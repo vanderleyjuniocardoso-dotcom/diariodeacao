@@ -7,11 +7,18 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
-const badges = [
+interface Badge {
+  label: string;
+  icon: typeof Star;
+  threshold: number;
+  type?: "hours";
+}
+
+const badges: Badge[] = [
   { label: "Primeira Ação", icon: Star, threshold: 1 },
   { label: "10 Ações", icon: Award, threshold: 10 },
-  { label: "50 Horas", icon: Clock, threshold: 50, type: "hours" as const },
-  { label: "100 Horas", icon: Heart, threshold: 100, type: "hours" as const },
+  { label: "50 Horas", icon: Clock, threshold: 50, type: "hours" },
+  { label: "100 Horas", icon: Heart, threshold: 100, type: "hours" },
 ];
 
 const Profile = () => {
