@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, Filter } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface VolunteerSummary {
