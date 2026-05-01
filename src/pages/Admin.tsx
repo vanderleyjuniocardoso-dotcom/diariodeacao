@@ -38,19 +38,26 @@ const Admin = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      // Load all actions with profile info
       const { data: actionsData } = await supabase
         .from("volunteer_actions")
-        .select("*, profiles(full_name, email)")
+        .select("*")
         .order("action_date", { ascending: false });
 
-      if (actionsData) {
-        setActions(actionsData as ActionDetail[]);
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, full_name, email");
 
-        // Aggregate volunteers
+      const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
+
+      if (actionsData) {
+        const enriched: ActionDetail[] = actionsData.map((a) => ({
+          ...a,
+          profiles: profileMap.get(a.user_id) ? { full_name: profileMap.get(a.user_id)!.full_name, email: profileMap.get(a.user_id)!.email } : null,
+        }));
+        setActions(enriched);
+
         const map = new Map<string, VolunteerSummary>();
-        for (const a of actionsData) {
-          const p = (a as ActionDetail).profiles;
+        for (const a of enriched) {
           const existing = map.get(a.user_id);
           if (existing) {
             existing.totalHours += Number(a.donated_hours);
@@ -58,8 +65,8 @@ const Admin = () => {
           } else {
             map.set(a.user_id, {
               id: a.user_id,
-              full_name: p?.full_name || "—",
-              email: p?.email || "—",
+              full_name: a.profiles?.full_name || "—",
+              email: a.profiles?.email || "—",
               totalHours: Number(a.donated_hours),
               totalActions: 1,
             });
