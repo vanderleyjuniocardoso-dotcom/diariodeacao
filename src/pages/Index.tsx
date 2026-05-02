@@ -1,8 +1,8 @@
-import { Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import logoVoluntariado from "@/assets/logo-voluntariado.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,8 +21,8 @@ const Index = () => {
       </div>
 
       <div className="relative z-10 text-center max-w-sm animate-fade-up">
-        <div className="mx-auto mb-6 w-20 h-20 rounded-2xl gradient-warm flex items-center justify-center shadow-[var(--shadow-elevated)]">
-          <Heart className="h-10 w-10 text-accent-foreground" fill="currentColor" />
+        <div className="mx-auto mb-6 w-28 h-28 rounded-3xl bg-white flex items-center justify-center shadow-[var(--shadow-elevated)] p-3">
+          <img src={logoVoluntariado} alt="Logo Voluntariado CEJAM" className="w-full h-full object-contain" />
         </div>
 
         <h1 className="text-3xl font-bold font-heading text-primary-foreground mb-2 leading-tight">
