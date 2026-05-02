@@ -69,6 +69,7 @@ export type Database = {
         Row: {
           action_date: string
           action_name: string
+          category: string | null
           created_at: string
           description: string | null
           donated_hours: number
@@ -81,6 +82,7 @@ export type Database = {
         Insert: {
           action_date: string
           action_name: string
+          category?: string | null
           created_at?: string
           description?: string | null
           donated_hours: number
@@ -93,6 +95,7 @@ export type Database = {
         Update: {
           action_date?: string
           action_name?: string
+          category?: string | null
           created_at?: string
           description?: string | null
           donated_hours?: number

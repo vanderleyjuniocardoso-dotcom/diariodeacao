@@ -1,0 +1,1 @@
+ALTER TABLE public.volunteer_actions ADD COLUMN category TEXT;
