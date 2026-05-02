@@ -21,7 +21,7 @@ const Index = () => {
       </div>
 
       <div className="relative z-10 text-center max-w-sm animate-fade-up">
-        <div className="mx-auto mb-6 w-28 h-28 rounded-3xl bg-white flex items-center justify-center shadow-[var(--shadow-elevated)] p-3">
+        <div className="mx-auto mb-6 w-40 h-40 rounded-3xl bg-white flex items-center justify-center shadow-[var(--shadow-elevated)] p-4">
           <img src={logoVoluntariado} alt="Logo Voluntariado CEJAM" className="w-full h-full object-contain" />
         </div>
 

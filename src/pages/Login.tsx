@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Heart, Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import logoVoluntariado from "@/assets/logo-voluntariado.jpg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -42,9 +43,10 @@ const Login = () => {
     <div className="min-h-screen flex flex-col justify-center px-6 bg-background">
       <div className="max-w-sm mx-auto w-full animate-fade-up">
         <div className="text-center mb-8">
-          <div className="mx-auto mb-4 w-14 h-14 rounded-xl gradient-hero flex items-center justify-center">
-            <Heart className="h-7 w-7 text-primary-foreground" fill="currentColor" />
-          </div>
+          <img src={logoVoluntariado} alt="Logo Voluntariado CEJAM" className="mx-auto mb-4 w-24 h-24 object-contain" />
+          <p className="text-base font-heading font-semibold text-primary italic mb-4">
+            "Onde Há Voluntário, Há Amor!"
+          </p>
           <h1 className="text-2xl font-bold font-heading text-foreground">Bem-vindo de volta!</h1>
           <p className="text-sm text-muted-foreground mt-1">Entre para continuar sua jornada</p>
         </div>
