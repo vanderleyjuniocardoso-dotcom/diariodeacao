@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock, Loader2 } from "lucide-react";
-import logoVoluntariado from "@/assets/logo-voluntariado.jpg";
+import logoVoluntariado from "@/assets/logo-voluntariado.png";
 
 const Login = () => {
   const navigate = useNavigate();
