@@ -56,27 +56,35 @@ const RegisterAction = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Validação: todos os campos são obrigatórios
+    if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
+    if (!form.category) { toast.error("Selecione uma categoria"); return; }
+    if (!form.action_date) { toast.error("Informe a data da ação"); return; }
+    if (!form.donated_hours || parseFloat(form.donated_hours) <= 0) { toast.error("Informe as horas doadas"); return; }
+    if (!form.location.trim()) { toast.error("Informe o local da ação"); return; }
+    if (!form.description.trim()) { toast.error("Conte como foi a experiência"); return; }
+    if (!photoFile) { toast.error("Adicione uma foto da ação"); return; }
+
     setLoading(true);
 
     let photo_url: string | null = null;
 
-    if (photoFile) {
-      const ext = photoFile.name.split(".").pop();
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("action-photos").upload(path, photoFile);
-      if (uploadError) { toast.error("Erro ao enviar foto"); setLoading(false); return; }
-      const { data: urlData } = supabase.storage.from("action-photos").getPublicUrl(path);
-      photo_url = urlData.publicUrl;
-    }
+    const ext = photoFile.name.split(".").pop();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("action-photos").upload(path, photoFile);
+    if (uploadError) { toast.error("Erro ao enviar foto"); setLoading(false); return; }
+    const { data: urlData } = supabase.storage.from("action-photos").getPublicUrl(path);
+    photo_url = urlData.publicUrl;
 
     const { error } = await supabase.from("volunteer_actions").insert({
       user_id: user.id,
-      action_name: form.action_name,
+      action_name: form.action_name.trim(),
       category: form.category,
       action_date: form.action_date,
-      location: form.location,
+      location: form.location.trim(),
       donated_hours: parseFloat(form.donated_hours),
-      description: form.description || null,
+      description: form.description.trim(),
       photo_url,
     });
 
@@ -150,6 +158,7 @@ const RegisterAction = () => {
             onChange={(e) => update("description", e.target.value)}
             placeholder="Descreva como se sentiu, o que aprendeu, o impacto emocional..."
             className="min-h-[120px] resize-none"
+            required
           />
         </div>
 
