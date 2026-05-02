@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
-import logoVoluntariado from "@/assets/logo-voluntariado.jpg";
+import logoVoluntariado from "@/assets/logo-voluntariado.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -21,9 +21,7 @@ const Index = () => {
       </div>
 
       <div className="relative z-10 text-center max-w-sm animate-fade-up">
-        <div className="mx-auto mb-6 w-40 h-40 rounded-3xl bg-white flex items-center justify-center shadow-[var(--shadow-elevated)] p-4">
-          <img src={logoVoluntariado} alt="Logo Voluntariado CEJAM" className="w-full h-full object-contain" />
-        </div>
+        <img src={logoVoluntariado} alt="Logo Voluntariado CEJAM" className="mx-auto mb-6 w-44 h-44 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.25)] brightness-0 invert" />
 
         <h1 className="text-3xl font-bold font-heading text-primary-foreground mb-2 leading-tight">
           Diário de Ação do Voluntariado
