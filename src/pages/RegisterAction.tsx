@@ -7,8 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag } from "lucide-react";
+
+const CATEGORIES = [
+  "Voluntariado Protagonista",
+  "Ações com Parceiros",
+  "Nota Fiscal Paulista",
+  "Workshop mensal",
+  "Encontros de comemoração",
+  "Voluntariado Ambiental",
+  "Cejam Solidário",
+  "Embaixador Conecta",
+  "Acompanhamento Psicológico",
+  "Voluntariado Corporativo",
+];
 
 const RegisterAction = () => {
   const { user } = useAuth();
