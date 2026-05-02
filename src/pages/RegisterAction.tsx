@@ -112,6 +112,20 @@ const RegisterAction = () => {
           <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="category"><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Categoria</Label>
+          <Select value={form.category} onValueChange={(v) => update("category", v)} required>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="Selecione uma categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="date"><Calendar className="inline h-4 w-4 mr-1 text-muted-foreground" />Data</Label>
