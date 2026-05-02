@@ -7,8 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag } from "lucide-react";
+
+const CATEGORIES = [
+  "Voluntariado Protagonista",
+  "Ações com Parceiros",
+  "Nota Fiscal Paulista",
+  "Workshop mensal",
+  "Encontros de comemoração",
+  "Voluntariado Ambiental",
+  "Cejam Solidário",
+  "Embaixador Conecta",
+  "Acompanhamento Psicológico",
+  "Voluntariado Corporativo",
+];
 
 const RegisterAction = () => {
   const { user } = useAuth();
@@ -21,6 +35,7 @@ const RegisterAction = () => {
 
   const [form, setForm] = useState({
     action_name: "",
+    category: "",
     action_date: new Date().toISOString().split("T")[0],
     location: "",
     donated_hours: "",
@@ -57,6 +72,7 @@ const RegisterAction = () => {
     const { error } = await supabase.from("volunteer_actions").insert({
       user_id: user.id,
       action_name: form.action_name,
+      category: form.category,
       action_date: form.action_date,
       location: form.location,
       donated_hours: parseFloat(form.donated_hours),
@@ -94,6 +110,20 @@ const RegisterAction = () => {
         <div className="space-y-1.5">
           <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
           <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="category"><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Categoria</Label>
+          <Select value={form.category} onValueChange={(v) => update("category", v)} required>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="Selecione uma categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
