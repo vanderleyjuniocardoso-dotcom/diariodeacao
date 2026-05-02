@@ -72,6 +72,7 @@ const RegisterAction = () => {
     const { error } = await supabase.from("volunteer_actions").insert({
       user_id: user.id,
       action_name: form.action_name,
+      category: form.category,
       action_date: form.action_date,
       location: form.location,
       donated_hours: parseFloat(form.donated_hours),
