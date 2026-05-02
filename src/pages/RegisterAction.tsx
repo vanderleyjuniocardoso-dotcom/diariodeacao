@@ -35,6 +35,7 @@ const RegisterAction = () => {
 
   const [form, setForm] = useState({
     action_name: "",
+    category: "",
     action_date: new Date().toISOString().split("T")[0],
     location: "",
     donated_hours: "",
