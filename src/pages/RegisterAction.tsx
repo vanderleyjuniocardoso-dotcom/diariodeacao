@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard } from "lucide-react";
 
 const CATEGORIES = [
   "Voluntariado Protagonista",
@@ -34,6 +34,8 @@ const RegisterAction = () => {
   const [success, setSuccess] = useState(false);
 
   const [form, setForm] = useState({
+    volunteer_name: "",
+    volunteer_credential: "",
     action_name: "",
     category: "",
     action_date: new Date().toISOString().split("T")[0],
@@ -58,6 +60,8 @@ const RegisterAction = () => {
     if (!user) return;
 
     // Validação: todos os campos são obrigatórios
+    if (!form.volunteer_name.trim()) { toast.error("Informe seu nome"); return; }
+    if (!form.volunteer_credential.trim()) { toast.error("Informe sua credencial"); return; }
     if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
     if (!form.category) { toast.error("Selecione uma categoria"); return; }
     if (!form.action_date) { toast.error("Informe a data da ação"); return; }
@@ -79,6 +83,8 @@ const RegisterAction = () => {
 
     const { error } = await supabase.from("volunteer_actions").insert({
       user_id: user.id,
+      volunteer_name: form.volunteer_name.trim(),
+      volunteer_credential: form.volunteer_credential.trim(),
       action_name: form.action_name.trim(),
       category: form.category,
       action_date: form.action_date,
@@ -115,6 +121,16 @@ const RegisterAction = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="px-5 space-y-4 animate-fade-up">
+        <div className="space-y-1.5">
+          <Label htmlFor="vname"><User className="inline h-4 w-4 mr-1 text-muted-foreground" />Seu nome</Label>
+          <Input id="vname" value={form.volunteer_name} onChange={(e) => update("volunteer_name", e.target.value)} placeholder="Nome completo do voluntário" required />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="vcred"><IdCard className="inline h-4 w-4 mr-1 text-muted-foreground" />Credencial</Label>
+          <Input id="vcred" value={form.volunteer_credential} onChange={(e) => update("volunteer_credential", e.target.value)} placeholder="Sua credencial" required />
+        </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
           <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
