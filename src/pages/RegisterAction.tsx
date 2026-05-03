@@ -60,6 +60,8 @@ const RegisterAction = () => {
     if (!user) return;
 
     // Validação: todos os campos são obrigatórios
+    if (!form.volunteer_name.trim()) { toast.error("Informe seu nome"); return; }
+    if (!form.volunteer_credential.trim()) { toast.error("Informe sua credencial"); return; }
     if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
     if (!form.category) { toast.error("Selecione uma categoria"); return; }
     if (!form.action_date) { toast.error("Informe a data da ação"); return; }
