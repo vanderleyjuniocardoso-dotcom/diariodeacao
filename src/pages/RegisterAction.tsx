@@ -83,6 +83,8 @@ const RegisterAction = () => {
 
     const { error } = await supabase.from("volunteer_actions").insert({
       user_id: user.id,
+      volunteer_name: form.volunteer_name.trim(),
+      volunteer_credential: form.volunteer_credential.trim(),
       action_name: form.action_name.trim(),
       category: form.category,
       action_date: form.action_date,
