@@ -78,6 +78,8 @@ export type Database = {
           photo_url: string | null
           updated_at: string
           user_id: string
+          volunteer_credential: string | null
+          volunteer_name: string | null
         }
         Insert: {
           action_date: string
@@ -91,6 +93,8 @@ export type Database = {
           photo_url?: string | null
           updated_at?: string
           user_id: string
+          volunteer_credential?: string | null
+          volunteer_name?: string | null
         }
         Update: {
           action_date?: string
@@ -104,6 +108,8 @@ export type Database = {
           photo_url?: string | null
           updated_at?: string
           user_id?: string
+          volunteer_credential?: string | null
+          volunteer_name?: string | null
         }
         Relationships: []
       }
