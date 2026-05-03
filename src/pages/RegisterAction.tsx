@@ -122,6 +122,16 @@ const RegisterAction = () => {
 
       <form onSubmit={handleSubmit} className="px-5 space-y-4 animate-fade-up">
         <div className="space-y-1.5">
+          <Label htmlFor="vname"><User className="inline h-4 w-4 mr-1 text-muted-foreground" />Seu nome</Label>
+          <Input id="vname" value={form.volunteer_name} onChange={(e) => update("volunteer_name", e.target.value)} placeholder="Nome completo do voluntário" required />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="vcred"><IdCard className="inline h-4 w-4 mr-1 text-muted-foreground" />Credencial</Label>
+          <Input id="vcred" value={form.volunteer_credential} onChange={(e) => update("volunteer_credential", e.target.value)} placeholder="Sua credencial" required />
+        </div>
+
+        <div className="space-y-1.5">
           <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
           <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
         </div>
