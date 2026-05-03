@@ -34,6 +34,8 @@ const RegisterAction = () => {
   const [success, setSuccess] = useState(false);
 
   const [form, setForm] = useState({
+    volunteer_name: "",
+    volunteer_credential: "",
     action_name: "",
     category: "",
     action_date: new Date().toISOString().split("T")[0],
