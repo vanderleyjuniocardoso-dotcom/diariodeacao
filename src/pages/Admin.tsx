@@ -13,6 +13,7 @@ interface VolunteerSummary {
   email: string;
   totalHours: number;
   totalActions: number;
+  volunteer_level: number;
 }
 
 interface ActionDetail {
@@ -46,7 +47,7 @@ const Admin = () => {
 
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, full_name, email");
+        .select("id, full_name, email, volunteer_level");
 
       const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
 
@@ -58,19 +59,22 @@ const Admin = () => {
         setActions(enriched);
 
         const map = new Map<string, VolunteerSummary>();
+        // Seed with all profiles so admin can set level even before any action is registered
+        for (const p of profilesData || []) {
+          map.set(p.id, {
+            id: p.id,
+            full_name: p.full_name || "—",
+            email: p.email || "—",
+            totalHours: 0,
+            totalActions: 0,
+            volunteer_level: (p as any).volunteer_level ?? 1,
+          });
+        }
         for (const a of enriched) {
           const existing = map.get(a.user_id);
           if (existing) {
             existing.totalHours += Number(a.donated_hours);
             existing.totalActions += 1;
-          } else {
-            map.set(a.user_id, {
-              id: a.user_id,
-              full_name: a.profiles?.full_name || "—",
-              email: a.profiles?.email || "—",
-              totalHours: Number(a.donated_hours),
-              totalActions: 1,
-            });
           }
         }
         setVolunteers(Array.from(map.values()));
@@ -79,6 +83,16 @@ const Admin = () => {
     };
     load();
   }, []);
+
+  const updateLevel = async (userId: string, level: number) => {
+    const { error } = await supabase.from("profiles").update({ volunteer_level: level }).eq("id", userId);
+    if (error) {
+      toast.error("Erro ao atualizar nível");
+      return;
+    }
+    setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_level: level } : v)));
+    toast.success(`Nível atualizado para ${level}`);
+  };
 
   const exportToExcel = () => {
     const rows = actions.map((a) => ({
