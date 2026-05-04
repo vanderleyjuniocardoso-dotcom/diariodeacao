@@ -24,6 +24,7 @@ export type Database = {
           phone: string | null
           unit: string | null
           updated_at: string
+          volunteer_level: number
         }
         Insert: {
           avatar_url?: string | null
@@ -34,6 +35,7 @@ export type Database = {
           phone?: string | null
           unit?: string | null
           updated_at?: string
+          volunteer_level?: number
         }
         Update: {
           avatar_url?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           phone?: string | null
           unit?: string | null
           updated_at?: string
+          volunteer_level?: number
         }
         Relationships: []
       }

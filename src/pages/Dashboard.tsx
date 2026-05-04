@@ -82,28 +82,24 @@ const Dashboard = () => {
           <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} />
         </div>
 
-        {/* Performance bar */}
+        {/* Performance bar - based on user's assigned level */}
         {(() => {
-          const goalHours = 40;
-          const goalWorkshops = 4;
-          const goalMonths = 4;
+          const level = profile?.volunteer_level === 2 ? 2 : 1;
+          const goalHours = level === 2 ? 40 : 20;
+          const goalWorkshops = level === 2 ? 4 : 3;
+          const goalMonths = level === 2 ? 4 : 3;
           const pHours = Math.min(stats.totalHours / goalHours, 1);
           const pWork = Math.min(stats.workshops / goalWorkshops, 1);
           const pMonths = Math.min(stats.engagementMonths / goalMonths, 1);
           const progress = Math.round(((pHours + pWork + pMonths) / 3) * 100);
-          const currentLevel = stats.totalHours >= 40 && stats.workshops >= 4 && stats.engagementMonths >= 4
-            ? "Nível 2 alcançado"
-            : stats.totalHours >= 20 && stats.workshops >= 3 && stats.engagementMonths >= 3
-            ? "Nível 1 alcançado"
-            : "Em progresso";
           return (
-            <div className="mt-4 rounded-2xl bg-primary-foreground/10 border border-primary-foreground/20 p-4">
+            <div className="mt-4 rounded-2xl bg-primary-foreground/15 border border-primary-foreground/40 p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-primary-foreground/90">Seu desempenho na trilha</p>
-                <p className="text-xs font-semibold text-primary-foreground">{progress}%</p>
+                <p className="text-sm font-semibold text-primary-foreground">Seu desempenho — Nível {level}</p>
+                <p className="text-sm font-bold text-primary-foreground">{progress}%</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="relative flex-1 h-3 rounded-full bg-primary-foreground/20 overflow-hidden">
+                <div className="relative flex-1 h-3 rounded-full bg-primary-foreground/30 overflow-hidden">
                   <div
                     className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
                     style={{ width: `${progress}%` }}
@@ -111,12 +107,11 @@ const Dashboard = () => {
                 </div>
                 <Heart className="h-5 w-5 text-primary fill-primary flex-shrink-0" />
               </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] text-primary-foreground/80">
+              <div className="mt-2 flex items-center justify-between text-xs font-medium text-primary-foreground">
                 <span>{stats.totalHours}h / {goalHours}h</span>
                 <span>{stats.workshops}/{goalWorkshops} workshops</span>
                 <span>{stats.engagementMonths}/{goalMonths} meses</span>
               </div>
-              <p className="text-xs text-primary-foreground/90 mt-2 font-medium">{currentLevel}</p>
             </div>
           );
         })()}
