@@ -15,6 +15,7 @@ import RegisterAction from "./pages/RegisterAction";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import Volunteers from "./pages/Volunteers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/register-action" element={<ProtectedRoute><RegisterAction /></ProtectedRoute>} />
             <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/volunteers" element={<ProtectedRoute><Volunteers /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

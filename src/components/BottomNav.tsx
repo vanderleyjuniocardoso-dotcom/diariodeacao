@@ -1,10 +1,11 @@
-import { Home, PlusCircle, Clock, User } from "lucide-react";
+import { Home, PlusCircle, Clock, User, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { icon: Home, label: "Início", path: "/dashboard" },
   { icon: PlusCircle, label: "Registrar", path: "/register-action" },
+  { icon: Users, label: "Voluntários", path: "/volunteers" },
   { icon: Clock, label: "Histórico", path: "/history" },
   { icon: User, label: "Perfil", path: "/profile" },
 ];
