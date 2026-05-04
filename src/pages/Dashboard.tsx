@@ -26,7 +26,7 @@ interface ActionRow {
 const Dashboard = () => {
   const { user, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ totalHours: 0, totalActions: 0 });
+  const [stats, setStats] = useState({ totalHours: 0, totalActions: 0, workshops: 0, engagementMonths: 0 });
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
 
@@ -35,28 +35,21 @@ const Dashboard = () => {
     const load = async () => {
       const { data } = await supabase
         .from("volunteer_actions")
-        .select("id, action_name, action_date, location, donated_hours")
+        .select("id, action_name, action_date, location, donated_hours, category")
         .eq("user_id", user.id)
-        .order("action_date", { ascending: false })
-        .limit(5);
+        .order("action_date", { ascending: false });
 
       if (data) {
-        setRecent(data);
-        const totalHours = data.reduce((sum: number, a: ActionRow) => sum + Number(a.donated_hours), 0);
-        // Get total count
-        const { count } = await supabase
-          .from("volunteer_actions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id);
-        
-        // Get total hours from all actions
-        const { data: allActions } = await supabase
-          .from("volunteer_actions")
-          .select("donated_hours")
-          .eq("user_id", user.id);
-        
-        const allHours = allActions?.reduce((sum: number, a: { donated_hours: number }) => sum + Number(a.donated_hours), 0) ?? totalHours;
-        setStats({ totalHours: allHours, totalActions: count ?? data.length });
+        setRecent(data.slice(0, 5));
+        const totalHours = data.reduce((sum, a) => sum + Number(a.donated_hours), 0);
+        const workshops = data.filter((a) => (a.category || "").toLowerCase() === "workshop").length;
+        const months = new Set(data.map((a) => (a.action_date || "").slice(0, 7)).filter(Boolean));
+        setStats({
+          totalHours,
+          totalActions: data.length,
+          workshops,
+          engagementMonths: months.size,
+        });
       }
     };
     load();
