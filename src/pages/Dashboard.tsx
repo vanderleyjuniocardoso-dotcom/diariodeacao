@@ -65,6 +65,10 @@ const Dashboard = () => {
           <div>
             <p className="text-primary-foreground/70 text-sm">Olá,</p>
             <h1 className="text-xl font-bold font-heading text-primary-foreground">{firstName} 👋</h1>
+            <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full bg-primary-foreground/20 border border-primary-foreground/40">
+              <Trophy className="h-3.5 w-3.5 text-primary-foreground" />
+              <span className="text-xs font-semibold text-primary-foreground">Nível {profile?.volunteer_level === 2 ? 2 : 1}</span>
+            </div>
           </div>
           {isAdmin && (
             <Button
