@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,17 +93,10 @@ const Admin = () => {
       "Data de Envio": new Date(a.created_at).toLocaleDateString("pt-BR"),
     }));
 
-    const headers = Object.keys(rows[0] || {});
-    const csv = [
-      headers.join(","),
-      ...rows.map((r) => headers.map((h) => `"${String(r[h as keyof typeof r]).replace(/"/g, '""')}"`).join(",")),
-    ].join("\n");
-
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `voluntariado_cejam_${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Ações");
+    XLSX.writeFile(workbook, `voluntariado_cejam_${new Date().toISOString().split("T")[0]}.xlsx`);
     toast.success("Dados exportados com sucesso!");
   };
 
