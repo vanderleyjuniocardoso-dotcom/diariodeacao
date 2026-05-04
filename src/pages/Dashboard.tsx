@@ -81,6 +81,45 @@ const Dashboard = () => {
           <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} gradient />
           <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} />
         </div>
+
+        {/* Performance bar */}
+        {(() => {
+          const goalHours = 40;
+          const goalWorkshops = 4;
+          const goalMonths = 4;
+          const pHours = Math.min(stats.totalHours / goalHours, 1);
+          const pWork = Math.min(stats.workshops / goalWorkshops, 1);
+          const pMonths = Math.min(stats.engagementMonths / goalMonths, 1);
+          const progress = Math.round(((pHours + pWork + pMonths) / 3) * 100);
+          const currentLevel = stats.totalHours >= 40 && stats.workshops >= 4 && stats.engagementMonths >= 4
+            ? "Nível 2 alcançado"
+            : stats.totalHours >= 20 && stats.workshops >= 3 && stats.engagementMonths >= 3
+            ? "Nível 1 alcançado"
+            : "Em progresso";
+          return (
+            <div className="mt-4 rounded-2xl bg-primary-foreground/10 border border-primary-foreground/20 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-primary-foreground/90">Seu desempenho na trilha</p>
+                <p className="text-xs font-semibold text-primary-foreground">{progress}%</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 h-3 rounded-full bg-primary-foreground/20 overflow-hidden">
+                  <div
+                    className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <Heart className="h-5 w-5 text-primary fill-primary flex-shrink-0" />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] text-primary-foreground/80">
+                <span>{stats.totalHours}h / {goalHours}h</span>
+                <span>{stats.workshops}/{goalWorkshops} workshops</span>
+                <span>{stats.engagementMonths}/{goalMonths} meses</span>
+              </div>
+              <p className="text-xs text-primary-foreground/90 mt-2 font-medium">{currentLevel}</p>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="px-5 mt-6 space-y-5 animate-fade-up">
