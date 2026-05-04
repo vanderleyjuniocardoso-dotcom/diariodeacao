@@ -7,7 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  profile: { full_name: string; email: string; phone: string | null; unit: string | null; avatar_url: string | null } | null;
+  profile: { full_name: string; email: string; phone: string | null; unit: string | null; avatar_url: string | null; volunteer_level?: number | null } | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
