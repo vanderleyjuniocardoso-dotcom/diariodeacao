@@ -190,6 +190,25 @@ const Admin = () => {
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{v.totalHours}h</span>
                   <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{v.totalActions} ações</span>
                 </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-xs font-medium text-foreground">Nível:</span>
+                  <Button
+                    size="sm"
+                    variant={v.volunteer_level === 1 ? "default" : "outline"}
+                    onClick={() => updateLevel(v.id, 1)}
+                    className="h-7 px-3 text-xs"
+                  >
+                    Nível 1
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={v.volunteer_level === 2 ? "default" : "outline"}
+                    onClick={() => updateLevel(v.id, 2)}
+                    className="h-7 px-3 text-xs"
+                  >
+                    Nível 2
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
