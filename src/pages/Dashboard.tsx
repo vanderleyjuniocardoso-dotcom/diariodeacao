@@ -20,6 +20,7 @@ interface ActionRow {
   action_date: string;
   location: string;
   donated_hours: number;
+  category?: string | null;
 }
 
 const Dashboard = () => {
