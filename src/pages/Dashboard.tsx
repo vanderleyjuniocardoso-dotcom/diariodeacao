@@ -105,6 +105,49 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Trilha de Desenvolvimento */}
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="h-5 w-5 text-warm" />
+            <h2 className="text-base font-semibold font-heading text-foreground">Trilha de Desenvolvimento</h2>
+          </div>
+
+          {(() => {
+            const levels = [
+              {
+                name: "Nível 1",
+                criteria: ["20 horas anuais", "Participação em 3 workshops", "3 meses de engajamento"],
+              },
+              {
+                name: "Nível 2",
+                criteria: ["40 horas anuais", "Participação em 4 workshops", "4 meses de engajamento"],
+              },
+            ];
+            return (
+              <div className="space-y-4">
+                {levels.map((lvl, i) => (
+                  <div key={lvl.name} className="rounded-xl border border-border/60 p-4 bg-background/40">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                        {i + 1}
+                      </div>
+                      <p className="font-semibold text-sm text-foreground">{lvl.name}</p>
+                    </div>
+                    <ul className="space-y-1.5 pl-1">
+                      {lvl.criteria.map((c) => (
+                        <li key={c} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Circle className="h-3.5 w-3.5 text-primary/60 flex-shrink-0" />
+                          <span>{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+
         {/* CTA */}
         <Button variant="hero" size="lg" className="w-full" onClick={() => navigate("/register-action")}>
           Registrar Nova Ação
