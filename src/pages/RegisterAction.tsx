@@ -109,18 +109,19 @@ const RegisterAction = () => {
 
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
+    fireConfetti();
     setSuccess(true);
-    setTimeout(() => navigate("/dashboard"), 2000);
+    setTimeout(() => navigate("/dashboard"), 3000);
   };
 
   if (success) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-background animate-scale-in">
-        <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mb-4">
-          <CheckCircle className="h-10 w-10 text-success" />
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+          <Heart className="h-10 w-10 text-primary fill-primary" />
         </div>
-        <h2 className="text-xl font-bold font-heading text-foreground">Ação registrada!</h2>
-        <p className="text-sm text-muted-foreground mt-2 text-center">Obrigado por fazer a diferença. 💙</p>
+        <h2 className="text-2xl font-bold font-heading text-foreground text-center">Parabéns!</h2>
+        <p className="text-base text-foreground mt-2 text-center font-medium">Continue levando Amor 😉</p>
         <BottomNav />
       </div>
     );
