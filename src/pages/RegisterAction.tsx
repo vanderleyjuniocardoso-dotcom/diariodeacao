@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X } from "lucide-react";
 import confetti from "canvas-confetti";
 
 const fireConfetti = () => {
@@ -38,13 +38,14 @@ const CATEGORIES = [
 ];
 
 const RegisterAction = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [success, setSuccess] = useState(false);
+  const [animating, setAnimating] = useState(false);
 
   const [form, setForm] = useState({
     volunteer_name: "",
@@ -111,18 +112,75 @@ const RegisterAction = () => {
     if (error) { toast.error("Erro ao registrar ação"); return; }
     fireConfetti();
     setSuccess(true);
-    setTimeout(() => navigate("/dashboard"), 3000);
+  };
+
+  const handleCloseSuccess = () => {
+    setSuccess(false);
+    setAnimating(true);
+    setTimeout(() => {
+      setAnimating(false);
+      navigate("/dashboard");
+    }, 2800);
   };
 
   if (success) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-background animate-scale-in">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 bg-background/95 backdrop-blur-sm animate-scale-in">
+        <button
+          onClick={handleCloseSuccess}
+          className="absolute top-6 right-6 w-10 h-10 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
+          aria-label="Fechar"
+        >
+          <X className="h-5 w-5 text-foreground" />
+        </button>
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <Heart className="h-10 w-10 text-primary fill-primary" />
         </div>
         <h2 className="text-2xl font-bold font-heading text-foreground text-center">Parabéns!</h2>
-        <p className="text-base text-foreground mt-2 text-center font-medium">Continue levando Amor 😉</p>
-        <BottomNav />
+        <p className="text-base text-foreground mt-2 text-center font-medium max-w-xs">
+          Você está fazendo do mundo um lugar melhor. Continue levando amor ❤️
+        </p>
+      </div>
+    );
+  }
+
+  if (animating) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 bg-background animate-fade-in">
+        <p className="text-base font-semibold text-foreground mb-6 text-center">Você está progredindo na sua trilha! 💙</p>
+        <div className="w-full max-w-sm">
+          <div className="relative h-4 rounded-full bg-muted overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 bg-primary rounded-full"
+              style={{ width: "100%", animation: "progressFill 2.4s ease-out forwards", transformOrigin: "left" }}
+            />
+          </div>
+          <div className="relative h-16 mt-[-44px] pointer-events-none">
+            <div
+              className="absolute top-1 w-12 h-12 rounded-full bg-background border-4 border-primary overflow-hidden shadow-lg flex items-center justify-center"
+              style={{ animation: "avatarMove 2.4s ease-out forwards", left: 0 }}
+            >
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="h-6 w-6 text-primary" />
+              )}
+            </div>
+          </div>
+          <div className="flex justify-end mt-2">
+            <Heart className="h-6 w-6 text-primary fill-primary" />
+          </div>
+        </div>
+        <style>{`
+          @keyframes progressFill {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+          }
+          @keyframes avatarMove {
+            from { left: 0%; transform: translateX(0); }
+            to { left: 100%; transform: translateX(-100%); }
+          }
+        `}</style>
       </div>
     );
   }
