@@ -70,7 +70,7 @@ const Dashboard = () => {
       if (data) {
         setRecent(data.slice(0, 5));
         const totalHours = data.reduce((sum, a) => sum + Number(a.donated_hours), 0);
-        const workshops = data.filter((a) => (a.category || "").toLowerCase() === "workshop").length;
+        const workshops = data.filter((a) => (a.category || "").toLowerCase().includes("workshop mensal")).length;
         const months = new Set(data.map((a) => (a.action_date || "").slice(0, 7)).filter(Boolean));
         setStats({
           totalHours,
