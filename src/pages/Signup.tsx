@@ -1,24 +1,34 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Heart, Loader2, Mail, Lock, User, Phone, Building } from "lucide-react";
+import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera } from "lucide-react";
 
 const Signup = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "" });
   const [loading, setLoading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
+
+  const onAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setAvatarFile(f);
+    setAvatarPreview(URL.createObjectURL(f));
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.password.length < 8) { toast.error("A senha deve ter pelo menos 8 caracteres"); return; }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -26,13 +36,26 @@ const Signup = () => {
         emailRedirectTo: window.location.origin,
       },
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
-    } else {
-      toast.success("Conta criada! Verifique seu e-mail para confirmar.");
-      navigate("/login");
+      return;
     }
+    const userId = data.user?.id;
+    if (avatarFile && userId) {
+      try {
+        const ext = avatarFile.name.split(".").pop();
+        const path = `${userId}/avatar-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
+        if (!upErr) {
+          const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+          await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", userId);
+        }
+      } catch {}
+    }
+    setLoading(false);
+    toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+    navigate("/login");
   };
 
   const fields = [
@@ -55,6 +78,26 @@ const Signup = () => {
         </div>
 
         <form onSubmit={handleSignup} className="space-y-3">
+          {/* Avatar upload */}
+          <div className="flex flex-col items-center mb-2">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="relative w-20 h-20 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center overflow-hidden hover:border-primary transition"
+            >
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Camera className="h-6 w-6 text-muted-foreground" />
+              )}
+              <span className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                <Camera className="h-3 w-3" />
+              </span>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarSelect} />
+            <p className="text-xs text-muted-foreground mt-2">Foto de perfil (opcional)</p>
+          </div>
+
           {fields.map(({ key, label, icon: Icon, type, required }) => (
             <div key={key} className="space-y-1.5">
               <Label htmlFor={key}>{label}{!required && <span className="text-muted-foreground ml-1">(opcional)</span>}</Label>
