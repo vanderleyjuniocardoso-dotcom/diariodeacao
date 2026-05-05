@@ -214,7 +214,7 @@ const Dashboard = () => {
               },
               {
                 name: "Nível 2",
-                criteria: ["40 horas anuais", "Participação em 4 workshops", "4 meses de engajamento"],
+                criteria: ["40 horas anuais", "4 workshops", "4 meses de engajamento"],
               },
             ];
             return (
