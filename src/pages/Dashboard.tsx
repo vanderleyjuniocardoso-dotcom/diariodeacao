@@ -186,7 +186,7 @@ const Dashboard = () => {
             );
           })()}
         </div>
-
+      </div>
 
       <div className="px-5 mt-6 space-y-5 animate-fade-up">
         {/* Motivational */}
