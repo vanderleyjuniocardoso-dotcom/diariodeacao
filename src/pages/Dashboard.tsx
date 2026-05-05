@@ -218,9 +218,9 @@ const Dashboard = () => {
               },
             ];
             return (
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
                 {levels.map((lvl, i) => (
-                  <div key={lvl.name} className="rounded-xl border border-border/60 p-4 bg-background/40">
+                  <div key={lvl.name} className="rounded-xl border border-border/60 p-3 bg-background/40">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                         {i + 1}
