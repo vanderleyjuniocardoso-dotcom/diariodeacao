@@ -210,7 +210,7 @@ const Dashboard = () => {
             const levels = [
               {
                 name: "Nível 1",
-                criteria: ["20 horas anuais", "Participação em 3 workshops", "3 meses de engajamento"],
+                criteria: ["20 horas anuais", "3 workshops", "3 meses de engajamento"],
               },
               {
                 name: "Nível 2",
