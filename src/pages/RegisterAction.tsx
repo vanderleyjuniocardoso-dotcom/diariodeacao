@@ -38,13 +38,14 @@ const CATEGORIES = [
 ];
 
 const RegisterAction = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [success, setSuccess] = useState(false);
+  const [animating, setAnimating] = useState(false);
 
   const [form, setForm] = useState({
     volunteer_name: "",
