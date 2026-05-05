@@ -10,6 +10,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard } from "lucide-react";
+import confetti from "canvas-confetti";
+
+const fireConfetti = () => {
+  const duration = 3000;
+  const end = Date.now() + duration;
+  const colors = ["#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#bfdbfe"];
+  (function frame() {
+    confetti({ particleCount: 5, angle: 60, spread: 70, origin: { x: 0 }, colors });
+    confetti({ particleCount: 5, angle: 120, spread: 70, origin: { x: 1 }, colors });
+    confetti({ particleCount: 4, spread: 100, origin: { x: 0.5, y: 0.3 }, colors });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  })();
+};
 
 const CATEGORIES = [
   "Voluntariado Protagonista",
