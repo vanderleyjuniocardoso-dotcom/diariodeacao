@@ -145,8 +145,24 @@ const Dashboard = () => {
 
         {/* Stats inside blue header */}
         <div className="grid grid-cols-2 gap-3">
-          <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} gradient />
-          <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} gradient />
+          <div className="rounded-2xl p-4 flex items-center gap-3 bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm">
+            <div className="rounded-xl p-2.5 bg-primary-foreground/20">
+              <Clock className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold font-heading text-primary-foreground">{stats.totalHours}</p>
+              <p className="text-xs text-primary-foreground/80">Horas doadas</p>
+            </div>
+          </div>
+          <div className="rounded-2xl p-4 flex items-center gap-3 bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm">
+            <div className="rounded-xl p-2.5 bg-primary-foreground/20">
+              <Heart className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold font-heading text-primary-foreground">{stats.totalActions}</p>
+              <p className="text-xs text-primary-foreground/80">Ações realizadas</p>
+            </div>
+          </div>
         </div>
       </div>
 
