@@ -142,49 +142,27 @@ const Dashboard = () => {
           </div>
           <Trophy className="h-6 w-6" />
         </div>
-      </div>
 
-      <div className="px-5 -mt-2 space-y-5 animate-fade-up">
-        {/* Stats + Performance */}
-        <div className="glass-card rounded-2xl p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} />
-            <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} />
+        {/* Stats inside blue header */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl p-4 flex items-center gap-3 bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm">
+            <div className="rounded-xl p-2.5 bg-primary-foreground/20">
+              <Clock className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold font-heading text-primary-foreground">{stats.totalHours}</p>
+              <p className="text-xs text-primary-foreground/80">Horas doadas</p>
+            </div>
           </div>
-
-          {/* Performance bar - based on user's assigned level */}
-          {(() => {
-            const level = profile?.volunteer_level === 2 ? 2 : 1;
-            const goalHours = level === 2 ? 40 : 20;
-            const goalWorkshops = level === 2 ? 4 : 3;
-            const goalMonths = level === 2 ? 4 : 3;
-            const pHours = Math.min(stats.totalHours / goalHours, 1);
-            const pWork = Math.min(stats.workshops / goalWorkshops, 1);
-            const pMonths = Math.min(stats.engagementMonths / goalMonths, 1);
-            const progress = Math.round(((pHours + pWork + pMonths) / 3) * 100);
-            return (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-semibold text-foreground">Seu desempenho — Nível {level}</p>
-                  <p className="text-sm font-bold text-primary">{progress}%</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1 h-3 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <Heart className="h-5 w-5 text-primary fill-primary flex-shrink-0" />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
-                  <span>{stats.totalHours}h / {goalHours}h</span>
-                  <span>{stats.workshops}/{goalWorkshops} workshops</span>
-                  <span>{stats.engagementMonths}/{goalMonths} meses</span>
-                </div>
-              </div>
-            );
-          })()}
+          <div className="rounded-2xl p-4 flex items-center gap-3 bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm">
+            <div className="rounded-xl p-2.5 bg-primary-foreground/20">
+              <Heart className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold font-heading text-primary-foreground">{stats.totalActions}</p>
+              <p className="text-xs text-primary-foreground/80">Ações realizadas</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -202,49 +180,6 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Trilha de Desenvolvimento */}
-        <div className="glass-card rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy className="h-5 w-5 text-warm" />
-            <h2 className="text-base font-semibold font-heading text-foreground">Trilha de Desenvolvimento</h2>
-          </div>
-
-          {(() => {
-            const levels = [
-              {
-                name: "Nível 1",
-                criteria: ["20 horas anuais", "3 workshops", "3 meses de engajamento"],
-              },
-              {
-                name: "Nível 2",
-                criteria: ["40 horas anuais", "4 workshops", "4 meses de engajamento"],
-              },
-            ];
-            return (
-              <div className="grid grid-cols-2 gap-3">
-                {levels.map((lvl, i) => (
-                  <div key={lvl.name} className="rounded-xl border border-border/60 p-3 bg-background/40">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                        {i + 1}
-                      </div>
-                      <p className="font-semibold text-sm text-foreground">{lvl.name}</p>
-                    </div>
-                    <ul className="space-y-1.5 pl-1">
-                      {lvl.criteria.map((c) => (
-                        <li key={c} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Circle className="h-3.5 w-3.5 text-primary/60 flex-shrink-0" />
-                          <span>{c}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
         </div>
 
         {/* CTA */}
