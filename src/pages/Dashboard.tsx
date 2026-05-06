@@ -144,47 +144,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="px-5 -mt-2 space-y-5 animate-fade-up">
-        {/* Stats + Performance */}
-        <div className="glass-card rounded-2xl p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} />
-            <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} />
-          </div>
-
-          {/* Performance bar - based on user's assigned level */}
-          {(() => {
-            const level = profile?.volunteer_level === 2 ? 2 : 1;
-            const goalHours = level === 2 ? 40 : 20;
-            const goalWorkshops = level === 2 ? 4 : 3;
-            const goalMonths = level === 2 ? 4 : 3;
-            const pHours = Math.min(stats.totalHours / goalHours, 1);
-            const pWork = Math.min(stats.workshops / goalWorkshops, 1);
-            const pMonths = Math.min(stats.engagementMonths / goalMonths, 1);
-            const progress = Math.round(((pHours + pWork + pMonths) / 3) * 100);
-            return (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-semibold text-foreground">Seu desempenho — Nível {level}</p>
-                  <p className="text-sm font-bold text-primary">{progress}%</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1 h-3 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <Heart className="h-5 w-5 text-primary fill-primary flex-shrink-0" />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
-                  <span>{stats.totalHours}h / {goalHours}h</span>
-                  <span>{stats.workshops}/{goalWorkshops} workshops</span>
-                  <span>{stats.engagementMonths}/{goalMonths} meses</span>
-                </div>
-              </div>
-            );
-          })()}
+        {/* Stats inside blue header */}
+        <div className="grid grid-cols-2 gap-3">
+          <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} />
+          <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} />
         </div>
       </div>
 
