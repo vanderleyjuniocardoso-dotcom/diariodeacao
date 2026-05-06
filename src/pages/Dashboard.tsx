@@ -145,8 +145,8 @@ const Dashboard = () => {
 
         {/* Stats inside blue header */}
         <div className="grid grid-cols-2 gap-3">
-          <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} />
-          <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} />
+          <StatCard icon={Clock} label="Horas doadas" value={stats.totalHours} gradient />
+          <StatCard icon={Heart} label="Ações realizadas" value={stats.totalActions} gradient />
         </div>
       </div>
 
