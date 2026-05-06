@@ -142,7 +142,6 @@ const Dashboard = () => {
           </div>
           <Trophy className="h-6 w-6" />
         </div>
-      </div>
 
         {/* Stats inside blue header */}
         <div className="grid grid-cols-2 gap-3">
