@@ -213,6 +213,24 @@ const Dashboard = () => {
           Registrar Nova Ação
         </Button>
 
+        {/* Credencial - sincroniza horas da planilha */}
+        <div className="glass-card rounded-2xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <IdCard className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold text-foreground">Credencial do voluntário</p>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Informe sua credencial para sincronizar automaticamente as horas da planilha de monitoramento.
+            {stats.sheetHours > 0 && <span className="block mt-1 text-primary font-medium">+{stats.sheetHours}h vindas da planilha</span>}
+          </p>
+          <div className="flex gap-2">
+            <Input value={credInput} onChange={(e) => setCredInput(e.target.value)} placeholder="Sua credencial" />
+            <Button onClick={saveCredential} disabled={savingCred || credInput.trim() === (profile?.volunteer_credential ?? "").trim()}>
+              {savingCred ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar"}
+            </Button>
+          </div>
+        </div>
+
         {/* Recent */}
         <div>
           <h2 className="text-lg font-semibold font-heading text-foreground mb-3">Atividades recentes</h2>
