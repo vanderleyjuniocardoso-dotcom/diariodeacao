@@ -96,6 +96,14 @@ const Admin = () => {
     toast.success(`Nível atualizado para ${level}`);
   };
 
+  const updateCredential = async (userId: string, credential: string) => {
+    const value = credential.trim() || null;
+    const { error } = await supabase.from("profiles").update({ volunteer_credential: value }).eq("id", userId);
+    if (error) { toast.error("Erro ao salvar credencial"); return; }
+    setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_credential: value } : v)));
+    toast.success("Credencial salva");
+  };
+
   const exportToExcel = () => {
     const rows = actions.map((a) => ({
       "Nome do Voluntário": a.profiles?.full_name || "—",
