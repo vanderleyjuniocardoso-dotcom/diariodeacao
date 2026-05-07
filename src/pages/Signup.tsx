@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera } from "lucide-react";
+import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera, IdCard } from "lucide-react";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "" });
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "", volunteer_credential: "" });
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -42,16 +42,22 @@ const Signup = () => {
       return;
     }
     const userId = data.user?.id;
-    if (avatarFile && userId) {
-      try {
-        const ext = avatarFile.name.split(".").pop();
-        const path = `${userId}/avatar-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
-        if (!upErr) {
-          const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-          await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", userId);
-        }
-      } catch {}
+    if (userId) {
+      // Save credential on profile
+      if (form.volunteer_credential.trim()) {
+        await supabase.from("profiles").update({ volunteer_credential: form.volunteer_credential.trim() }).eq("id", userId);
+      }
+      if (avatarFile) {
+        try {
+          const ext = avatarFile.name.split(".").pop();
+          const path = `${userId}/avatar-${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
+          if (!upErr) {
+            const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+            await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", userId);
+          }
+        } catch {}
+      }
     }
     setLoading(false);
     toast.success("Conta criada! Verifique seu e-mail para confirmar.");
@@ -62,6 +68,7 @@ const Signup = () => {
     { key: "full_name", label: "Nome completo", icon: User, type: "text", required: true },
     { key: "email", label: "E-mail", icon: Mail, type: "email", required: true },
     { key: "password", label: "Senha", icon: Lock, type: "password", required: true },
+    { key: "volunteer_credential", label: "Credencial do voluntário", icon: IdCard, type: "text", required: false },
     { key: "phone", label: "Telefone", icon: Phone, type: "tel", required: false },
     { key: "unit", label: "Unidade / Departamento", icon: Building, type: "text", required: false },
   ];
