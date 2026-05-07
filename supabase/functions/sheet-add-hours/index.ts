@@ -38,8 +38,8 @@ Deno.serve(async (req) => {
       'X-Connection-Api-Key': GOOGLE_SHEETS_API_KEY,
     };
 
-    // Read credential column C and current AG values
-    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C5:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AG5:AG`)}`;
+    // Read credential column C and current AH values
+    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C5:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AH5:AH`)}`;
     const readUrl = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`;
     const readResp = await fetch(readUrl, { headers });
     const readData = await readResp.json();
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       : parseFloat(String(currentRaw ?? '0').replace(',', '.')) || 0;
     const newValue = current + addHours;
 
-    const writeRange = `${SHEET_NAME}!AG${rowNumber}`;
+    const writeRange = `${SHEET_NAME}!AH${rowNumber}`;
     const writeUrl = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values/${writeRange}?valueInputOption=USER_ENTERED`;
     const writeResp = await fetch(writeUrl, {
       method: 'PUT',
