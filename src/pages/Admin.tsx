@@ -48,7 +48,7 @@ const Admin = () => {
 
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, full_name, email, volunteer_level");
+        .select("id, full_name, email, volunteer_level, volunteer_credential");
 
       const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
 
@@ -69,6 +69,7 @@ const Admin = () => {
             totalHours: 0,
             totalActions: 0,
             volunteer_level: (p as any).volunteer_level ?? 1,
+            volunteer_credential: (p as any).volunteer_credential ?? null,
           });
         }
         for (const a of enriched) {
