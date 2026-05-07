@@ -30,6 +30,19 @@ interface ActionDetail {
   profiles: { full_name: string; email: string } | null;
 }
 
+const CredentialEditor = ({ initial, onSave }: { initial: string; onSave: (v: string) => Promise<void> | void }) => {
+  const [value, setValue] = useState(initial);
+  useEffect(() => { setValue(initial); }, [initial]);
+  const dirty = value.trim() !== initial.trim();
+  return (
+    <div className="flex items-center gap-2 mt-3">
+      <span className="text-xs font-medium text-foreground whitespace-nowrap">Credencial:</span>
+      <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder="—" className="h-7 text-xs" />
+      <Button size="sm" variant="outline" disabled={!dirty} onClick={() => onSave(value)} className="h-7 px-3 text-xs">Salvar</Button>
+    </div>
+  );
+};
+
 const Admin = () => {
   const navigate = useNavigate();
   const [volunteers, setVolunteers] = useState<VolunteerSummary[]>([]);
