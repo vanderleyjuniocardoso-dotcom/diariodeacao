@@ -32,7 +32,20 @@ const Dashboard = () => {
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [credInput, setCredInput] = useState("");
+  const [savingCred, setSavingCred] = useState(false);
 
+  useEffect(() => { setCredInput(profile?.volunteer_credential ?? ""); }, [profile?.volunteer_credential]);
+
+  const saveCredential = async () => {
+    if (!user) return;
+    setSavingCred(true);
+    const { error } = await supabase.from("profiles").update({ volunteer_credential: credInput.trim() || null }).eq("id", user.id);
+    setSavingCred(false);
+    if (error) { toast.error(error.message); return; }
+    await refreshProfile();
+    toast.success("Credencial salva! Suas horas serão atualizadas.");
+  };
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
