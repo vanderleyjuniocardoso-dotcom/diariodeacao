@@ -26,6 +26,11 @@ const Signup = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.full_name.trim() || !form.email.trim() || !form.password || !form.phone.trim() || !form.unit.trim() || !form.volunteer_credential.trim()) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+    if (!avatarFile) { toast.error("Selecione uma foto de perfil"); return; }
     if (form.password.length < 8) { toast.error("A senha deve ter pelo menos 8 caracteres"); return; }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
@@ -68,9 +73,9 @@ const Signup = () => {
     { key: "full_name", label: "Nome completo", icon: User, type: "text", required: true },
     { key: "email", label: "E-mail", icon: Mail, type: "email", required: true },
     { key: "password", label: "Senha", icon: Lock, type: "password", required: true },
-    { key: "volunteer_credential", label: "Credencial do voluntário", icon: IdCard, type: "text", required: false },
-    { key: "phone", label: "Telefone", icon: Phone, type: "tel", required: false },
-    { key: "unit", label: "Unidade / Departamento", icon: Building, type: "text", required: false },
+    { key: "volunteer_credential", label: "Credencial do voluntário", icon: IdCard, type: "text", required: true },
+    { key: "phone", label: "Telefone", icon: Phone, type: "tel", required: true },
+    { key: "unit", label: "Unidade / Departamento", icon: Building, type: "text", required: true },
   ];
 
   return (
@@ -102,12 +107,12 @@ const Signup = () => {
               </span>
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarSelect} />
-            <p className="text-xs text-muted-foreground mt-2">Foto de perfil (opcional)</p>
+            <p className="text-xs text-muted-foreground mt-2">Foto de perfil</p>
           </div>
 
           {fields.map(({ key, label, icon: Icon, type, required }) => (
             <div key={key} className="space-y-1.5">
-              <Label htmlFor={key}>{label}{!required && <span className="text-muted-foreground ml-1">(opcional)</span>}</Label>
+              <Label htmlFor={key}>{label}</Label>
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
