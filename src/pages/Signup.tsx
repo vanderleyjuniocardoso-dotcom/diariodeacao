@@ -112,7 +112,7 @@ const Signup = () => {
 
           {fields.map(({ key, label, icon: Icon, type, required }) => (
             <div key={key} className="space-y-1.5">
-              <Label htmlFor={key}>{label}{!required && <span className="text-muted-foreground ml-1">(opcional)</span>}</Label>
+              <Label htmlFor={key}>{label}</Label>
               <div className="relative">
                 <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
