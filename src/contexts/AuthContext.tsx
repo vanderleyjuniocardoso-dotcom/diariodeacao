@@ -69,6 +69,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  // Realtime: refresh profile when admin updates it (e.g. credencial)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`profile-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${user.id}` },
+        (payload) => {
+          setProfile(payload.new as any);
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
