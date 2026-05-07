@@ -42,16 +42,22 @@ const Signup = () => {
       return;
     }
     const userId = data.user?.id;
-    if (avatarFile && userId) {
-      try {
-        const ext = avatarFile.name.split(".").pop();
-        const path = `${userId}/avatar-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
-        if (!upErr) {
-          const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-          await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", userId);
-        }
-      } catch {}
+    if (userId) {
+      // Save credential on profile
+      if (form.volunteer_credential.trim()) {
+        await supabase.from("profiles").update({ volunteer_credential: form.volunteer_credential.trim() }).eq("id", userId);
+      }
+      if (avatarFile) {
+        try {
+          const ext = avatarFile.name.split(".").pop();
+          const path = `${userId}/avatar-${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
+          if (!upErr) {
+            const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+            await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", userId);
+          }
+        } catch {}
+      }
     }
     setLoading(false);
     toast.success("Conta criada! Verifique seu e-mail para confirmar.");
