@@ -110,6 +110,20 @@ const RegisterAction = () => {
 
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
+
+    // Sincroniza horas na planilha (coluna AG)
+    try {
+      const { data: syncData, error: syncError } = await supabase.functions.invoke("sheet-add-hours", {
+        body: { credential: form.volunteer_credential.trim(), hours: parseFloat(form.donated_hours) },
+      });
+      if (syncError || (syncData && syncData.ok === false)) {
+        console.warn("Falha ao sincronizar com a planilha:", syncError || syncData?.error);
+        toast.warning("Ação registrada, mas não foi possível atualizar a planilha.");
+      }
+    } catch (err) {
+      console.warn("Erro ao chamar sheet-add-hours:", err);
+    }
+
     fireConfetti();
     setSuccess(true);
   };
