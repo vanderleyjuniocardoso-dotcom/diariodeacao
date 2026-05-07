@@ -14,6 +14,7 @@ interface VolunteerSummary {
   totalHours: number;
   totalActions: number;
   volunteer_level: number;
+  volunteer_credential: string | null;
 }
 
 interface ActionDetail {
