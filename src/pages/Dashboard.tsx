@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
-import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon } from "lucide-react";
+import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -22,12 +22,13 @@ interface ActionRow {
   location: string;
   donated_hours: number;
   category?: string | null;
+  people_impacted?: number | null;
 }
 
 const Dashboard = () => {
   const { user, profile, isAdmin, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ totalHours: 0, totalActions: 0, workshops: 0, engagementMonths: 0, sheetHours: 0 });
+  const [stats, setStats] = useState({ totalHours: 0, totalActions: 0, workshops: 0, engagementMonths: 0, sheetHours: 0, peopleImpacted: 0 });
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -62,7 +63,7 @@ const Dashboard = () => {
     const load = async () => {
       const { data } = await supabase
         .from("volunteer_actions")
-        .select("id, action_name, action_date, location, donated_hours, category")
+        .select("id, action_name, action_date, location, donated_hours, category, people_impacted")
         .eq("user_id", user.id)
         .order("action_date", { ascending: false });
 
@@ -82,12 +83,14 @@ const Dashboard = () => {
         const actionsHours = data.reduce((sum, a) => sum + Number(a.donated_hours), 0);
         const workshops = data.filter((a) => (a.category || "").toLowerCase().includes("workshop mensal")).length;
         const months = new Set(data.map((a) => (a.action_date || "").slice(0, 7)).filter(Boolean));
+        const peopleImpacted = data.reduce((sum, a: any) => sum + Number(a.people_impacted || 0), 0);
         setStats({
           totalHours: actionsHours + sheetHours,
           totalActions: data.length,
           workshops,
           engagementMonths: months.size,
           sheetHours,
+          peopleImpacted,
         });
       }
     };
@@ -175,6 +178,15 @@ const Dashboard = () => {
             <div>
               <p className="text-2xl font-bold font-heading text-primary-foreground">{stats.totalActions}</p>
               <p className="text-xs text-primary-foreground/80">Ações realizadas</p>
+            </div>
+          </div>
+          <div className="rounded-2xl p-4 flex items-center gap-3 bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm col-span-2">
+            <div className="rounded-xl p-2.5 bg-primary-foreground/20">
+              <Users className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold font-heading text-primary-foreground">{stats.peopleImpacted}</p>
+              <p className="text-xs text-primary-foreground/80">Pessoas impactadas</p>
             </div>
           </div>
         </div>
