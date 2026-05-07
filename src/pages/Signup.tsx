@@ -107,7 +107,7 @@ const Signup = () => {
               </span>
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarSelect} />
-            <p className="text-xs text-muted-foreground mt-2">Foto de perfil (opcional)</p>
+            <p className="text-xs text-muted-foreground mt-2">Foto de perfil</p>
           </div>
 
           {fields.map(({ key, label, icon: Icon, type, required }) => (
