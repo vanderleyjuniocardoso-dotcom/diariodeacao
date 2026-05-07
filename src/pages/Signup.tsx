@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera } from "lucide-react";
+import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera, IdCard } from "lucide-react";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "" });
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "", volunteer_credential: "" });
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
