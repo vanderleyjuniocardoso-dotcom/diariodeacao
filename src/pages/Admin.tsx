@@ -14,6 +14,7 @@ interface VolunteerSummary {
   totalHours: number;
   totalActions: number;
   volunteer_level: number;
+  volunteer_credential: string | null;
 }
 
 interface ActionDetail {
@@ -28,6 +29,19 @@ interface ActionDetail {
   user_id: string;
   profiles: { full_name: string; email: string } | null;
 }
+
+const CredentialEditor = ({ initial, onSave }: { initial: string; onSave: (v: string) => Promise<void> | void }) => {
+  const [value, setValue] = useState(initial);
+  useEffect(() => { setValue(initial); }, [initial]);
+  const dirty = value.trim() !== initial.trim();
+  return (
+    <div className="flex items-center gap-2 mt-3">
+      <span className="text-xs font-medium text-foreground whitespace-nowrap">Credencial:</span>
+      <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder="—" className="h-7 text-xs" />
+      <Button size="sm" variant="outline" disabled={!dirty} onClick={() => onSave(value)} className="h-7 px-3 text-xs">Salvar</Button>
+    </div>
+  );
+};
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -47,7 +61,7 @@ const Admin = () => {
 
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, full_name, email, volunteer_level");
+        .select("id, full_name, email, volunteer_level, volunteer_credential");
 
       const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
 
@@ -68,6 +82,7 @@ const Admin = () => {
             totalHours: 0,
             totalActions: 0,
             volunteer_level: (p as any).volunteer_level ?? 1,
+            volunteer_credential: (p as any).volunteer_credential ?? null,
           });
         }
         for (const a of enriched) {
@@ -92,6 +107,14 @@ const Admin = () => {
     }
     setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_level: level } : v)));
     toast.success(`Nível atualizado para ${level}`);
+  };
+
+  const updateCredential = async (userId: string, credential: string) => {
+    const value = credential.trim() || null;
+    const { error } = await supabase.from("profiles").update({ volunteer_credential: value }).eq("id", userId);
+    if (error) { toast.error("Erro ao salvar credencial"); return; }
+    setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_credential: value } : v)));
+    toast.success("Credencial salva");
   };
 
   const exportToExcel = () => {
@@ -209,6 +232,10 @@ const Admin = () => {
                     Nível 2
                   </Button>
                 </div>
+                <CredentialEditor
+                  initial={v.volunteer_credential ?? ""}
+                  onSave={(value) => updateCredential(v.id, value)}
+                />
               </div>
             ))}
           </div>

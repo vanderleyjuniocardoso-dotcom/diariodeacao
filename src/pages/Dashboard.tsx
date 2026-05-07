@@ -4,9 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
-import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, IdCard } from "lucide-react";
+import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const quotes = [
@@ -32,20 +31,6 @@ const Dashboard = () => {
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [credInput, setCredInput] = useState("");
-  const [savingCred, setSavingCred] = useState(false);
-
-  useEffect(() => { setCredInput(profile?.volunteer_credential ?? ""); }, [profile?.volunteer_credential]);
-
-  const saveCredential = async () => {
-    if (!user) return;
-    setSavingCred(true);
-    const { error } = await supabase.from("profiles").update({ volunteer_credential: credInput.trim() || null }).eq("id", user.id);
-    setSavingCred(false);
-    if (error) { toast.error(error.message); return; }
-    await refreshProfile();
-    toast.success("Credencial salva! Suas horas serão atualizadas.");
-  };
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -213,23 +198,13 @@ const Dashboard = () => {
           Registrar Nova Ação
         </Button>
 
-        {/* Credencial - sincroniza horas da planilha */}
-        <div className="glass-card rounded-2xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <IdCard className="h-4 w-4 text-primary" />
-            <p className="text-sm font-semibold text-foreground">Credencial do voluntário</p>
+        {stats.sheetHours > 0 && (
+          <div className="glass-card rounded-2xl p-4">
+            <p className="text-xs text-muted-foreground">
+              <span className="text-primary font-medium">+{stats.sheetHours}h</span> sincronizadas da planilha de monitoramento
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            Informe sua credencial para sincronizar automaticamente as horas da planilha de monitoramento.
-            {stats.sheetHours > 0 && <span className="block mt-1 text-primary font-medium">+{stats.sheetHours}h vindas da planilha</span>}
-          </p>
-          <div className="flex gap-2">
-            <Input value={credInput} onChange={(e) => setCredInput(e.target.value)} placeholder="Sua credencial" />
-            <Button onClick={saveCredential} disabled={savingCred || credInput.trim() === (profile?.volunteer_credential ?? "").trim()}>
-              {savingCred ? <Loader2 className="h-4 w-4 animate-spin" /> : "Salvar"}
-            </Button>
-          </div>
-        </div>
+        )}
 
         {/* Recent */}
         <div>
