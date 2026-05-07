@@ -15,15 +15,27 @@ const Trilha = () => {
         .from("volunteer_actions")
         .select("action_date, donated_hours, category")
         .eq("user_id", user.id);
+
+      let sheetHours = 0;
+      const credential = profile?.volunteer_credential?.trim();
+      if (credential) {
+        try {
+          const { data: sh } = await supabase.functions.invoke("sheet-hours", { body: { credential } });
+          if (sh && typeof sh.hours === "number") sheetHours = sh.hours;
+        } catch (e) {
+          console.error("sheet-hours invoke failed", e);
+        }
+      }
+
       if (data) {
-        const totalHours = data.reduce((sum, a) => sum + Number(a.donated_hours), 0);
+        const actionsHours = data.reduce((sum, a) => sum + Number(a.donated_hours), 0);
         const workshops = data.filter((a) => (a.category || "").toLowerCase().includes("workshop mensal")).length;
         const months = new Set(data.map((a) => (a.action_date || "").slice(0, 7)).filter(Boolean));
-        setStats({ totalHours, workshops, engagementMonths: months.size });
+        setStats({ totalHours: actionsHours + sheetHours, workshops, engagementMonths: months.size });
       }
     };
     load();
-  }, [user]);
+  }, [user, profile?.volunteer_credential]);
 
   const level = profile?.volunteer_level === 2 ? 2 : 1;
   const goalHours = level === 2 ? 40 : 20;
