@@ -26,6 +26,11 @@ const Signup = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.full_name.trim() || !form.email.trim() || !form.password || !form.phone.trim() || !form.unit.trim() || !form.volunteer_credential.trim()) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+    if (!avatarFile) { toast.error("Selecione uma foto de perfil"); return; }
     if (form.password.length < 8) { toast.error("A senha deve ter pelo menos 8 caracteres"); return; }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
