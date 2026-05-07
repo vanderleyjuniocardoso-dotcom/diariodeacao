@@ -1,4 +1,7 @@
-import { corsHeaders } from '@supabase/supabase-js/cors';
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const SPREADSHEET_ID = '1AYeleeFTj7rb1KLGnQp2eY1Ow5DOnV0kcGmueuPnbLs';
 const SHEET_NAME = 'Base de voluntários';
