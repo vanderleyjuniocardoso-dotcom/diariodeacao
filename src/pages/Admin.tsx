@@ -219,6 +219,10 @@ const Admin = () => {
                     Nível 2
                   </Button>
                 </div>
+                <CredentialEditor
+                  initial={v.volunteer_credential ?? ""}
+                  onSave={(value) => updateCredential(v.id, value)}
+                />
               </div>
             ))}
           </div>
