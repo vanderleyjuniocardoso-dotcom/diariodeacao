@@ -2,10 +2,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
-import { Clock, Heart, LogOut, Award, Star, User as UserIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Clock, Heart, LogOut, Award, Star, User as UserIcon, IdCard, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Badge {
   label: string;
@@ -22,9 +25,15 @@ const badges: Badge[] = [
 ];
 
 const Profile = () => {
-  const { profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ totalHours: 0, totalActions: 0 });
+  const [credential, setCredential] = useState("");
+  const [savingCred, setSavingCred] = useState(false);
+
+  useEffect(() => {
+    setCredential(profile?.volunteer_credential ?? "");
+  }, [profile?.volunteer_credential]);
 
   useEffect(() => {
     const load = async () => {
@@ -42,6 +51,16 @@ const Profile = () => {
   const handleLogout = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const saveCredential = async () => {
+    if (!user) return;
+    setSavingCred(true);
+    const { error } = await supabase.from("profiles").update({ volunteer_credential: credential.trim() || null }).eq("id", user.id);
+    setSavingCred(false);
+    if (error) { toast.error(error.message); return; }
+    await refreshProfile();
+    toast.success("Credencial salva!");
   };
 
   const earnedBadges = badges.filter((b) =>
