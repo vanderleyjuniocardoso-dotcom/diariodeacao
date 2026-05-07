@@ -4,8 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
-import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon } from "lucide-react";
+import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const quotes = [
