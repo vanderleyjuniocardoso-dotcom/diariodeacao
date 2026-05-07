@@ -118,6 +118,9 @@ const Dashboard = () => {
             <div>
               <p className="text-primary-foreground/80 text-sm">Olá,</p>
               <h1 className="text-xl font-bold font-heading text-primary-foreground">{firstName} 👋</h1>
+              {profile?.volunteer_credential && (
+                <p className="text-xs text-primary-foreground/80 mt-0.5">Credencial: <span className="font-semibold text-primary-foreground">{profile.volunteer_credential}</span></p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
