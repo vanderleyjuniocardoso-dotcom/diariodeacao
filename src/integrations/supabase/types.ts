@@ -81,6 +81,7 @@ export type Database = {
           donated_hours: number
           id: string
           location: string
+          people_impacted: number
           photo_url: string | null
           updated_at: string
           user_id: string
@@ -96,6 +97,7 @@ export type Database = {
           donated_hours: number
           id?: string
           location: string
+          people_impacted?: number
           photo_url?: string | null
           updated_at?: string
           user_id: string
@@ -111,6 +113,7 @@ export type Database = {
           donated_hours?: number
           id?: string
           location?: string
+          people_impacted?: number
           photo_url?: string | null
           updated_at?: string
           user_id?: string

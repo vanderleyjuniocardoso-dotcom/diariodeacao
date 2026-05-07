@@ -1,0 +1,1 @@
+ALTER TABLE public.volunteer_actions ADD COLUMN people_impacted integer NOT NULL DEFAULT 0;

@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X, Users } from "lucide-react";
 import confetti from "canvas-confetti";
 
 const fireConfetti = () => {
@@ -55,6 +55,7 @@ const RegisterAction = () => {
     action_date: new Date().toISOString().split("T")[0],
     location: "",
     donated_hours: "",
+    people_impacted: "",
     description: "",
   });
 
@@ -81,6 +82,7 @@ const RegisterAction = () => {
     if (!form.action_date) { toast.error("Informe a data da ação"); return; }
     if (!form.donated_hours || parseFloat(form.donated_hours) <= 0) { toast.error("Informe as horas doadas"); return; }
     if (!form.location.trim()) { toast.error("Informe o local da ação"); return; }
+    if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas impactadas"); return; }
     if (!form.description.trim()) { toast.error("Conte como foi a experiência"); return; }
     if (!photoFile) { toast.error("Adicione uma foto da ação"); return; }
 
@@ -104,6 +106,7 @@ const RegisterAction = () => {
       action_date: form.action_date,
       location: form.location.trim(),
       donated_hours: parseFloat(form.donated_hours),
+      people_impacted: parseInt(form.people_impacted),
       description: form.description.trim(),
       photo_url,
     });
@@ -250,6 +253,11 @@ const RegisterAction = () => {
         <div className="space-y-1.5">
           <Label htmlFor="location"><MapPin className="inline h-4 w-4 mr-1 text-muted-foreground" />Local</Label>
           <Input id="location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Ex: Centro Comunitário São Paulo" required />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="impacted"><Users className="inline h-4 w-4 mr-1 text-muted-foreground" />Pessoas impactadas</Label>
+          <Input id="impacted" type="number" min="0" step="1" value={form.people_impacted} onChange={(e) => update("people_impacted", e.target.value)} placeholder="Ex: 50" required />
         </div>
 
         <div className="space-y-1.5">
