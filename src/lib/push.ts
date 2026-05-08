@@ -1,6 +1,6 @@
 // Public VAPID key for Web Push subscriptions (safe to expose).
 export const VAPID_PUBLIC_KEY =
-  "BLUtPebV9KsVrrncsbWQQmY6Q-s-THfNrZMsyXHL6wIN-_NVlPwlSfhGanFiZgGRC_ccEimhb0FNaImRKIxDGTY";
+  "BOk0HtqZC7lET_byiRXKBwE7tsfAXjEkq9mhILHCZFxtIuOOnU5UrdkoW2Hy2oqPzDgRe-7mZOkiL2tDX7bZUUQ";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
