@@ -20,13 +20,27 @@ const InstallAppButton = () => {
       window.navigator.standalone === true;
     setInstalled(isStandalone);
 
+    // Pick up an event already captured in index.html before React mounted.
+    // @ts-ignore
+    const early = window.__deferredInstallPrompt as BIPEvent | null;
+    if (early) setDeferred(early);
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BIPEvent);
     };
+    const earlyHandler = () => {
+      // @ts-ignore
+      const ev = window.__deferredInstallPrompt as BIPEvent | null;
+      if (ev) setDeferred(ev);
+    };
     window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("pwa-install-available", earlyHandler);
     window.addEventListener("appinstalled", () => setInstalled(true));
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("pwa-install-available", earlyHandler);
+    };
   }, []);
 
   if (installed) return null;

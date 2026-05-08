@@ -27,6 +27,18 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Capture install prompt as early as possible so we never miss it.
+      window.__deferredInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__deferredInstallPrompt = e;
+        window.dispatchEvent(new Event('pwa-install-available'));
+      });
+      window.addEventListener('appinstalled', function () {
+        window.__deferredInstallPrompt = null;
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
