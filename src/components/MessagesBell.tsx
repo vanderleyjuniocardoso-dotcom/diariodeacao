@@ -27,6 +27,9 @@ const MessagesBell = () => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [open, setOpen] = useState(false);
+  const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
 
   const unreadCount = messages.filter((m) => !m.read_at).length;
 
