@@ -69,16 +69,17 @@ const MessagesBell = () => {
         const sub = await subscribeToPush();
         if (!sub) return;
         const json: any = sub.toJSON();
-        await supabase.from("push_subscriptions").upsert(
-          {
-            user_id: user.id,
-            endpoint: json.endpoint,
-            p256dh: json.keys.p256dh,
-            auth: json.keys.auth,
-            user_agent: navigator.userAgent,
-          },
-          { onConflict: "endpoint" },
-        );
+        // Insert (ignore if endpoint already saved)
+        const { error } = await supabase.from("push_subscriptions").insert({
+          user_id: user.id,
+          endpoint: json.endpoint,
+          p256dh: json.keys.p256dh,
+          auth: json.keys.auth,
+          user_agent: navigator.userAgent,
+        });
+        if (error && !error.message.includes("duplicate")) {
+          console.error("save subscription error", error);
+        }
       } catch (e) {
         console.error("push subscribe failed", e);
       }
