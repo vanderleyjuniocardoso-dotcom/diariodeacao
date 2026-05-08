@@ -49,13 +49,13 @@ const InstallAppButton = () => {
   return (
     <>
       <Button
-        variant="outline"
+        variant="default"
         size="lg"
-        className="w-full bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
+        className="w-full"
         onClick={handleClick}
       >
         <Download className="mr-2 h-4 w-4" />
-        Baixar app na tela inicial
+        Baixar app
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
