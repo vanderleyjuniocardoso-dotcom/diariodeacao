@@ -170,8 +170,6 @@ const Volunteers = () => {
       })
       .catch((e) => console.error("send-push error", e));
     setSending(false);
-    toast({ title: "Recado enviado!", description: `Sua mensagem foi enviada para ${selected.full_name}.` });
-    setSelected(null);
     setMessage("");
   };
 
