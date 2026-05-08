@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
 import InstallAppButton from "@/components/InstallAppButton";
+import MessagesBell from "@/components/MessagesBell";
 import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -142,6 +143,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <MessagesBell />
             {isAdmin && (
               <Button
                 variant="outline"
