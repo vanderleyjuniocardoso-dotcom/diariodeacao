@@ -202,6 +202,19 @@ const MessagesBell = () => {
                       <p className="text-sm text-foreground/90 mt-1 whitespace-pre-wrap break-words">
                         {m.message}
                       </p>
+                      <div className="mt-2 flex justify-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setReplyTo(m);
+                            setReplyText("");
+                          }}
+                        >
+                          <Send className="h-3.5 w-3.5 mr-1.5" />
+                          Responder
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
