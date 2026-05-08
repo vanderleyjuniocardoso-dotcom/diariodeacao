@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       });
     }
     const addHours = typeof hours === 'number' ? hours : parseFloat(String(hours ?? '0').replace(',', '.'));
-    if (!isFinite(addHours) || addHours <= 0) {
+    if (!isFinite(addHours) || addHours === 0) {
       return new Response(JSON.stringify({ ok: false, error: 'invalid hours' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
