@@ -18,6 +18,7 @@ import Admin from "./pages/Admin";
 import Volunteers from "./pages/Volunteers";
 import Trilha from "./pages/Trilha";
 import NotFound from "./pages/NotFound";
+import WelcomeOverlay from "./components/WelcomeOverlay";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <WelcomeOverlay />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
