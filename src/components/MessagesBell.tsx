@@ -284,11 +284,22 @@ const MessagesBell = () => {
                   recipient_id: replyTo.sender_id,
                   message: trimmed,
                 });
-                setSendingReply(false);
                 if (error) {
+                  setSendingReply(false);
                   toast.error("Erro ao enviar", { description: error.message });
                   return;
                 }
+                supabase.functions
+                  .invoke("send-push", {
+                    body: {
+                      recipient_id: replyTo.sender_id,
+                      title: `Nova mensagem de ${user.user_metadata?.full_name || "um voluntário"}`,
+                      message: trimmed,
+                      url: "/",
+                    },
+                  })
+                  .catch((e) => console.error("send-push error", e));
+                setSendingReply(false);
                 toast.success(`Resposta enviada para ${replyTo.sender_name}`);
                 setReplyTo(null);
                 setReplyText("");
