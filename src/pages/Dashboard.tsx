@@ -253,6 +253,10 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+        {/* Install app */}
+        <div className="pt-2">
+          <InstallAppButton />
+        </div>
       </div>
 
       <BottomNav />
