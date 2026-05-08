@@ -122,6 +122,30 @@ export type Database = {
         }
         Relationships: []
       }
+      volunteer_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
