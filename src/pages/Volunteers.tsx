@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
-import { Users, Trophy, Clock, BadgeCheck } from "lucide-react";
+import { Users, Trophy, Clock, BadgeCheck, Send } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface VolunteerRow {
   id: string;
@@ -14,6 +19,11 @@ interface VolunteerRow {
 
 const Volunteers = () => {
   const [list, setList] = useState<VolunteerRow[]>([]);
+  const [selected, setSelected] = useState<VolunteerRow | null>(null);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -40,6 +50,38 @@ const Volunteers = () => {
     })();
   }, []);
 
+  const openDialog = (v: VolunteerRow) => {
+    setSelected(v);
+    setMessage("");
+  };
+
+  const sendMessage = async () => {
+    if (!user || !selected) return;
+    const trimmed = message.trim();
+    if (!trimmed) {
+      toast({ title: "Escreva uma mensagem", variant: "destructive" });
+      return;
+    }
+    if (trimmed.length > 1000) {
+      toast({ title: "Mensagem muito longa (máx. 1000)", variant: "destructive" });
+      return;
+    }
+    setSending(true);
+    const { error } = await supabase.from("volunteer_messages").insert({
+      sender_id: user.id,
+      recipient_id: selected.id,
+      message: trimmed,
+    });
+    setSending(false);
+    if (error) {
+      toast({ title: "Erro ao enviar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Recado enviado!", description: `Sua mensagem foi enviada para ${selected.full_name}.` });
+    setSelected(null);
+    setMessage("");
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
@@ -47,7 +89,7 @@ const Volunteers = () => {
           <Users className="h-6 w-6 text-primary-foreground" />
           <h1 className="text-xl font-bold font-heading text-primary-foreground">Voluntários</h1>
         </div>
-        <p className="text-sm text-primary-foreground/80 mt-1">Conheça quem faz parte da rede.</p>
+        <p className="text-sm text-primary-foreground/80 mt-1">Toque em um voluntário para deixar um recado.</p>
       </div>
 
       <div className="px-5 mt-6 space-y-3">
@@ -56,10 +98,13 @@ const Volunteers = () => {
         ) : (
           list.map((v) => {
             const initials = v.full_name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+            const isSelf = user?.id === v.id;
             return (
-              <div
+              <button
                 key={v.id}
-                className="w-full text-left glass-card rounded-xl p-4 flex items-center gap-3"
+                onClick={() => !isSelf && openDialog(v)}
+                disabled={isSelf}
+                className="w-full text-left glass-card rounded-xl p-4 flex items-center gap-3 transition active:scale-[0.99] disabled:opacity-70 disabled:cursor-default"
               >
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0 overflow-hidden">
                   {v.avatar_url ? (
@@ -69,7 +114,9 @@ const Volunteers = () => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
-                  <p className="font-medium text-sm text-foreground truncate">{v.full_name}</p>
+                  <p className="font-medium text-sm text-foreground truncate">
+                    {v.full_name} {isSelf && <span className="text-xs text-muted-foreground">(você)</span>}
+                  </p>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <BadgeCheck className="h-3.5 w-3.5 text-primary" />
                     <span className="truncate">{v.volunteer_credential || "Sem credencial"}</span>
@@ -85,11 +132,39 @@ const Volunteers = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })
         )}
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deixar um recado</DialogTitle>
+            <DialogDescription>
+              Envie uma mensagem para <span className="font-semibold text-foreground">{selected?.full_name}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Escreva uma mensagem ou recado..."
+            rows={5}
+            maxLength={1000}
+          />
+          <p className="text-xs text-muted-foreground text-right">{message.length}/1000</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelected(null)} disabled={sending}>
+              Cancelar
+            </Button>
+            <Button onClick={sendMessage} disabled={sending}>
+              <Send className="h-4 w-4 mr-2" />
+              {sending ? "Enviando..." : "Enviar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>
