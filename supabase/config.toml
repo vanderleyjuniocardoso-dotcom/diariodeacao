@@ -1,1 +1,4 @@
 project_id = "eolvrylgvgndinrcblem"
+
+[functions.send-daily-push]
+verify_jwt = false
