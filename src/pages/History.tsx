@@ -41,10 +41,24 @@ const History = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deseja excluir esta ação?")) return;
+    const action = actions.find((a) => a.id === id);
     const { error } = await supabase.from("volunteer_actions").delete().eq("id", id);
     if (error) { toast.error("Erro ao excluir"); return; }
     toast.success("Ação excluída");
     setActions((p) => p.filter((a) => a.id !== id));
+
+    // Subtrai as horas da planilha (coluna AH)
+    const credential = action?.volunteer_credential?.trim();
+    const hours = Number(action?.donated_hours || 0);
+    if (credential && hours > 0) {
+      try {
+        await supabase.functions.invoke("sheet-add-hours", {
+          body: { credential, hours: -hours },
+        });
+      } catch (err) {
+        console.warn("Erro ao sincronizar exclusão com a planilha:", err);
+      }
+    }
   };
 
   const filtered = actions.filter((a) =>
