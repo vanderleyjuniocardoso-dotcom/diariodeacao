@@ -143,6 +143,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <MessagesBell />
             {isAdmin && (
               <Button
                 variant="outline"
