@@ -8,11 +8,19 @@ const corsHeaders = {
 };
 
 const VAPID_PUBLIC_KEY =
-  "BLUtPebV9KsVrrncsbWQQmY6Q-s-THfNrZMsyXHL6wIN-_NVlPwlSfhGanFiZgGRC_ccEimhb0FNaImRKIxDGTY";
-const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
+  "BOk0HtqZC7lET_byiRXKBwE7tsfAXjEkq9mhILHCZFxtIuOOnU5UrdkoW2Hy2oqPzDgRe-7mZOkiL2tDX7bZUUQ";
+// Sanitize: strip whitespace/newlines and convert standard base64 to base64url if needed
+const RAW_PRIVATE = (Deno.env.get("VAPID_PRIVATE_KEY") ?? "").trim().replace(/\s+/g, "");
+const VAPID_PRIVATE_KEY = RAW_PRIVATE.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 const VAPID_SUBJECT = "mailto:contato@diariodeacao.app";
 
-webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+console.log("VAPID private key length:", VAPID_PRIVATE_KEY.length);
+
+try {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+} catch (e) {
+  console.error("setVapidDetails failed:", e);
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
