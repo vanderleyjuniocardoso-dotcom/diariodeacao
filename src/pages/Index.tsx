@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import logoVoluntariado from "@/assets/logo-voluntariado.png";
+import InstallAppButton from "@/components/InstallAppButton";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const Index = () => {
           <Button variant="outline" size="lg" className="w-full bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20" onClick={() => navigate("/signup")}>
             Criar Conta
           </Button>
+          <InstallAppButton />
         </div>
 
         <p className="mt-8 text-xs text-primary-foreground/60">
