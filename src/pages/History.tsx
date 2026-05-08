@@ -16,6 +16,7 @@ interface Action {
   description: string | null;
   photo_url: string | null;
   created_at: string;
+  volunteer_credential: string | null;
 }
 
 const History = () => {
