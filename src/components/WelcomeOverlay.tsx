@@ -6,7 +6,7 @@ import mascote from "@/assets/mascote-voluntario.png";
 const SESSION_KEY = "welcome_shown";
 
 const fireConfetti = () => {
-  const duration = 2500;
+  const duration = 8500;
   const end = Date.now() + duration;
   const colors = ["#22d3ee", "#f43f5e", "#facc15", "#34d399", "#a78bfa", "#fb923c"];
 
@@ -54,9 +54,9 @@ const WelcomeOverlay = () => {
     const t1 = setTimeout(() => fireConfetti(), 150);
 
     // start closing animation
-    const t2 = setTimeout(() => setClosing(true), 3200);
+    const t2 = setTimeout(() => setClosing(true), 9400);
     // unmount
-    const t3 = setTimeout(() => setShow(false), 3800);
+    const t3 = setTimeout(() => setShow(false), 10000);
 
     return () => {
       clearTimeout(t1);
