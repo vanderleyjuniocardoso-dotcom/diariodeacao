@@ -59,12 +59,31 @@ const MessagesBell = () => {
     );
   };
 
-  // Pede permissão de notificação
+  // Inscreve para Push (notificações com app fechado)
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
+    if (!user) return;
+    (async () => {
+      try {
+        const { subscribeToPush, isInIframe } = await import("@/lib/push");
+        if (isInIframe) return;
+        const sub = await subscribeToPush();
+        if (!sub) return;
+        const json: any = sub.toJSON();
+        await supabase.from("push_subscriptions").upsert(
+          {
+            user_id: user.id,
+            endpoint: json.endpoint,
+            p256dh: json.keys.p256dh,
+            auth: json.keys.auth,
+            user_agent: navigator.userAgent,
+          },
+          { onConflict: "endpoint" },
+        );
+      } catch (e) {
+        console.error("push subscribe failed", e);
+      }
+    })();
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
