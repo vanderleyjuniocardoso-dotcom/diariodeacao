@@ -59,12 +59,32 @@ const MessagesBell = () => {
     );
   };
 
-  // Pede permissão de notificação
+  // Inscreve para Push (notificações com app fechado)
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
+    if (!user) return;
+    (async () => {
+      try {
+        const { subscribeToPush, isInIframe } = await import("@/lib/push");
+        if (isInIframe) return;
+        const sub = await subscribeToPush();
+        if (!sub) return;
+        const json: any = sub.toJSON();
+        // Insert (ignore if endpoint already saved)
+        const { error } = await supabase.from("push_subscriptions").insert({
+          user_id: user.id,
+          endpoint: json.endpoint,
+          p256dh: json.keys.p256dh,
+          auth: json.keys.auth,
+          user_agent: navigator.userAgent,
+        });
+        if (error && !error.message.includes("duplicate")) {
+          console.error("save subscription error", error);
+        }
+      } catch (e) {
+        console.error("push subscribe failed", e);
+      }
+    })();
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -264,11 +284,22 @@ const MessagesBell = () => {
                   recipient_id: replyTo.sender_id,
                   message: trimmed,
                 });
-                setSendingReply(false);
                 if (error) {
+                  setSendingReply(false);
                   toast.error("Erro ao enviar", { description: error.message });
                   return;
                 }
+                supabase.functions
+                  .invoke("send-push", {
+                    body: {
+                      recipient_id: replyTo.sender_id,
+                      title: `Nova mensagem de ${user.user_metadata?.full_name || "um voluntário"}`,
+                      message: trimmed,
+                      url: "/",
+                    },
+                  })
+                  .catch((e) => console.error("send-push error", e));
+                setSendingReply(false);
                 toast.success(`Resposta enviada para ${replyTo.sender_name}`);
                 setReplyTo(null);
                 setReplyText("");
