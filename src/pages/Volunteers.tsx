@@ -71,7 +71,70 @@ const Volunteers = () => {
   const openDialog = (v: VolunteerRow) => {
     setSelected(v);
     setMessage("");
+    setThread([]);
   };
+
+  // Carrega histórico + realtime quando abre conversa
+  useEffect(() => {
+    if (!user || !selected) return;
+    let cancelled = false;
+
+    (async () => {
+      setLoadingThread(true);
+      const { data } = await supabase
+        .from("volunteer_messages")
+        .select("id, message, created_at, sender_id, recipient_id")
+        .or(
+          `and(sender_id.eq.${user.id},recipient_id.eq.${selected.id}),and(sender_id.eq.${selected.id},recipient_id.eq.${user.id})`,
+        )
+        .order("created_at", { ascending: true })
+        .limit(200);
+      if (cancelled) return;
+      setThread(data ?? []);
+      setLoadingThread(false);
+      scrollToBottom();
+
+      // Marca recebidas como lidas
+      const unreadIds = (data ?? [])
+        .filter((m: any) => m.recipient_id === user.id)
+        .map((m: any) => m.id);
+      if (unreadIds.length > 0) {
+        await supabase
+          .from("volunteer_messages")
+          .update({ read_at: new Date().toISOString() })
+          .in("id", unreadIds);
+      }
+    })();
+
+    const channel = supabase
+      .channel(`thread-${user.id}-${selected.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "volunteer_messages" },
+        (payload) => {
+          const row = payload.new as ThreadMessage;
+          const inThread =
+            (row.sender_id === user.id && row.recipient_id === selected.id) ||
+            (row.sender_id === selected.id && row.recipient_id === user.id);
+          if (!inThread) return;
+          setThread((prev) => (prev.find((m) => m.id === row.id) ? prev : [...prev, row]));
+          scrollToBottom();
+          if (row.recipient_id === user.id) {
+            supabase
+              .from("volunteer_messages")
+              .update({ read_at: new Date().toISOString() })
+              .eq("id", row.id)
+              .then(() => {});
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, selected?.id]);
 
   const sendMessage = async () => {
     if (!user || !selected) return;
