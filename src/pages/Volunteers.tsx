@@ -30,8 +30,18 @@ const Volunteers = () => {
   const [selected, setSelected] = useState<VolunteerRow | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [thread, setThread] = useState<ThreadMessage[]>([]);
+  const [loadingThread, setLoadingThread] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      const el = scrollRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  };
 
   useEffect(() => {
     (async () => {
