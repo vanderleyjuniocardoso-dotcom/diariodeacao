@@ -223,6 +223,64 @@ const MessagesBell = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!replyTo} onOpenChange={(o) => !o && setReplyTo(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Responder mensagem</DialogTitle>
+            <DialogDescription>
+              Resposta para <span className="font-semibold text-foreground">{replyTo?.sender_name}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          {replyTo && (
+            <div className="rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground/80 mb-1">Mensagem original:</p>
+              <p className="whitespace-pre-wrap break-words">{replyTo.message}</p>
+            </div>
+          )}
+          <Textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder="Escreva sua resposta..."
+            rows={5}
+            maxLength={1000}
+          />
+          <p className="text-xs text-muted-foreground text-right">{replyText.length}/1000</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setReplyTo(null)} disabled={sendingReply}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!user || !replyTo) return;
+                const trimmed = replyText.trim();
+                if (!trimmed) {
+                  toast.error("Escreva uma resposta");
+                  return;
+                }
+                setSendingReply(true);
+                const { error } = await supabase.from("volunteer_messages").insert({
+                  sender_id: user.id,
+                  recipient_id: replyTo.sender_id,
+                  message: trimmed,
+                });
+                setSendingReply(false);
+                if (error) {
+                  toast.error("Erro ao enviar", { description: error.message });
+                  return;
+                }
+                toast.success(`Resposta enviada para ${replyTo.sender_name}`);
+                setReplyTo(null);
+                setReplyText("");
+              }}
+              disabled={sendingReply}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {sendingReply ? "Enviando..." : "Enviar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
