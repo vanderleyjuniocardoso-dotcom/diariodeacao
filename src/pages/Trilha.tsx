@@ -2,10 +2,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
+import { toast } from "sonner";
 import { Heart, Trophy, Circle } from "lucide-react";
 
+const LEVEL_GOALS: Record<number, { hours: number; workshops: number; months: number }> = {
+  1: { hours: 20, workshops: 3, months: 3 },
+  2: { hours: 40, workshops: 4, months: 4 },
+  3: { hours: 60, workshops: 5, months: 5 },
+};
+
 const Trilha = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth() as any;
   const [stats, setStats] = useState({ totalHours: 0, workshops: 0, engagementMonths: 0 });
 
   useEffect(() => {
@@ -37,18 +44,34 @@ const Trilha = () => {
     load();
   }, [user, profile?.volunteer_credential]);
 
-  const level = profile?.volunteer_level === 2 ? 2 : 1;
-  const goalHours = level === 2 ? 40 : 20;
-  const goalWorkshops = level === 2 ? 4 : 3;
-  const goalMonths = level === 2 ? 4 : 3;
-  const pHours = Math.min(stats.totalHours / goalHours, 1);
-  const pWork = Math.min(stats.workshops / goalWorkshops, 1);
-  const pMonths = Math.min(stats.engagementMonths / goalMonths, 1);
+  const level = Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3);
+  const goal = LEVEL_GOALS[level] ?? LEVEL_GOALS[1];
+  const pHours = Math.min(stats.totalHours / goal.hours, 1);
+  const pWork = Math.min(stats.workshops / goal.workshops, 1);
+  const pMonths = Math.min(stats.engagementMonths / goal.months, 1);
   const progress = Math.round(((pHours + pWork + pMonths) / 3) * 100);
+
+  useEffect(() => {
+    if (!user || !profile) return;
+    if (progress < 100) return;
+    if (level >= 3) return;
+    const nextLevel = level + 1;
+    (async () => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ volunteer_level: nextLevel })
+        .eq("id", user.id);
+      if (!error) {
+        toast.success(`Parabéns! Você avançou para o Nível ${nextLevel}! 🎉`);
+        if (typeof refreshProfile === "function") await refreshProfile();
+      }
+    })();
+  }, [progress, level, user, profile, refreshProfile]);
 
   const levels = [
     { name: "Nível 1", criteria: ["20 horas anuais", "3 workshops", "3 meses de engajamento"] },
     { name: "Nível 2", criteria: ["40 horas anuais", "4 workshops", "4 meses de engajamento"] },
+    { name: "Nível 3", criteria: ["60 horas anuais", "5 workshops", "5 meses de engajamento"] },
   ];
 
   return (
@@ -71,9 +94,9 @@ const Trilha = () => {
             <Heart className="h-5 w-5 text-primary fill-primary flex-shrink-0" />
           </div>
           <div className="mt-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
-            <span>{stats.totalHours}h / {goalHours}h</span>
-            <span>{stats.workshops}/{goalWorkshops} workshops</span>
-            <span>{stats.engagementMonths}/{goalMonths} meses</span>
+            <span>{stats.totalHours}h / {goal.hours}h</span>
+            <span>{stats.workshops}/{goal.workshops} workshops</span>
+            <span>{stats.engagementMonths}/{goal.months} meses</span>
           </div>
         </div>
 
@@ -82,7 +105,7 @@ const Trilha = () => {
             <Trophy className="h-5 w-5 text-warm" />
             <h2 className="text-base font-semibold font-heading text-foreground">Critérios dos Níveis</h2>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {levels.map((lvl, i) => (
               <div key={lvl.name} className="rounded-xl border border-border/60 p-3 bg-background/40">
                 <div className="flex items-center gap-2 mb-2">
