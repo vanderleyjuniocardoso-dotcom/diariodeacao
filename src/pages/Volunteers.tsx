@@ -1,12 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { Users, Trophy, Clock, BadgeCheck, Send } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+
+interface ThreadMessage {
+  id: string;
+  message: string;
+  created_at: string;
+  sender_id: string;
+  recipient_id: string;
+}
 
 interface VolunteerRow {
   id: string;
@@ -22,8 +30,18 @@ const Volunteers = () => {
   const [selected, setSelected] = useState<VolunteerRow | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [thread, setThread] = useState<ThreadMessage[]>([]);
+  const [loadingThread, setLoadingThread] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      const el = scrollRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -53,7 +71,70 @@ const Volunteers = () => {
   const openDialog = (v: VolunteerRow) => {
     setSelected(v);
     setMessage("");
+    setThread([]);
   };
+
+  // Carrega histórico + realtime quando abre conversa
+  useEffect(() => {
+    if (!user || !selected) return;
+    let cancelled = false;
+
+    (async () => {
+      setLoadingThread(true);
+      const { data } = await supabase
+        .from("volunteer_messages")
+        .select("id, message, created_at, sender_id, recipient_id")
+        .or(
+          `and(sender_id.eq.${user.id},recipient_id.eq.${selected.id}),and(sender_id.eq.${selected.id},recipient_id.eq.${user.id})`,
+        )
+        .order("created_at", { ascending: true })
+        .limit(200);
+      if (cancelled) return;
+      setThread(data ?? []);
+      setLoadingThread(false);
+      scrollToBottom();
+
+      // Marca recebidas como lidas
+      const unreadIds = (data ?? [])
+        .filter((m: any) => m.recipient_id === user.id)
+        .map((m: any) => m.id);
+      if (unreadIds.length > 0) {
+        await supabase
+          .from("volunteer_messages")
+          .update({ read_at: new Date().toISOString() })
+          .in("id", unreadIds);
+      }
+    })();
+
+    const channel = supabase
+      .channel(`thread-${user.id}-${selected.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "volunteer_messages" },
+        (payload) => {
+          const row = payload.new as ThreadMessage;
+          const inThread =
+            (row.sender_id === user.id && row.recipient_id === selected.id) ||
+            (row.sender_id === selected.id && row.recipient_id === user.id);
+          if (!inThread) return;
+          setThread((prev) => (prev.find((m) => m.id === row.id) ? prev : [...prev, row]));
+          scrollToBottom();
+          if (row.recipient_id === user.id) {
+            supabase
+              .from("volunteer_messages")
+              .update({ read_at: new Date().toISOString() })
+              .eq("id", row.id)
+              .then(() => {});
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, selected?.id]);
 
   const sendMessage = async () => {
     if (!user || !selected) return;
@@ -89,8 +170,6 @@ const Volunteers = () => {
       })
       .catch((e) => console.error("send-push error", e));
     setSending(false);
-    toast({ title: "Recado enviado!", description: `Sua mensagem foi enviada para ${selected.full_name}.` });
-    setSelected(null);
     setMessage("");
   };
 
@@ -151,30 +230,84 @@ const Volunteers = () => {
       </div>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Deixar um recado</DialogTitle>
-            <DialogDescription>
-              Envie uma mensagem para <span className="font-semibold text-foreground">{selected?.full_name}</span>.
-            </DialogDescription>
+        <DialogContent className="max-w-md p-0 gap-0 max-h-[85vh] flex flex-col">
+          <DialogHeader className="p-4 border-b border-border">
+            <DialogTitle className="flex items-center gap-3 text-base">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs flex-shrink-0 overflow-hidden">
+                {selected?.avatar_url ? (
+                  <img src={selected.avatar_url} alt={selected.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  selected?.full_name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate">{selected?.full_name}</p>
+                <p className="text-[11px] font-normal text-muted-foreground truncate">
+                  {selected?.volunteer_credential || "Voluntário"}
+                </p>
+              </div>
+            </DialogTitle>
+            <DialogDescription className="sr-only">Conversa com {selected?.full_name}</DialogDescription>
           </DialogHeader>
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Escreva uma mensagem ou recado..."
-            rows={5}
-            maxLength={1000}
-          />
-          <p className="text-xs text-muted-foreground text-right">{message.length}/1000</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelected(null)} disabled={sending}>
-              Cancelar
+
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/20">
+            {loadingThread ? (
+              <p className="text-xs text-muted-foreground text-center py-8">Carregando conversa...</p>
+            ) : thread.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-8">
+                Nenhuma mensagem ainda. Envie a primeira!
+              </p>
+            ) : (
+              thread.map((m) => {
+                const mine = m.sender_id === user?.id;
+                return (
+                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+                        mine
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "bg-card border border-border text-foreground rounded-bl-sm"
+                      }`}
+                    >
+                      <p>{m.message}</p>
+                      <p
+                        className={`text-[10px] mt-1 text-right ${
+                          mine ? "text-primary-foreground/70" : "text-muted-foreground"
+                        }`}
+                      >
+                        {new Date(m.created_at).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="p-3 border-t border-border flex items-end gap-2">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Escreva uma mensagem..."
+              rows={1}
+              maxLength={1000}
+              className="resize-none min-h-[40px] max-h-32"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (!sending) sendMessage();
+                }
+              }}
+            />
+            <Button onClick={sendMessage} disabled={sending || !message.trim()} size="icon">
+              <Send className="h-4 w-4" />
             </Button>
-            <Button onClick={sendMessage} disabled={sending}>
-              <Send className="h-4 w-4 mr-2" />
-              {sending ? "Enviando..." : "Enviar"}
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
