@@ -4,7 +4,7 @@ const corsHeaders = {
 };
 
 const SPREADSHEET_ID = '1AYeleeFTj7rb1KLGnQp2eY1Ow5DOnV0kcGmueuPnbLs';
-const SHEET_NAME = 'Base de voluntários';
+const SHEET_NAME = 'BASE DE VOLUNTÁRIOS';
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_sheets/v4';
 
 Deno.serve(async (req) => {
