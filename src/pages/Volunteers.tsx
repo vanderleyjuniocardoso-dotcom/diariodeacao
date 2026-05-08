@@ -72,11 +72,23 @@ const Volunteers = () => {
       recipient_id: selected.id,
       message: trimmed,
     });
-    setSending(false);
     if (error) {
+      setSending(false);
       toast({ title: "Erro ao enviar", description: error.message, variant: "destructive" });
       return;
     }
+    // Dispara notificação push para o destinatário (best-effort)
+    supabase.functions
+      .invoke("send-push", {
+        body: {
+          recipient_id: selected.id,
+          title: `Nova mensagem de ${user.user_metadata?.full_name || "um voluntário"}`,
+          message: trimmed,
+          url: "/",
+        },
+      })
+      .catch((e) => console.error("send-push error", e));
+    setSending(false);
     toast({ title: "Recado enviado!", description: `Sua mensagem foi enviada para ${selected.full_name}.` });
     setSelected(null);
     setMessage("");
