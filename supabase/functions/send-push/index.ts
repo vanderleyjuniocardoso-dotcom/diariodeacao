@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const VAPID_PUBLIC_KEY =
-  "BLUtPebV9KsVrrncsbWQQmY6Q-s-THfNrZMsyXHL6wIN-_NVlPwlSfhGanFiZgGRC_ccEimhb0FNaImRKIxDGTY";
+  "BOk0HtqZC7lET_byiRXKBwE7tsfAXjEkq9mhILHCZFxtIuOOnU5UrdkoW2Hy2oqPzDgRe-7mZOkiL2tDX7bZUUQ";
 // Sanitize: strip whitespace/newlines and convert standard base64 to base64url if needed
 const RAW_PRIVATE = (Deno.env.get("VAPID_PRIVATE_KEY") ?? "").trim().replace(/\s+/g, "");
 const VAPID_PRIVATE_KEY = RAW_PRIVATE.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
