@@ -61,6 +61,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
     const load = async () => {
       const { data } = await supabase
         .from("volunteer_actions")
@@ -79,6 +80,7 @@ const Dashboard = () => {
         }
       }
 
+      if (cancelled) return;
       if (data) {
         setRecent(data.slice(0, 5));
         const actionsHours = data.reduce((sum, a) => sum + Number(a.donated_hours), 0);
@@ -96,6 +98,18 @@ const Dashboard = () => {
       }
     };
     load();
+    // Atualiza ao voltar para a aba e a cada 30s para refletir mudanças na planilha
+    const onFocus = () => load();
+    const onVisible = () => { if (document.visibilityState === "visible") load(); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = setInterval(load, 30000);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(interval);
+    };
   }, [user, profile?.volunteer_credential]);
 
   const firstName = profile?.full_name?.split(" ")[0] || "Voluntário";

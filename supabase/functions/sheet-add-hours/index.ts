@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       });
     }
     const addHours = typeof hours === 'number' ? hours : parseFloat(String(hours ?? '0').replace(',', '.'));
-    if (!isFinite(addHours) || addHours <= 0) {
+    if (!isFinite(addHours) || addHours === 0) {
       return new Response(JSON.stringify({ ok: false, error: 'invalid hours' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     const current = typeof currentRaw === 'number'
       ? currentRaw
       : parseFloat(String(currentRaw ?? '0').replace(',', '.')) || 0;
-    const newValue = current + addHours;
+    const newValue = Math.max(0, current + addHours);
 
     const writeRange = `${SHEET_NAME}!AH${rowNumber}`;
     const writeUrl = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values/${writeRange}?valueInputOption=USER_ENTERED`;
