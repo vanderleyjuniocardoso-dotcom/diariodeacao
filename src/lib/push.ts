@@ -43,12 +43,28 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
   }
   if (permission !== "granted") return null;
 
+  const key = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+  const appServerKey = key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength) as ArrayBuffer;
+
   let sub = await reg.pushManager.getSubscription();
+
+  // If existing subscription was created with a different VAPID public key, drop it.
+  if (sub) {
+    const existingKey = sub.options?.applicationServerKey;
+    const same =
+      existingKey &&
+      new Uint8Array(existingKey as ArrayBuffer).every((b, i) => b === key[i]) &&
+      (existingKey as ArrayBuffer).byteLength === key.byteLength;
+    if (!same) {
+      try { await sub.unsubscribe(); } catch {}
+      sub = null;
+    }
+  }
+
   if (!sub) {
-    const key = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
     sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength) as ArrayBuffer,
+      applicationServerKey: appServerKey,
     });
   }
   return sub;
