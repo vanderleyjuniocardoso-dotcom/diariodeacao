@@ -67,22 +67,7 @@ Deno.serve(async (req) => {
     }
 
     const target = credential.trim().toLowerCase();
-    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C5:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AF5:AF`)}`;
-    const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`;
-
-    const resp = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': GOOGLE_SHEETS_API_KEY,
-      },
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      throw new Error(`Sheets API failed [${resp.status}]: ${JSON.stringify(data)}`);
-    }
-
-    const credCol: any[][] = data.valueRanges?.[0]?.values ?? [];
-    const hoursCol: any[][] = data.valueRanges?.[1]?.values ?? [];
+    const { credCol, hoursCol } = await fetchSheet(LOVABLE_API_KEY, GOOGLE_SHEETS_API_KEY);
 
     let hours = 0;
     let found = false;
