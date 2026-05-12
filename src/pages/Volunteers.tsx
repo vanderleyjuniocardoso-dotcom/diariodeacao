@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import VolunteersIntro from "@/components/VolunteersIntro";
 
 interface ThreadMessage {
   id: string;
@@ -32,6 +33,7 @@ const Volunteers = () => {
   const [sending, setSending] = useState(false);
   const [thread, setThread] = useState<ThreadMessage[]>([]);
   const [loadingThread, setLoadingThread] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -175,6 +177,9 @@ const Volunteers = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && list.length > 0 && (
+        <VolunteersIntro volunteers={list} onDone={() => setShowIntro(false)} />
+      )}
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6 text-primary-foreground" />
