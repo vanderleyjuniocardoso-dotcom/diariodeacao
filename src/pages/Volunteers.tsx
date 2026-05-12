@@ -177,6 +177,9 @@ const Volunteers = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && list.length > 0 && (
+        <VolunteersIntro volunteers={list} onDone={() => setShowIntro(false)} />
+      )}
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6 text-primary-foreground" />
