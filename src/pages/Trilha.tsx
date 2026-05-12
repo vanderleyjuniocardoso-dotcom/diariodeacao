@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { Heart, Trophy, Circle } from "lucide-react";
+import TrilhaIntro from "@/components/TrilhaIntro";
 
 const LEVEL_GOALS: Record<number, { hours: number; workshops: number; months: number }> = {
   1: { hours: 20, workshops: 3, months: 3 },
