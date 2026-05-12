@@ -28,7 +28,7 @@ const TrilhaIntro = ({ avatarUrl, fullName, requirements, onDone }: Props) => {
   const currentIndex = Math.max(0, Math.min(step, total));
 
   return (
-    <div className="fixed inset-0 z-[60] bg-gradient-to-b from-sky-200 via-sky-100 to-white overflow-hidden">
+    <div onClick={onDone} className="fixed inset-0 z-[60] bg-gradient-to-b from-sky-200 via-sky-100 to-white overflow-hidden cursor-pointer">
       {/* Nuvens */}
       <div className="absolute inset-0 pointer-events-none">
         {[
