@@ -78,6 +78,14 @@ const Trilha = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && (
+        <TrilhaIntro
+          avatarUrl={profile?.avatar_url}
+          fullName={profile?.full_name}
+          requirements={goal ? [`${goal.hours}h anuais`, `${goal.workshops} workshops`, `${goal.months} meses de engajamento`] : []}
+          onDone={() => setShowIntro(false)}
+        />
+      )}
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
         <h1 className="text-xl font-bold font-heading text-primary-foreground">Trilha de Desenvolvimento</h1>
         <p className="text-primary-foreground/80 text-sm mt-1">Acompanhe seu progresso e os critérios de cada nível.</p>
