@@ -33,7 +33,7 @@ const RegisterIntro = ({ onDone }: Props) => {
   }, [onDone]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-b from-sky-50 to-white overflow-hidden">
+    <div onClick={onDone} className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-b from-sky-50 to-white overflow-hidden cursor-pointer">
       <style>{`
         @keyframes ri-pop { 0% { transform: translateY(40px) scale(0.5); opacity: 0; } 60% { transform: translateY(-6px) scale(1.05); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes ri-fly { 0% { transform: translate(0,0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.4); opacity: 0; } }
