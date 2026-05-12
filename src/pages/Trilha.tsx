@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { Heart, Trophy, Circle } from "lucide-react";
+import TrilhaIntro from "@/components/TrilhaIntro";
 
 const LEVEL_GOALS: Record<number, { hours: number; workshops: number; months: number }> = {
   1: { hours: 20, workshops: 3, months: 3 },
@@ -14,6 +15,7 @@ const LEVEL_GOALS: Record<number, { hours: number; workshops: number; months: nu
 const Trilha = () => {
   const { user, profile, refreshProfile } = useAuth() as any;
   const [stats, setStats] = useState({ totalHours: 0, workshops: 0, engagementMonths: 0 });
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -76,6 +78,14 @@ const Trilha = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && (
+        <TrilhaIntro
+          avatarUrl={profile?.avatar_url}
+          fullName={profile?.full_name}
+          requirements={goal ? [`${goal.hours}h anuais`, `${goal.workshops} workshops`, `${goal.months} meses de engajamento`] : []}
+          onDone={() => setShowIntro(false)}
+        />
+      )}
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
         <h1 className="text-xl font-bold font-heading text-primary-foreground">Trilha de Desenvolvimento</h1>
         <p className="text-primary-foreground/80 text-sm mt-1">Acompanhe seu progresso e os critérios de cada nível.</p>
