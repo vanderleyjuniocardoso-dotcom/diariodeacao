@@ -15,6 +15,7 @@ const LEVEL_GOALS: Record<number, { hours: number; workshops: number; months: nu
 const Trilha = () => {
   const { user, profile, refreshProfile } = useAuth() as any;
   const [stats, setStats] = useState({ totalHours: 0, workshops: 0, engagementMonths: 0 });
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     if (!user) return;
