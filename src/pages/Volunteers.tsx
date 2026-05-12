@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import VolunteersIntro from "@/components/VolunteersIntro";
 
 interface ThreadMessage {
   id: string;
