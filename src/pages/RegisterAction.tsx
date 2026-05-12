@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import RegisterIntro from "@/components/RegisterIntro";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,7 @@ const RegisterAction = () => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [success, setSuccess] = useState(false);
   const [animating, setAnimating] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   const [form, setForm] = useState({
     volunteer_name: "",
@@ -204,6 +206,7 @@ const RegisterAction = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && <RegisterIntro onDone={() => setShowIntro(false)} />}
       <div className="px-5 pt-12 pb-6">
         <h1 className="text-2xl font-bold font-heading text-foreground">Registrar Ação</h1>
         <p className="text-sm text-muted-foreground mt-1">Compartilhe sua experiência voluntária</p>
