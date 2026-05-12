@@ -33,6 +33,7 @@ const Volunteers = () => {
   const [sending, setSending] = useState(false);
   const [thread, setThread] = useState<ThreadMessage[]>([]);
   const [loadingThread, setLoadingThread] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
