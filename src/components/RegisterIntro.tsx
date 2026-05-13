@@ -8,13 +8,22 @@ interface Props {
 
 // Hearts launched from the group photo, each with an offset origin
 const HEARTS = [
-  { ox: -90, delay: 0 },
-  { ox: -45, delay: 280 },
-  { ox: -10, delay: 560 },
-  { ox: 25, delay: 840 },
-  { ox: 70, delay: 1120 },
-  { ox: -30, delay: 1400 },
-  { ox: 50, delay: 1680 },
+  { ox: -100, delay: 0 },
+  { ox: -60, delay: 350 },
+  { ox: -25, delay: 700 },
+  { ox: 15, delay: 1050 },
+  { ox: 55, delay: 1400 },
+  { ox: 90, delay: 1750 },
+  { ox: -80, delay: 2100 },
+  { ox: -20, delay: 2450 },
+  { ox: 40, delay: 2800 },
+  { ox: 75, delay: 3150 },
+  { ox: -50, delay: 3500 },
+  { ox: 30, delay: 3850 },
+  { ox: -10, delay: 4200 },
+  { ox: 60, delay: 4550 },
+  { ox: -40, delay: 4900 },
+  { ox: 20, delay: 5250 },
 ];
 
 const RegisterIntro = ({ onDone }: Props) => {
@@ -24,10 +33,10 @@ const RegisterIntro = ({ onDone }: Props) => {
   useEffect(() => {
     const timers: number[] = [];
     HEARTS.forEach((h, i) => {
-      timers.push(window.setTimeout(() => setHearts((arr) => [...arr, i]), 900 + h.delay));
+      timers.push(window.setTimeout(() => setHearts((arr) => [...arr, i]), 500 + h.delay));
     });
-    timers.push(window.setTimeout(() => setZoom(true), 5400));
-    timers.push(window.setTimeout(() => onDone(), 6400));
+    timers.push(window.setTimeout(() => setZoom(true), 7000));
+    timers.push(window.setTimeout(() => onDone(), 8000));
     return () => timers.forEach(clearTimeout);
   }, [onDone]);
 
