@@ -243,7 +243,14 @@ const Admin = () => {
           <div className="space-y-3">
             {filteredActions.map((a) => (
               <div key={a.id} className="glass-card rounded-xl overflow-hidden">
-                {a.photo_url && <img src={a.photo_url} alt="" className="w-full h-32 object-cover" />}
+                {a.photo_url && (
+                  <img
+                    src={a.photo_url}
+                    alt=""
+                    className="w-full h-32 object-cover cursor-pointer"
+                    onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name })}
+                  />
+                )}
                 <div className="p-4">
                   <p className="font-semibold text-foreground">{a.action_name}</p>
                   <p className="text-xs text-primary font-medium">{a.profiles?.full_name}</p>
