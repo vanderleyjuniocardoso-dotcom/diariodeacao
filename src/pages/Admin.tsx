@@ -287,6 +287,29 @@ const Admin = () => {
           </div>
         )}
       </div>
+
+      {photoModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4"
+          onClick={() => setPhotoModal(null)}
+        >
+          <div className="max-w-lg w-full bg-card rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <img src={photoModal.url} alt="" className="w-full max-h-[60vh] object-contain bg-black" />
+            <div className="p-4 space-y-1">
+              <p className="text-sm text-muted-foreground">Voluntário</p>
+              <p className="font-semibold text-foreground">{photoModal.volunteer}</p>
+              <p className="text-sm text-muted-foreground mt-2">Ação</p>
+              <p className="font-semibold text-foreground">{photoModal.action}</p>
+            </div>
+            <div className="flex gap-2 p-4 pt-0">
+              <Button variant="outline" className="flex-1" onClick={() => setPhotoModal(null)}>Fechar</Button>
+              <Button variant="default" className="flex-1" onClick={downloadPhoto}>
+                <Download className="h-4 w-4 mr-2" /> Baixar foto
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
