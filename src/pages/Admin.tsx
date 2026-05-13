@@ -50,6 +50,27 @@ const Admin = () => {
   const [filter, setFilter] = useState("");
   const [tab, setTab] = useState<"volunteers" | "actions">("volunteers");
   const [loading, setLoading] = useState(true);
+  const [photoModal, setPhotoModal] = useState<{ url: string; volunteer: string; action: string } | null>(null);
+
+  const downloadPhoto = async () => {
+    if (!photoModal) return;
+    try {
+      const res = await fetch(photoModal.url);
+      const blob = await res.blob();
+      const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+      const safe = (s: string) => s.replace(/[^\w\-]+/g, "_");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safe(photoModal.volunteer)}_${safe(photoModal.action)}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Erro ao baixar a foto");
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -243,7 +264,14 @@ const Admin = () => {
           <div className="space-y-3">
             {filteredActions.map((a) => (
               <div key={a.id} className="glass-card rounded-xl overflow-hidden">
-                {a.photo_url && <img src={a.photo_url} alt="" className="w-full h-32 object-cover" />}
+                {a.photo_url && (
+                  <img
+                    src={a.photo_url}
+                    alt=""
+                    className="w-full h-32 object-cover cursor-pointer"
+                    onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name })}
+                  />
+                )}
                 <div className="p-4">
                   <p className="font-semibold text-foreground">{a.action_name}</p>
                   <p className="text-xs text-primary font-medium">{a.profiles?.full_name}</p>
@@ -259,6 +287,29 @@ const Admin = () => {
           </div>
         )}
       </div>
+
+      {photoModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4"
+          onClick={() => setPhotoModal(null)}
+        >
+          <div className="max-w-lg w-full bg-card rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <img src={photoModal.url} alt="" className="w-full max-h-[60vh] object-contain bg-black" />
+            <div className="p-4 space-y-1">
+              <p className="text-sm text-muted-foreground">Voluntário</p>
+              <p className="font-semibold text-foreground">{photoModal.volunteer}</p>
+              <p className="text-sm text-muted-foreground mt-2">Ação</p>
+              <p className="font-semibold text-foreground">{photoModal.action}</p>
+            </div>
+            <div className="flex gap-2 p-4 pt-0">
+              <Button variant="outline" className="flex-1" onClick={() => setPhotoModal(null)}>Fechar</Button>
+              <Button variant="default" className="flex-1" onClick={downloadPhoto}>
+                <Download className="h-4 w-4 mr-2" /> Baixar foto
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
