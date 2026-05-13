@@ -8,7 +8,7 @@ const SHEET_NAME = 'BASE DE VOLUNTÁRIOS';
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_sheets/v4';
 
 // In-memory cache (persists between warm invocations of the same edge worker)
-const CACHE_TTL_MS = 60_000; // 60s — well under 300 reads/min quota
+const CACHE_TTL_MS = 5 * 60_000; // 5min — keeps us well under 300 reads/min quota across cold workers
 let cache: { at: number; credCol: any[][]; hoursCol: any[][] } | null = null;
 let inflight: Promise<{ credCol: any[][]; hoursCol: any[][] }> | null = null;
 
@@ -21,24 +21,31 @@ async function fetchSheet(LOVABLE_API_KEY: string, GOOGLE_SHEETS_API_KEY: string
   inflight = (async () => {
     const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C5:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AF5:AF`)}`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`;
-    const resp = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': GOOGLE_SHEETS_API_KEY,
-      },
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      // On 429, serve stale cache if we have one
-      if (resp.status === 429 && cache) {
-        return { credCol: cache.credCol, hoursCol: cache.hoursCol };
+
+    // Retry with exponential backoff on 429/5xx
+    let lastErr = '';
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const resp = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'X-Connection-Api-Key': GOOGLE_SHEETS_API_KEY,
+        },
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        const credCol: any[][] = data.valueRanges?.[0]?.values ?? [];
+        const hoursCol: any[][] = data.valueRanges?.[1]?.values ?? [];
+        cache = { at: Date.now(), credCol, hoursCol };
+        return { credCol, hoursCol };
       }
-      throw new Error(`Sheets API failed [${resp.status}]: ${JSON.stringify(data)}`);
+      lastErr = `Sheets API failed [${resp.status}]: ${JSON.stringify(data)}`;
+      if (resp.status !== 429 && resp.status < 500) break;
+      await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
     }
-    const credCol: any[][] = data.valueRanges?.[0]?.values ?? [];
-    const hoursCol: any[][] = data.valueRanges?.[1]?.values ?? [];
-    cache = { at: Date.now(), credCol, hoursCol };
-    return { credCol, hoursCol };
+    // Serve stale cache if available, otherwise return empty (don't 500 the client)
+    if (cache) return { credCol: cache.credCol, hoursCol: cache.hoursCol };
+    console.error('sheet-hours fetch failed, returning empty:', lastErr);
+    return { credCol: [], hoursCol: [] };
   })();
 
   try {
