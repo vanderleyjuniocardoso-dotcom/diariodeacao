@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import { Heart, Monitor, User } from "lucide-react";
+import { Heart, Monitor } from "lucide-react";
+import grupoVoluntarios from "@/assets/grupo-voluntarios.png";
 
 interface Props {
   onDone: () => void;
 }
 
-const VOLUNTEERS = [
-  { x: 10, delay: 0 },
-  { x: 22, delay: 120 },
-  { x: 34, delay: 240 },
-  { x: 16, delay: 360, back: true },
-  { x: 28, delay: 480, back: true },
+// Hearts launched from the group photo, each with an offset origin
+const HEARTS = [
+  { ox: -60, delay: 0 },
+  { ox: -25, delay: 180 },
+  { ox: 0, delay: 340 },
+  { ox: 25, delay: 500 },
+  { ox: 60, delay: 660 },
 ];
 
 const RegisterIntro = ({ onDone }: Props) => {
@@ -18,36 +20,33 @@ const RegisterIntro = ({ onDone }: Props) => {
   const [zoom, setZoom] = useState(false);
 
   useEffect(() => {
-    // Launch hearts staggered after volunteers appear
     const timers: number[] = [];
-    VOLUNTEERS.forEach((_, i) => {
-      timers.push(
-        window.setTimeout(() => {
-          setHearts((h) => [...h, i]);
-        }, 900 + i * 280)
-      );
+    HEARTS.forEach((h, i) => {
+      timers.push(window.setTimeout(() => setHearts((arr) => [...arr, i]), 700 + h.delay));
     });
-    timers.push(window.setTimeout(() => setZoom(true), 2600));
-    timers.push(window.setTimeout(() => onDone(), 3400));
+    timers.push(window.setTimeout(() => setZoom(true), 2400));
+    timers.push(window.setTimeout(() => onDone(), 3200));
     return () => timers.forEach(clearTimeout);
   }, [onDone]);
 
   return (
-    <div onClick={onDone} className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-b from-sky-50 to-white overflow-hidden cursor-pointer">
+    <div
+      onClick={onDone}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-b from-sky-50 to-white overflow-hidden cursor-pointer"
+    >
       <style>{`
-        @keyframes ri-pop { 0% { transform: translateY(40px) scale(0.5); opacity: 0; } 60% { transform: translateY(-6px) scale(1.05); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes ri-pop { 0% { transform: translateY(20px) scale(0.95); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes ri-fly { 0% { transform: translate(0,0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.4); opacity: 0; } }
-        @keyframes ri-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-        @keyframes ri-zoom { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(8); opacity: 0; } }
+        @keyframes ri-pulse { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
+        @keyframes ri-zoom { 0% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(8); opacity: 0; } }
       `}</style>
 
       {/* Computer */}
       <div
         className="absolute"
         style={{
-          top: "18%",
+          top: "12%",
           left: "50%",
-          transform: "translateX(-50%)",
           animation: zoom ? "ri-zoom 0.8s ease-in forwards" : "ri-pulse 1.6s ease-in-out infinite",
           transformOrigin: "center",
         }}
@@ -62,48 +61,38 @@ const RegisterIntro = ({ onDone }: Props) => {
         </div>
       </div>
 
-      {/* Volunteers row */}
-      <div className="absolute bottom-[18%] left-0 right-0 flex justify-center gap-3 px-4">
-        {VOLUNTEERS.map((v, i) => (
-          <div
-            key={i}
-            className="relative"
-            style={{
-              animation: `ri-pop 0.6s ease-out ${v.delay}ms both`,
-              zIndex: v.back ? 1 : 2,
-              marginTop: v.back ? -18 : 0,
-            }}
-          >
-            {/* Body (blue shirt) */}
-            <div className="relative w-14 h-20 flex flex-col items-center">
-              {/* Head */}
-              <div className="w-7 h-7 rounded-full bg-gradient-to-b from-amber-200 to-amber-300 border border-amber-400/50" />
-              {/* Shirt */}
-              <div className="-mt-1 w-14 h-10 rounded-t-2xl bg-gradient-to-b from-sky-400 to-blue-500 shadow-md flex items-start justify-center pt-1">
-                <Heart className="w-3 h-3 text-white fill-white" />
-              </div>
-              {/* Pants */}
-              <div className="w-14 h-3 bg-slate-200 rounded-b-md" />
-            </div>
+      {/* Group photo */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-[8%]"
+        style={{ animation: "ri-pop 0.7s ease-out both" }}
+      >
+        <div className="relative">
+          <img
+            src={grupoVoluntarios}
+            alt="Grupo de voluntários"
+            className="w-72 sm:w-80 h-auto drop-shadow-2xl select-none pointer-events-none"
+          />
 
-            {/* Heart flying to computer */}
-            {hearts.includes(i) && (
+          {/* Hearts flying from the photo to the computer */}
+          {HEARTS.map((h, i) =>
+            hearts.includes(i) ? (
               <Heart
-                className="absolute left-1/2 top-2 w-7 h-7 text-blue-500 fill-blue-500 drop-shadow-lg pointer-events-none"
+                key={i}
+                className="absolute w-8 h-8 text-blue-500 fill-blue-500 drop-shadow-lg pointer-events-none"
                 style={
                   {
-                    // approximate translate from this volunteer to the computer center
-                    // tx negative/positive depending on index, ty large negative
-                    "--tx": `${(2 - i) * 30}px`,
-                    "--ty": `-340px`,
-                    animation: "ri-fly 1.2s ease-in forwards",
+                    left: "50%",
+                    top: "20%",
+                    "--tx": `${h.ox}px`,
+                    "--ty": `-380px`,
+                    animation: "ri-fly 1.3s ease-in forwards",
                     transform: "translateX(-50%)",
                   } as React.CSSProperties
                 }
               />
-            )}
-          </div>
-        ))}
+            ) : null,
+          )}
+        </div>
       </div>
     </div>
   );
