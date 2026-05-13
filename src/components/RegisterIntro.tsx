@@ -8,11 +8,13 @@ interface Props {
 
 // Hearts launched from the group photo, each with an offset origin
 const HEARTS = [
-  { ox: -60, delay: 0 },
-  { ox: -25, delay: 180 },
-  { ox: 0, delay: 340 },
-  { ox: 25, delay: 500 },
-  { ox: 60, delay: 660 },
+  { ox: -90, delay: 0 },
+  { ox: -45, delay: 280 },
+  { ox: -10, delay: 560 },
+  { ox: 25, delay: 840 },
+  { ox: 70, delay: 1120 },
+  { ox: -30, delay: 1400 },
+  { ox: 50, delay: 1680 },
 ];
 
 const RegisterIntro = ({ onDone }: Props) => {
@@ -22,10 +24,10 @@ const RegisterIntro = ({ onDone }: Props) => {
   useEffect(() => {
     const timers: number[] = [];
     HEARTS.forEach((h, i) => {
-      timers.push(window.setTimeout(() => setHearts((arr) => [...arr, i]), 700 + h.delay));
+      timers.push(window.setTimeout(() => setHearts((arr) => [...arr, i]), 900 + h.delay));
     });
-    timers.push(window.setTimeout(() => setZoom(true), 2400));
-    timers.push(window.setTimeout(() => onDone(), 3200));
+    timers.push(window.setTimeout(() => setZoom(true), 5400));
+    timers.push(window.setTimeout(() => onDone(), 6400));
     return () => timers.forEach(clearTimeout);
   }, [onDone]);
 
@@ -35,8 +37,8 @@ const RegisterIntro = ({ onDone }: Props) => {
       className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-b from-sky-50 to-white overflow-hidden cursor-pointer"
     >
       <style>{`
-        @keyframes ri-pop { 0% { transform: translateY(20px) scale(0.95); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-        @keyframes ri-fly { 0% { transform: translate(0,0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0.4); opacity: 0; } }
+        @keyframes ri-pop { 0% { transform: translate(-50%, 20px) scale(0.95); opacity: 0; } 100% { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+        @keyframes ri-fly { 0% { transform: translate(-50%, 0) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--tx)), var(--ty)) scale(0.4); opacity: 0; } }
         @keyframes ri-pulse { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
         @keyframes ri-zoom { 0% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(8); opacity: 0; } }
       `}</style>
@@ -45,9 +47,9 @@ const RegisterIntro = ({ onDone }: Props) => {
       <div
         className="absolute"
         style={{
-          top: "12%",
+          top: "8%",
           left: "50%",
-          animation: zoom ? "ri-zoom 0.8s ease-in forwards" : "ri-pulse 1.6s ease-in-out infinite",
+          animation: zoom ? "ri-zoom 0.9s ease-in forwards" : "ri-pulse 1.6s ease-in-out infinite",
           transformOrigin: "center",
         }}
       >
@@ -61,16 +63,19 @@ const RegisterIntro = ({ onDone }: Props) => {
         </div>
       </div>
 
-      {/* Group photo */}
+      {/* Group photo - large and centered */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 bottom-[8%]"
-        style={{ animation: "ri-pop 0.7s ease-out both" }}
+        className="absolute left-1/2 top-1/2"
+        style={{
+          transform: "translate(-50%, 0)",
+          animation: "ri-pop 0.8s ease-out both",
+        }}
       >
         <div className="relative">
           <img
             src={grupoVoluntarios}
             alt="Grupo de voluntários"
-            className="w-72 sm:w-80 h-auto drop-shadow-2xl select-none pointer-events-none"
+            className="w-[88vw] max-w-[480px] h-auto drop-shadow-2xl select-none pointer-events-none"
           />
 
           {/* Hearts flying from the photo to the computer */}
@@ -78,15 +83,14 @@ const RegisterIntro = ({ onDone }: Props) => {
             hearts.includes(i) ? (
               <Heart
                 key={i}
-                className="absolute w-8 h-8 text-blue-500 fill-blue-500 drop-shadow-lg pointer-events-none"
+                className="absolute w-9 h-9 text-blue-500 fill-blue-500 drop-shadow-lg pointer-events-none"
                 style={
                   {
                     left: "50%",
-                    top: "20%",
+                    top: "30%",
                     "--tx": `${h.ox}px`,
-                    "--ty": `-380px`,
-                    animation: "ri-fly 1.3s ease-in forwards",
-                    transform: "translateX(-50%)",
+                    "--ty": `-340px`,
+                    animation: "ri-fly 1.6s ease-in forwards",
                   } as React.CSSProperties
                 }
               />
