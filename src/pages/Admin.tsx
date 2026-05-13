@@ -50,6 +50,27 @@ const Admin = () => {
   const [filter, setFilter] = useState("");
   const [tab, setTab] = useState<"volunteers" | "actions">("volunteers");
   const [loading, setLoading] = useState(true);
+  const [photoModal, setPhotoModal] = useState<{ url: string; volunteer: string; action: string } | null>(null);
+
+  const downloadPhoto = async () => {
+    if (!photoModal) return;
+    try {
+      const res = await fetch(photoModal.url);
+      const blob = await res.blob();
+      const ext = (blob.type.split("/")[1] || "jpg").split("+")[0];
+      const safe = (s: string) => s.replace(/[^\w\-]+/g, "_");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safe(photoModal.volunteer)}_${safe(photoModal.action)}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Erro ao baixar a foto");
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
