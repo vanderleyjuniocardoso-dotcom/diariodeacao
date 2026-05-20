@@ -16,6 +16,7 @@ import History from "./pages/History";
 
 import Admin from "./pages/Admin";
 import Volunteers from "./pages/Volunteers";
+import VolunteerProfile from "./pages/VolunteerProfile";
 import Trilha from "./pages/Trilha";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
             
             <Route path="/volunteers" element={<ProtectedRoute><Volunteers /></ProtectedRoute>} />
+            <Route path="/voluntario/:id" element={<ProtectedRoute><VolunteerProfile /></ProtectedRoute>} />
             <Route path="/trilha" element={<ProtectedRoute><Trilha /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
