@@ -16,6 +16,7 @@ import History from "./pages/History";
 
 import Admin from "./pages/Admin";
 import Volunteers from "./pages/Volunteers";
+import VolunteerProfile from "./pages/VolunteerProfile";
 import Trilha from "./pages/Trilha";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
