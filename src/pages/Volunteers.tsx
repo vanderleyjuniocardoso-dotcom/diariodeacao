@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
-import { Users, Trophy, Clock, BadgeCheck, Plus, MessageSquare, Newspaper, Sparkles } from "lucide-react";
+import { Users, Trophy, Clock, BadgeCheck, Plus, MessageSquare, Newspaper } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
