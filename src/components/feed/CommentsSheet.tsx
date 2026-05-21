@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default function CommentsSheet({ post, onClose }: Props) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
@@ -105,6 +105,18 @@ export default function CommentsSheet({ post, onClose }: Props) {
     if (error) {
       toast({ title: "Erro ao comentar", description: error.message, variant: "destructive" });
       return;
+    }
+    if (post.user_id !== user.id) {
+      supabase.functions
+        .invoke("send-push", {
+          body: {
+            recipient_id: post.user_id,
+            title: `${profile?.full_name ?? "Um voluntário"} comentou no seu post 💬`,
+            message: t,
+            url: "/volunteers",
+          },
+        })
+        .catch(() => {});
     }
     setText("");
   };
