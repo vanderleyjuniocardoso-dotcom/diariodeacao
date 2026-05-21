@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
-import { Users, Trophy, Clock, BadgeCheck, Plus, MessageSquare, Newspaper } from "lucide-react";
+import { Users, Trophy, Clock, BadgeCheck, Plus, Home, Send, User as UserIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,7 @@ import CommentsSheet from "@/components/feed/CommentsSheet";
 import MotivationalModal from "@/components/feed/MotivationalModal";
 import MotivationalMural from "@/components/feed/MotivationalMural";
 import DirectMessageDialog from "@/components/feed/DirectMessageDialog";
+import StoriesBar from "@/components/feed/StoriesBar";
 import type { FeedPost } from "@/components/feed/PostCard";
 
 interface VolunteerRow {
