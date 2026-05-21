@@ -92,6 +92,18 @@ export default function PostCard({ post, onOpenComments, onOpenMessage, onOpenMo
       setLiked(true);
       setLikes((n) => n + 1);
       await supabase.from("post_likes").insert({ post_id: post.id, user_id: user.id });
+      if (post.user_id !== user.id) {
+        supabase.functions
+          .invoke("send-push", {
+            body: {
+              recipient_id: post.user_id,
+              title: `${profile?.full_name ?? "Um voluntário"} curtiu seu post ❤️`,
+              message: post.content?.slice(0, 100) || "Veja no feed",
+              url: "/volunteers",
+            },
+          })
+          .catch(() => {});
+      }
     }
   };
 
