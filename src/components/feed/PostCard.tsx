@@ -42,7 +42,7 @@ const timeAgo = (iso: string) => {
 };
 
 export default function PostCard({ post, onOpenComments, onOpenMessage, onOpenMotivation, onDeleted }: Props) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [likes, setLikes] = useState(0);
   const [liked, setLiked] = useState(false);
