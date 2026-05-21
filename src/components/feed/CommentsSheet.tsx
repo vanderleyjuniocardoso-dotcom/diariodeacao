@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default function CommentsSheet({ post, onClose }: Props) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
