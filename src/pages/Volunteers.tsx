@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
-import { Users, Trophy, Clock, BadgeCheck, Plus, MessageSquare, Newspaper } from "lucide-react";
+import { Users, Trophy, Clock, BadgeCheck, Plus, Home, Send, User as UserIcon } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,7 @@ import CommentsSheet from "@/components/feed/CommentsSheet";
 import MotivationalModal from "@/components/feed/MotivationalModal";
 import MotivationalMural from "@/components/feed/MotivationalMural";
 import DirectMessageDialog from "@/components/feed/DirectMessageDialog";
+import StoriesBar from "@/components/feed/StoriesBar";
 import type { FeedPost } from "@/components/feed/PostCard";
 
 interface VolunteerRow {
@@ -139,23 +140,30 @@ const Volunteers = () => {
 
       <Tabs defaultValue="feed" className="mt-4">
         <div className="px-5">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="feed" className="text-xs gap-1.5">
-              <Newspaper className="h-3.5 w-3.5" /> Feed
+          <TabsList className="w-full grid grid-cols-3 h-12">
+            <TabsTrigger value="feed" className="gap-1.5">
+              <Home className="h-5 w-5" />
             </TabsTrigger>
-            <TabsTrigger value="people" className="text-xs gap-1.5">
-              <Users className="h-3.5 w-3.5" /> Voluntários
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="text-xs gap-1.5 relative">
-              <MessageSquare className="h-3.5 w-3.5" /> Mensagens
+            <TabsTrigger value="messages" className="gap-1.5 relative">
+              <Send className="h-5 w-5" />
               {conversations.reduce((s, c) => s + c.unread, 0) > 0 && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full" />
+                <span className="absolute top-1.5 right-1/2 translate-x-4 w-2 h-2 bg-red-500 rounded-full" />
               )}
             </TabsTrigger>
+            {user && (
+              <Link
+                to={`/voluntario/${user.id}`}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm text-sm font-medium ring-offset-background transition-all hover:bg-background/50"
+                aria-label="Meu perfil"
+              >
+                <UserIcon className="h-5 w-5" />
+              </Link>
+            )}
           </TabsList>
         </div>
 
-        <TabsContent value="feed" className="mt-4">
+        <TabsContent value="feed" className="mt-3">
+          <StoriesBar />
           <MotivationalMural />
           <div className="px-5">
             <FeedList
@@ -164,49 +172,6 @@ const Volunteers = () => {
               onOpenMotivation={(id, name) => setMotivation({ id, name })}
             />
           </div>
-        </TabsContent>
-
-        <TabsContent value="people" className="mt-4 px-5 space-y-3">
-          {list.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Nenhum voluntário encontrado.</p>
-          ) : (
-            list.map((v) => {
-              const initials = v.full_name?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
-              const isSelf = user?.id === v.id;
-              return (
-                <Link
-                  key={v.id}
-                  to={`/voluntario/${v.id}`}
-                  className="w-full text-left glass-card rounded-xl p-4 flex items-center gap-3 transition active:scale-[0.99]"
-                >
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm flex-shrink-0 overflow-hidden">
-                    {v.avatar_url ? (
-                      <img src={v.avatar_url} alt={v.full_name} className="w-full h-full object-cover" />
-                    ) : (
-                      initials
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <p className="font-medium text-sm text-foreground truncate">
-                      {v.full_name} {isSelf && <span className="text-xs text-muted-foreground">(você)</span>}
-                    </p>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <BadgeCheck className="h-3.5 w-3.5 text-primary" />
-                      <span className="truncate">{v.volunteer_credential || "Sem credencial"}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="flex items-center gap-1 text-primary font-semibold">
-                        <Trophy className="h-3.5 w-3.5" /> Nível {v.volunteer_level}
-                      </span>
-                      <span className="flex items-center gap-1 text-foreground font-semibold">
-                        <Clock className="h-3.5 w-3.5" /> {v.donated_hours.toFixed(1)}h
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })
-          )}
         </TabsContent>
 
         <TabsContent value="messages" className="mt-4 px-5 space-y-2">
@@ -250,6 +215,7 @@ const Volunteers = () => {
           )}
         </TabsContent>
       </Tabs>
+
 
       {/* FAB */}
       <button
