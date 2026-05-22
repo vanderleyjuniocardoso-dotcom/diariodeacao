@@ -98,10 +98,11 @@ Deno.serve(async (req) => {
 
     const payload = JSON.stringify({
       title: title || "Nova mensagem",
-      body: message.slice(0, 200),
+      body: msgText!.slice(0, 200),
       url: url || "/",
-      tag: `msg-${senderId}`,
+      tag: broadcast ? `broadcast-${Date.now()}` : `msg-${senderId}`,
     });
+
 
     const results = await Promise.allSettled(
       (subs ?? []).map(async (s) => {
