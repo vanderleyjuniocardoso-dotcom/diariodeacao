@@ -51,15 +51,25 @@ Deno.serve(async (req) => {
     const senderId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const { recipient_id, title, message, url } = body as {
+    const { recipient_id, title, message, url, broadcast, body: bodyText } = body as {
       recipient_id?: string;
       title?: string;
       message?: string;
+      body?: string;
       url?: string;
+      broadcast?: boolean;
     };
 
-    if (!recipient_id || !message) {
+    const msgText = message || bodyText;
+
+    if (!broadcast && (!recipient_id || !msgText)) {
       return new Response(JSON.stringify({ error: "recipient_id and message required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (broadcast && !msgText) {
+      return new Response(JSON.stringify({ error: "message required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -67,12 +77,24 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    const { data: subs, error: subsErr } = await admin
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth")
-      .eq("user_id", recipient_id);
+    // If broadcast, validate admin role
+    if (broadcast) {
+      const { data: isAdmin } = await admin.rpc("has_role", { _user_id: senderId, _role: "admin" });
+      if (!isAdmin) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const subsQuery = admin.from("push_subscriptions").select("id, endpoint, p256dh, auth");
+    const { data: subs, error: subsErr } = broadcast
+      ? await subsQuery
+      : await subsQuery.eq("user_id", recipient_id!);
 
     if (subsErr) throw subsErr;
+
 
     const payload = JSON.stringify({
       title: title || "Nova mensagem",
