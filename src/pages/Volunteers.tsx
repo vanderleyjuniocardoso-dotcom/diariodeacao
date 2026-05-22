@@ -177,7 +177,8 @@ const Volunteers = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="feed" className="mt-3">
+        <TabsContent value="feed" className="mt-3 space-y-3">
+          <AdminBroadcastBanner />
           <StoriesBar />
           <MotivationalMural />
           <div className="px-5">
@@ -188,6 +189,7 @@ const Volunteers = () => {
             />
           </div>
         </TabsContent>
+
 
         <TabsContent value="messages" className="mt-4 px-5 space-y-2">
           {conversations.length === 0 ? (
