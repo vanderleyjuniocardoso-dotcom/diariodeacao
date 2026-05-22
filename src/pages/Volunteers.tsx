@@ -258,6 +258,7 @@ const Volunteers = () => {
         recipientName={dm?.name ?? null}
         recipientAvatar={dm?.avatar ?? null}
       />
+      <VolunteersListSheet open={volunteersListOpen} onOpenChange={setVolunteersListOpen} />
 
       <BottomNav />
     </div>
