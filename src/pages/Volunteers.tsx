@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
-import { Users, Trophy, Clock, BadgeCheck, Plus, Home, Send, User as UserIcon } from "lucide-react";
+import { Users, Plus, Home, Send, User as UserIcon, UsersRound } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import VolunteersIntro from "@/components/VolunteersIntro";
 import FeedList from "@/components/feed/FeedList";
@@ -14,7 +13,10 @@ import MotivationalModal from "@/components/feed/MotivationalModal";
 import MotivationalMural from "@/components/feed/MotivationalMural";
 import DirectMessageDialog from "@/components/feed/DirectMessageDialog";
 import StoriesBar from "@/components/feed/StoriesBar";
+import AdminBroadcastBanner from "@/components/feed/AdminBroadcastBanner";
+import VolunteersListSheet from "@/components/feed/VolunteersListSheet";
 import type { FeedPost } from "@/components/feed/PostCard";
+
 
 interface VolunteerRow {
   id: string;
@@ -43,6 +45,8 @@ const Volunteers = () => {
   const [commentsPost, setCommentsPost] = useState<FeedPost | null>(null);
   const [motivation, setMotivation] = useState<{ id: string; name: string } | null>(null);
   const [dm, setDm] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
+  const [volunteersListOpen, setVolunteersListOpen] = useState(false);
+
 
   useEffect(() => {
     (async () => {
@@ -129,14 +133,25 @@ const Volunteers = () => {
         <VolunteersIntro volunteers={list} onDone={() => setShowIntro(false)} />
       )}
       <div className="gradient-hero px-5 pt-12 pb-6 rounded-b-3xl">
-        <div className="flex items-center gap-2">
-          <Users className="h-6 w-6 text-primary-foreground" />
-          <h1 className="text-xl font-bold font-heading text-primary-foreground">Comunidade</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-6 w-6 text-primary-foreground" />
+            <h1 className="text-xl font-bold font-heading text-primary-foreground tracking-tight">VOLUNTAGRAM</h1>
+          </div>
+          <button
+            onClick={() => setVolunteersListOpen(true)}
+            className="bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground rounded-full p-2 transition active:scale-95"
+            aria-label="Ver todos os voluntários"
+            title="Ver todos os voluntários"
+          >
+            <UsersRound className="h-5 w-5" />
+          </button>
         </div>
         <p className="text-sm text-primary-foreground/80 mt-1">
           Compartilhe momentos, motive e conecte-se com outros voluntários.
         </p>
       </div>
+
 
       <Tabs defaultValue="feed" className="mt-4">
         <div className="px-5">
@@ -162,7 +177,8 @@ const Volunteers = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="feed" className="mt-3">
+        <TabsContent value="feed" className="mt-3 space-y-3">
+          <AdminBroadcastBanner />
           <StoriesBar />
           <MotivationalMural />
           <div className="px-5">
@@ -173,6 +189,7 @@ const Volunteers = () => {
             />
           </div>
         </TabsContent>
+
 
         <TabsContent value="messages" className="mt-4 px-5 space-y-2">
           {conversations.length === 0 ? (
@@ -241,6 +258,7 @@ const Volunteers = () => {
         recipientName={dm?.name ?? null}
         recipientAvatar={dm?.avatar ?? null}
       />
+      <VolunteersListSheet open={volunteersListOpen} onOpenChange={setVolunteersListOpen} />
 
       <BottomNav />
     </div>

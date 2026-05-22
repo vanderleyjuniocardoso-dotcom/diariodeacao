@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_broadcasts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          sender_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          sender_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          sender_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       feed_posts: {
         Row: {
           content: string
