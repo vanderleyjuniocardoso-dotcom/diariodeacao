@@ -1,4 +1,4 @@
-import { Home, PlusCircle, Clock, Users, TrendingUp } from "lucide-react";
+import { Home, PlusCircle, Users, TrendingUp, MapPin } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ const tabs = [
   { icon: Home, label: "Impacto", path: "/dashboard" },
   { icon: PlusCircle, label: "Diário de Ação", path: "/register-action" },
   { icon: TrendingUp, label: "Trilha", path: "/trilha" },
-  { icon: Clock, label: "Histórico", path: "/history" },
+  { icon: MapPin, label: "Seu GGL", path: "/ggl" },
 ];
 
 const BottomNav = () => {

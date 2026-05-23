@@ -73,7 +73,7 @@ const Signup = () => {
     { key: "full_name", label: "Nome completo", icon: User, type: "text", required: true },
     { key: "email", label: "E-mail", icon: Mail, type: "email", required: true },
     { key: "password", label: "Senha", icon: Lock, type: "password", required: true },
-    { key: "volunteer_credential", label: "Credencial do voluntário", icon: IdCard, type: "text", required: true },
+    { key: "volunteer_credential", label: "Credencial do voluntário (Entre em contato com a equipe para pedir sua credencial)", icon: IdCard, type: "text", required: true },
     { key: "phone", label: "Telefone", icon: Phone, type: "tel", required: true },
     { key: "unit", label: "Unidade / Departamento", icon: Building, type: "text", required: true },
   ];
