@@ -40,12 +40,17 @@ const Volunteers = () => {
   const { user } = useAuth();
   const [list, setList] = useState<VolunteerRow[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem("voluntagram_intro_seen"));
   const [createOpen, setCreateOpen] = useState(false);
   const [commentsPost, setCommentsPost] = useState<FeedPost | null>(null);
   const [motivation, setMotivation] = useState<{ id: string; name: string } | null>(null);
   const [dm, setDm] = useState<{ id: string; name: string; avatar?: string | null } | null>(null);
   const [volunteersListOpen, setVolunteersListOpen] = useState(false);
+
+  const dismissIntro = () => {
+    localStorage.setItem("voluntagram_intro_seen", "1");
+    setShowIntro(false);
+  };
 
 
   useEffect(() => {
@@ -130,7 +135,7 @@ const Volunteers = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       {showIntro && list.length > 0 && (
-        <VolunteersIntro volunteers={list} onDone={() => setShowIntro(false)} />
+        <VolunteersIntro volunteers={list} onDone={dismissIntro} />
       )}
       <div className="gradient-hero px-5 pt-12 pb-6 rounded-b-3xl">
         <div className="flex items-center justify-between">
