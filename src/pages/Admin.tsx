@@ -204,6 +204,7 @@ const Admin = () => {
 
       <div className="px-5 mt-5 space-y-4">
         <AdminBroadcastComposer />
+        <AdminGglManager />
 
         {/* Export */}
         <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
