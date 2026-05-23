@@ -138,24 +138,62 @@ const Volunteers = () => {
         <VolunteersIntro volunteers={list} onDone={dismissIntro} />
       )}
       <div className="gradient-hero px-5 pt-12 pb-6 rounded-b-3xl">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary-foreground" />
-            <h1 className="text-xl font-bold font-heading text-primary-foreground tracking-tight">VOLUNTAGRAM</h1>
-          </div>
-          <button
-            onClick={() => setVolunteersListOpen(true)}
-            className="bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground rounded-full p-2 transition active:scale-95"
-            aria-label="Ver todos os voluntários"
-            title="Ver todos os voluntários"
-          >
-            <UsersRound className="h-5 w-5" />
-          </button>
+        <div className="flex items-center gap-2">
+          <Users className="h-6 w-6 text-primary-foreground" />
+          <h1 className="text-xl font-bold font-heading text-primary-foreground tracking-tight">VOLUNTAGRAM</h1>
         </div>
         <p className="text-sm text-primary-foreground/80 mt-1">
           Compartilhe momentos, motive e conecte-se com outros voluntários.
         </p>
       </div>
+
+
+      <Tabs defaultValue="feed" className="mt-4">
+        <div className="px-5">
+          <TabsList className="w-full grid grid-cols-4 h-12">
+            <TabsTrigger value="feed" className="gap-1.5" aria-label="Feed">
+              <Home className="h-5 w-5" />
+            </TabsTrigger>
+            <button
+              type="button"
+              onClick={() => setVolunteersListOpen(true)}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm text-sm font-medium ring-offset-background transition-all hover:bg-background/50"
+              aria-label="Ver todos os voluntários"
+            >
+              <UsersRound className="h-5 w-5" />
+            </button>
+            <TabsTrigger value="messages" className="gap-1.5 relative" aria-label="Mensagens">
+              <Send className="h-5 w-5" />
+              {conversations.reduce((s, c) => s + c.unread, 0) > 0 && (
+                <span className="absolute top-1.5 right-1/2 translate-x-4 w-2 h-2 bg-red-500 rounded-full" />
+              )}
+            </TabsTrigger>
+            {user ? (
+              <Link
+                to={`/voluntario/${user.id}`}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm text-sm font-medium ring-offset-background transition-all hover:bg-background/50"
+                aria-label="Meu perfil"
+              >
+                <UserIcon className="h-5 w-5" />
+              </Link>
+            ) : (
+              <span />
+            )}
+          </TabsList>
+        </div>
+
+        <TabsContent value="feed" className="mt-3 space-y-3">
+          <AdminBroadcastBanner />
+          <StoriesBar />
+          <MotivationalMural />
+          <div className="px-5">
+            <FeedList
+              onOpenComments={setCommentsPost}
+              onOpenMessage={(id, name) => setDm({ id, name })}
+              onOpenMotivation={(id, name) => setMotivation({ id, name })}
+            />
+          </div>
+        </TabsContent>
 
 
       <Tabs defaultValue="feed" className="mt-4">
