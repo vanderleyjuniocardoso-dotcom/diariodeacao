@@ -10,7 +10,7 @@ const Index = () => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) navigate("/dashboard", { replace: true });
+    if (!loading && user) navigate("/volunteers", { replace: true });
   }, [user, loading, navigate]);
 
   return (
@@ -25,7 +25,7 @@ const Index = () => {
         <img src={logoVoluntariado} alt="Logo Voluntariado CEJAM" className="mx-auto mb-6 w-44 h-44 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.25)] brightness-0 invert" />
 
         <h1 className="text-3xl font-bold font-heading text-primary-foreground mb-2 leading-tight">
-          Diário de Ação do Voluntariado
+          VOLUNTAGRAM
         </h1>
         <p className="text-sm font-medium text-primary-foreground/80 mb-1">CEJAM</p>
 

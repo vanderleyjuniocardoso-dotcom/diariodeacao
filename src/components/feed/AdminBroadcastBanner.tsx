@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Megaphone, Plus, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Megaphone, X } from "lucide-react";
 
 interface Broadcast {
   id: string;
@@ -17,12 +11,7 @@ interface Broadcast {
 }
 
 export default function AdminBroadcastBanner() {
-  const { user, isAdmin } = useAuth();
   const [items, setItems] = useState<Broadcast[]>([]);
-  const [composeOpen, setComposeOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
   const [dismissed, setDismissed] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem("dismissed_broadcasts") || "[]"));
@@ -59,50 +48,11 @@ export default function AdminBroadcastBanner() {
     localStorage.setItem("dismissed_broadcasts", JSON.stringify(Array.from(next)));
   };
 
-  const send = async () => {
-    if (!user || !title.trim() || !message.trim()) return;
-    setSending(true);
-    const { error } = await supabase
-      .from("admin_broadcasts")
-      .insert({ sender_id: user.id, title: title.trim(), message: message.trim() });
-    setSending(false);
-    if (error) {
-      toast.error("Erro ao enviar aviso");
-      return;
-    }
-    toast.success("Aviso enviado a todos os voluntários!");
-    setTitle("");
-    setMessage("");
-    setComposeOpen(false);
-
-    // dispara push para todos (best-effort)
-    supabase.functions
-      .invoke("send-push", {
-        body: {
-          broadcast: true,
-          title: `📢 ${title.trim()}`,
-          body: message.trim(),
-          url: "/volunteers",
-        },
-      })
-      .catch(() => {});
-  };
-
   const visible = items.filter((i) => !dismissed.has(i.id));
+  if (visible.length === 0) return null;
 
   return (
     <div className="px-5 space-y-2">
-      {isAdmin && (
-        <button
-          onClick={() => setComposeOpen(true)}
-          className="w-full flex items-center gap-2 bg-primary/10 border border-primary/30 text-primary rounded-xl px-3 py-2 text-sm font-medium active:scale-[0.99] transition"
-        >
-          <Megaphone className="h-4 w-4" />
-          <span>Enviar aviso para todos os voluntários</span>
-          <Plus className="h-4 w-4 ml-auto" />
-        </button>
-      )}
-
       {visible.map((b) => (
         <div
           key={b.id}
@@ -128,37 +78,7 @@ export default function AdminBroadcastBanner() {
           </p>
         </div>
       ))}
-
-      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nova mensagem do ADM</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Input
-              placeholder="Título do aviso"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={80}
-            />
-            <Textarea
-              placeholder="Escreva a mensagem que será enviada a todos os voluntários..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={5}
-              maxLength={1000}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setComposeOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={send} disabled={sending || !title.trim() || !message.trim()}>
-              {sending ? "Enviando..." : "Enviar para todos"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
+

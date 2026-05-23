@@ -23,7 +23,7 @@ const Login = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      navigate("/dashboard");
+      navigate("/volunteers");
     }
   };
 
@@ -36,7 +36,7 @@ const Login = () => {
       return;
     }
     if (result.redirected) return;
-    navigate("/dashboard");
+    navigate("/volunteers");
   };
 
   return (

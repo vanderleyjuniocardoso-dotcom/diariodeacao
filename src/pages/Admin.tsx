@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft, Download, Search, Users, Clock, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 
 interface VolunteerSummary {
   id: string;
@@ -201,6 +202,8 @@ const Admin = () => {
       </div>
 
       <div className="px-5 mt-5 space-y-4">
+        <AdminBroadcastComposer />
+
         {/* Export */}
         <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
           <Download className="h-4 w-4 mr-2" /> EXPORTAR DADOS
