@@ -196,42 +196,6 @@ const Volunteers = () => {
         </TabsContent>
 
 
-      <Tabs defaultValue="feed" className="mt-4">
-        <div className="px-5">
-          <TabsList className="w-full grid grid-cols-3 h-12">
-            <TabsTrigger value="feed" className="gap-1.5">
-              <Home className="h-5 w-5" />
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="gap-1.5 relative">
-              <Send className="h-5 w-5" />
-              {conversations.reduce((s, c) => s + c.unread, 0) > 0 && (
-                <span className="absolute top-1.5 right-1/2 translate-x-4 w-2 h-2 bg-red-500 rounded-full" />
-              )}
-            </TabsTrigger>
-            {user && (
-              <Link
-                to={`/voluntario/${user.id}`}
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm text-sm font-medium ring-offset-background transition-all hover:bg-background/50"
-                aria-label="Meu perfil"
-              >
-                <UserIcon className="h-5 w-5" />
-              </Link>
-            )}
-          </TabsList>
-        </div>
-
-        <TabsContent value="feed" className="mt-3 space-y-3">
-          <AdminBroadcastBanner />
-          <StoriesBar />
-          <MotivationalMural />
-          <div className="px-5">
-            <FeedList
-              onOpenComments={setCommentsPost}
-              onOpenMessage={(id, name) => setDm({ id, name })}
-              onOpenMotivation={(id, name) => setMotivation({ id, name })}
-            />
-          </div>
-        </TabsContent>
 
 
         <TabsContent value="messages" className="mt-4 px-5 space-y-2">
