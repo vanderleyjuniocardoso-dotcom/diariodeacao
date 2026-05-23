@@ -82,7 +82,7 @@ const Trilha = () => {
         <TrilhaIntro
           avatarUrl={profile?.avatar_url}
           fullName={profile?.full_name}
-          requirements={goal ? [`${goal.hours}h anuais`, `${goal.workshops} workshops`, `${goal.months} meses de engajamento`] : []}
+          requirements={["NÍVEL 1", "NÍVEL 2", "NÍVEL 3"]}
           onDone={() => setShowIntro(false)}
         />
       )}

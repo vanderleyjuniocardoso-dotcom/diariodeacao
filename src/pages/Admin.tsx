@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Download, Search, Users, Clock, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
+import AdminGglManager from "@/components/AdminGglManager";
 
 interface VolunteerSummary {
   id: string;
@@ -203,6 +204,7 @@ const Admin = () => {
 
       <div className="px-5 mt-5 space-y-4">
         <AdminBroadcastComposer />
+        <AdminGglManager />
 
         {/* Export */}
         <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
