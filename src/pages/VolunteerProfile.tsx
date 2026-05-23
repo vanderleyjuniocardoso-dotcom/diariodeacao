@@ -164,7 +164,11 @@ export default function VolunteerProfile() {
         ) : (
           <div className="grid grid-cols-3 gap-1">
             {posts.map((p) => (
-              <div key={p.id} className="aspect-square bg-muted rounded-md overflow-hidden">
+              <Link
+                key={p.id}
+                to={`/post/${p.id}`}
+                className="aspect-square bg-muted rounded-md overflow-hidden block active:opacity-80"
+              >
                 {p.image_url ? (
                   <img src={p.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
@@ -172,7 +176,7 @@ export default function VolunteerProfile() {
                     <span className="line-clamp-5">{p.content}</span>
                   </div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         )}

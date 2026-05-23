@@ -17,7 +17,9 @@ import History from "./pages/History";
 import Admin from "./pages/Admin";
 import Volunteers from "./pages/Volunteers";
 import VolunteerProfile from "./pages/VolunteerProfile";
+import PostDetail from "./pages/PostDetail";
 import Trilha from "./pages/Trilha";
+import Ggl from "./pages/Ggl";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
 
@@ -43,7 +45,9 @@ const App = () => (
             
             <Route path="/volunteers" element={<ProtectedRoute><Volunteers /></ProtectedRoute>} />
             <Route path="/voluntario/:id" element={<ProtectedRoute><VolunteerProfile /></ProtectedRoute>} />
+            <Route path="/post/:id" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
             <Route path="/trilha" element={<ProtectedRoute><Trilha /></ProtectedRoute>} />
+            <Route path="/ggl" element={<ProtectedRoute><Ggl /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
