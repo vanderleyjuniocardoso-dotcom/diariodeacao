@@ -65,6 +65,62 @@ export type Database = {
         }
         Relationships: []
       }
+      ggl_groups: {
+        Row: {
+          cities: string[]
+          created_at: string
+          id: string
+          unit_name: string
+          updated_at: string
+        }
+        Insert: {
+          cities?: string[]
+          created_at?: string
+          id?: string
+          unit_name: string
+          updated_at?: string
+        }
+        Update: {
+          cities?: string[]
+          created_at?: string
+          id?: string
+          unit_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ggl_members: {
+        Row: {
+          created_at: string
+          ggl_id: string
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          ggl_id: string
+          id?: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          ggl_id?: string
+          id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ggl_members_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       motivational_messages: {
         Row: {
           content: string
@@ -156,6 +212,27 @@ export type Database = {
           },
         ]
       }
+      post_views: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -163,6 +240,7 @@ export type Database = {
           created_at: string
           email: string
           full_name: string
+          ggl_id: string | null
           id: string
           phone: string | null
           unit: string | null
@@ -176,6 +254,7 @@ export type Database = {
           created_at?: string
           email: string
           full_name: string
+          ggl_id?: string | null
           id: string
           phone?: string | null
           unit?: string | null
@@ -189,6 +268,7 @@ export type Database = {
           created_at?: string
           email?: string
           full_name?: string
+          ggl_id?: string | null
           id?: string
           phone?: string | null
           unit?: string | null
@@ -196,7 +276,15 @@ export type Database = {
           volunteer_credential?: string | null
           volunteer_level?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
