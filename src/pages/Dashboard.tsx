@@ -26,6 +26,8 @@ interface ActionRow {
   donated_hours: number;
   category?: string | null;
   people_impacted?: number | null;
+  photo_url?: string | null;
+  description?: string | null;
 }
 
 const Dashboard = () => {
