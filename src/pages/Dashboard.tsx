@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<ActionRow | null>(null);
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
