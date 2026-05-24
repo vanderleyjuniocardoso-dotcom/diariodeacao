@@ -70,7 +70,7 @@ const Dashboard = () => {
     const load = async () => {
       const { data } = await supabase
         .from("volunteer_actions")
-        .select("id, action_name, action_date, location, donated_hours, category, people_impacted")
+        .select("id, action_name, action_date, location, donated_hours, category, people_impacted, photo_url, description")
         .eq("user_id", user.id)
         .order("action_date", { ascending: false });
 
