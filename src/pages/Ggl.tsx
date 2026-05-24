@@ -45,6 +45,13 @@ const Ggl = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && (
+        <GglIntro
+          avatarUrl={profile?.avatar_url}
+          fullName={profile?.full_name}
+          onDone={() => setShowIntro(false)}
+        />
+      )}
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
         <div className="flex items-center gap-2">
           <MapPin className="h-6 w-6 text-primary-foreground" />
