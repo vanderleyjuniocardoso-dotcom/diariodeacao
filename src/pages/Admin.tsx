@@ -257,6 +257,14 @@ const Admin = () => {
                   >
                     Nível 2
                   </Button>
+                  <Button
+                    size="sm"
+                    variant={v.volunteer_level === 3 ? "default" : "outline"}
+                    onClick={() => updateLevel(v.id, 3)}
+                    className="h-7 px-3 text-xs"
+                  >
+                    Nível 3
+                  </Button>
                 </div>
                 <CredentialEditor
                   initial={v.volunteer_credential ?? ""}
