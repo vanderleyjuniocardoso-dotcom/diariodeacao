@@ -254,9 +254,18 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-3">
               {recent.map((action) => (
-                <div key={action.id} className="glass-card rounded-xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Heart className="h-5 w-5 text-primary" />
+                <button
+                  type="button"
+                  key={action.id}
+                  onClick={() => setSelectedAction(action)}
+                  className="w-full text-left glass-card rounded-xl p-4 flex items-center gap-3 hover:bg-accent/40 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {action.photo_url ? (
+                      <img src={action.photo_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Heart className="h-5 w-5 text-primary" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{action.action_name}</p>
@@ -268,7 +277,7 @@ const Dashboard = () => {
                     <p className="font-bold text-sm text-primary">{action.donated_hours}h</p>
                     <p className="text-xs text-muted-foreground">{new Date(action.action_date).toLocaleDateString("pt-BR")}</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
