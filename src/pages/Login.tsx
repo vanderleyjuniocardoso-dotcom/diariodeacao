@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import logoVoluntariado from "@/assets/logo-voluntariado.png";
+import InstallAppButton from "@/components/InstallAppButton";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -51,7 +53,12 @@ const Login = () => {
           <p className="text-sm text-muted-foreground mt-1">Entre para continuar sua jornada</p>
         </div>
 
+        <div className="mb-6">
+          <InstallAppButton />
+        </div>
+
         <form onSubmit={handleLogin} className="space-y-4">
+
           <div className="space-y-2">
             <Label htmlFor="email">E-mail</Label>
             <div className="relative">
