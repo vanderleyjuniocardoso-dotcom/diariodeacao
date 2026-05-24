@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
+import GglIntro from "@/components/GglIntro";
 import { MapPin, Building2, Phone, Users, Construction } from "lucide-react";
 
 interface Group {
