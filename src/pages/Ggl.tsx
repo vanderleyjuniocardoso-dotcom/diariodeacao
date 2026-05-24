@@ -21,6 +21,7 @@ const Ggl = () => {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     (async () => {
