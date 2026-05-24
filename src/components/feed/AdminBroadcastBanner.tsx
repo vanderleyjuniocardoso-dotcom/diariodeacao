@@ -26,14 +26,15 @@ export default function AdminBroadcastBanner() {
         .from("admin_broadcasts")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(1);
       setItems(data ?? []);
     })();
 
     const ch = supabase
       .channel("admin-broadcasts")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_broadcasts" }, (p) => {
-        setItems((prev) => [p.new as Broadcast, ...prev].slice(0, 5));
+        setItems([p.new as Broadcast]);
+
       })
       .subscribe();
     return () => {

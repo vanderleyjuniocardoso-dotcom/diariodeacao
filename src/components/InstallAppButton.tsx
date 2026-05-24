@@ -49,16 +49,33 @@ const InstallAppButton = () => {
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
   const isAndroid = /Android/i.test(ua);
 
+  const requestNotifications = async () => {
+    try {
+      if ("Notification" in window && Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
+      if ("serviceWorker" in navigator) {
+        const { subscribeToPush, isInIframe } = await import("@/lib/push");
+        if (!isInIframe) await subscribeToPush().catch(() => {});
+      }
+    } catch {}
+  };
+
   const handleClick = async () => {
     if (deferred) {
       await deferred.prompt();
       const choice = await deferred.userChoice;
-      if (choice.outcome === "accepted") setInstalled(true);
+      if (choice.outcome === "accepted") {
+        setInstalled(true);
+        await requestNotifications();
+      }
       setDeferred(null);
     } else {
+      await requestNotifications();
       setOpen(true);
     }
   };
+
 
   return (
     <>
