@@ -288,6 +288,48 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <Dialog open={!!selectedAction} onOpenChange={(o) => !o && setSelectedAction(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedAction?.action_name}</DialogTitle>
+          </DialogHeader>
+          {selectedAction && (
+            <div className="space-y-4">
+              {selectedAction.photo_url && (
+                <img
+                  src={selectedAction.photo_url}
+                  alt={selectedAction.action_name}
+                  className="w-full max-h-72 object-cover rounded-xl"
+                />
+              )}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <Clock className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-sm font-bold text-foreground">{selectedAction.donated_hours}h</p>
+                  <p className="text-[10px] text-muted-foreground">Horas</p>
+                </div>
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <Users className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-sm font-bold text-foreground">{selectedAction.people_impacted ?? 0}</p>
+                  <p className="text-[10px] text-muted-foreground">Atendidos</p>
+                </div>
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <MapPin className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-[11px] font-semibold text-foreground truncate">{selectedAction.location}</p>
+                  <p className="text-[10px] text-muted-foreground">Local</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {new Date(selectedAction.action_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
+              </p>
+              {selectedAction.description && (
+                <p className="text-sm text-foreground/80 leading-relaxed">{selectedAction.description}</p>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <BottomNav />
     </div>
   );
