@@ -8,6 +8,7 @@ import InstallAppButton from "@/components/InstallAppButton";
 import MessagesBell from "@/components/MessagesBell";
 import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const quotes = [
@@ -25,6 +26,8 @@ interface ActionRow {
   donated_hours: number;
   category?: string | null;
   people_impacted?: number | null;
+  photo_url?: string | null;
+  description?: string | null;
 }
 
 const Dashboard = () => {
@@ -34,6 +37,7 @@ const Dashboard = () => {
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<ActionRow | null>(null);
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -66,7 +70,7 @@ const Dashboard = () => {
     const load = async () => {
       const { data } = await supabase
         .from("volunteer_actions")
-        .select("id, action_name, action_date, location, donated_hours, category, people_impacted")
+        .select("id, action_name, action_date, location, donated_hours, category, people_impacted, photo_url, description")
         .eq("user_id", user.id)
         .order("action_date", { ascending: false });
 
@@ -169,10 +173,10 @@ const Dashboard = () => {
         {/* Big level badge */}
         <div className="mb-4 rounded-2xl bg-primary-foreground text-primary px-4 py-3 flex items-center gap-3 shadow-lg">
           <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-            {profile?.volunteer_level === 2 ? 2 : 1}
+            {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}
           </div>
           <div className="flex-1">
-            <p className="text-base font-bold font-heading">Nível {profile?.volunteer_level === 2 ? 2 : 1}</p>
+            <p className="text-base font-bold font-heading">Nível {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}</p>
           </div>
           <Trophy className="h-6 w-6" />
         </div>
@@ -250,9 +254,18 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-3">
               {recent.map((action) => (
-                <div key={action.id} className="glass-card rounded-xl p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Heart className="h-5 w-5 text-primary" />
+                <button
+                  type="button"
+                  key={action.id}
+                  onClick={() => setSelectedAction(action)}
+                  className="w-full text-left glass-card rounded-xl p-4 flex items-center gap-3 hover:bg-accent/40 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {action.photo_url ? (
+                      <img src={action.photo_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Heart className="h-5 w-5 text-primary" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{action.action_name}</p>
@@ -264,7 +277,7 @@ const Dashboard = () => {
                     <p className="font-bold text-sm text-primary">{action.donated_hours}h</p>
                     <p className="text-xs text-muted-foreground">{new Date(action.action_date).toLocaleDateString("pt-BR")}</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -274,6 +287,48 @@ const Dashboard = () => {
           <InstallAppButton />
         </div>
       </div>
+
+      <Dialog open={!!selectedAction} onOpenChange={(o) => !o && setSelectedAction(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedAction?.action_name}</DialogTitle>
+          </DialogHeader>
+          {selectedAction && (
+            <div className="space-y-4">
+              {selectedAction.photo_url && (
+                <img
+                  src={selectedAction.photo_url}
+                  alt={selectedAction.action_name}
+                  className="w-full max-h-72 object-cover rounded-xl"
+                />
+              )}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <Clock className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-sm font-bold text-foreground">{selectedAction.donated_hours}h</p>
+                  <p className="text-[10px] text-muted-foreground">Horas</p>
+                </div>
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <Users className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-sm font-bold text-foreground">{selectedAction.people_impacted ?? 0}</p>
+                  <p className="text-[10px] text-muted-foreground">Atendidos</p>
+                </div>
+                <div className="rounded-xl bg-primary/10 p-3">
+                  <MapPin className="h-4 w-4 text-primary mx-auto mb-1" />
+                  <p className="text-[11px] font-semibold text-foreground truncate">{selectedAction.location}</p>
+                  <p className="text-[10px] text-muted-foreground">Local</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {new Date(selectedAction.action_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
+              </p>
+              {selectedAction.description && (
+                <p className="text-sm text-foreground/80 leading-relaxed">{selectedAction.description}</p>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

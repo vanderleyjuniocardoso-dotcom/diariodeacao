@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
+import GglIntro from "@/components/GglIntro";
 import { MapPin, Building2, Phone, Users, Construction } from "lucide-react";
 
 interface Group {
@@ -20,6 +21,7 @@ const Ggl = () => {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -43,6 +45,13 @@ const Ggl = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {showIntro && (
+        <GglIntro
+          avatarUrl={profile?.avatar_url}
+          fullName={profile?.full_name}
+          onDone={() => setShowIntro(false)}
+        />
+      )}
       <div className="gradient-hero px-5 pt-12 pb-8 rounded-b-3xl">
         <div className="flex items-center gap-2">
           <MapPin className="h-6 w-6 text-primary-foreground" />
