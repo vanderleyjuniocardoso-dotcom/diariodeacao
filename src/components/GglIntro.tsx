@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { User as UserIcon } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface Props {
   avatarUrl?: string | null;
@@ -8,110 +8,139 @@ interface Props {
 }
 
 /**
- * GGL intro: avatar walks to a hospital/unit building labeled "GGL",
- * enters, then the building zooms in until it fills the screen and fades.
- * Total duration ~5s. Click to skip.
+ * GGL intro: Brazil map with a magnifying glass searching around,
+ * stops over São Paulo, "SEU GGL" appears inside the lens,
+ * zooms in until it fills the screen, then fades.
+ * Total duration ~5s. Tap to skip.
  */
-const GglIntro = ({ avatarUrl, fullName, onDone }: Props) => {
-  // 0: approach, 1: enter, 2: zoom, 3: fade out
+const GglIntro = ({ onDone }: Props) => {
+  // 0: searching, 1: focused on SP, 2: zoom, 3: fade
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
-    const t1 = window.setTimeout(() => setPhase(1), 2000); // approach -> enter
-    const t2 = window.setTimeout(() => setPhase(2), 2800); // start zoom
+    const t1 = window.setTimeout(() => setPhase(1), 2600); // stop on SP
+    const t2 = window.setTimeout(() => setPhase(2), 3400); // zoom
     const t3 = window.setTimeout(() => setPhase(3), 4500); // fade
     const t4 = window.setTimeout(() => onDone(), 5000);
     return () => [t1, t2, t3, t4].forEach(clearTimeout);
   }, [onDone]);
 
-  const initials = fullName?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+  // Approximate São Paulo position in the SVG viewBox(0 0 400 460)
+  const SP = { x: 245, y: 320 };
+  // Wandering positions for the magnifier before stopping on SP
+  const search = [
+    { x: 140, y: 120 },
+    { x: 280, y: 180 },
+    { x: 180, y: 260 },
+    { x: 310, y: 270 },
+    { x: 200, y: 360 },
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (phase !== 0) return;
+    const i = window.setInterval(() => setIdx((v) => (v + 1) % search.length), 500);
+    return () => clearInterval(i);
+  }, [phase]);
+
+  const target = phase === 0 ? search[idx] : SP;
 
   return (
     <div
       onClick={onDone}
-      className={`fixed inset-0 z-[70] cursor-pointer overflow-hidden bg-gradient-to-b from-sky-200 via-sky-100 to-emerald-50 transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[70] cursor-pointer overflow-hidden transition-opacity duration-500 ${
         phase === 3 ? "opacity-0" : "opacity-100"
       }`}
+      style={{
+        background: "linear-gradient(to bottom, #e6f3ff 0%, #f5fbff 70%, #ffffff 100%)",
+      }}
     >
-      {/* sun */}
-      <div className="absolute top-10 right-12 w-16 h-16 rounded-full bg-yellow-300/80 blur-sm" />
+      {/* Soft clouds (matching Trilha vibe) */}
+      <div className="absolute top-[8%] left-[6%] w-40 h-14 bg-white/70 rounded-full blur-2xl" />
+      <div className="absolute top-[18%] right-[10%] w-52 h-16 bg-white/60 rounded-full blur-2xl" />
+      <div className="absolute top-[35%] left-[20%] w-32 h-10 bg-white/50 rounded-full blur-xl" />
+      <div className="absolute bottom-[12%] right-[15%] w-44 h-14 bg-white/60 rounded-full blur-2xl" />
+      <div className="absolute bottom-[24%] left-[8%] w-36 h-12 bg-white/55 rounded-full blur-2xl" />
 
-      {/* ground */}
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-emerald-100 to-emerald-200" />
-
-      {/* building */}
-      <div
-        className="absolute left-1/2 bottom-[33%] origin-bottom transition-all duration-[1500ms] ease-in-out"
-        style={{
-          transform:
-            phase >= 2
-              ? "translateX(-50%) scale(12)"
-              : "translateX(-50%) scale(1)",
-        }}
-      >
-        <div className="relative w-44 h-52 -translate-x-1/2 left-1/2">
-          {/* main building */}
-          <div className="absolute inset-x-0 bottom-0 h-44 bg-white rounded-t-lg shadow-2xl border-2 border-slate-200">
-            {/* roof band */}
-            <div className="absolute top-0 inset-x-0 h-10 bg-primary flex items-center justify-center rounded-t-md">
-              <span className="text-primary-foreground font-extrabold tracking-widest text-lg">GGL</span>
-            </div>
-            {/* red cross */}
-            <div className="absolute top-12 left-1/2 -translate-x-1/2 w-8 h-8">
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 bg-red-500 rounded-sm" />
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-2 bg-red-500 rounded-sm" />
-            </div>
-            {/* windows */}
-            <div className="absolute top-24 left-3 right-3 grid grid-cols-3 gap-1.5">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-4 bg-sky-300/80 rounded-sm" />
-              ))}
-            </div>
-            {/* door */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-12 bg-slate-700 rounded-t-md" />
-          </div>
-        </div>
-      </div>
-
-      {/* avatar walking toward building */}
-      <div
-        className="absolute bottom-[34%] transition-all duration-[1800ms] ease-in-out"
-        style={{
-          left: phase === 0 ? "8%" : "calc(50% - 28px)",
-          opacity: phase >= 1 ? 0 : 1,
-          transform: phase >= 1 ? "scale(0.6)" : "scale(1)",
-        }}
-      >
-        <div className="w-14 h-14 rounded-full bg-primary/20 border-4 border-primary shadow-lg overflow-hidden flex items-center justify-center text-primary font-bold">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={fullName || "Voluntário"} className="w-full h-full object-cover" />
-          ) : initials ? (
-            <span>{initials}</span>
-          ) : (
-            <UserIcon className="h-6 w-6" />
-          )}
-        </div>
-      </div>
-
-      {/* connection dots */}
-      {phase === 0 && (
-        <div className="absolute bottom-[40%] left-[20%] right-[42%] flex items-center justify-between pointer-events-none">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="w-2 h-2 rounded-full bg-primary/70 animate-pulse"
-              style={{ animationDelay: `${i * 150}ms` }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* caption */}
-      <div className="absolute top-16 inset-x-0 text-center px-6">
+      {/* Caption */}
+      <div className="absolute top-12 inset-x-0 text-center px-6 z-10">
         <p className="text-primary font-bold text-lg drop-shadow-sm">
-          {phase < 2 ? "Conectando você ao seu GGL..." : "Bem-vindo ao seu GGL"}
+          {phase < 1 ? "Procurando seu GGL..." : "Encontramos seu GGL"}
         </p>
         <p className="text-xs text-muted-foreground mt-1">toque para pular</p>
+      </div>
+
+      {/* Map + magnifier stage */}
+      <div
+        className="absolute inset-0 flex items-center justify-center transition-transform duration-[1100ms] ease-in-out"
+        style={{
+          transform: phase >= 2 ? "scale(6)" : "scale(1)",
+          transformOrigin: `${(SP.x / 400) * 100}% ${(SP.y / 460) * 100}%`,
+        }}
+      >
+        <div className="relative w-[78vw] max-w-[360px] aspect-[400/460]">
+          {/* Brazil silhouette */}
+          <svg
+            viewBox="0 0 400 460"
+            className="absolute inset-0 w-full h-full drop-shadow-md"
+          >
+            <defs>
+              <linearGradient id="brGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
+              </linearGradient>
+            </defs>
+            {/* Simplified Brazil shape */}
+            <path
+              d="M150,40 C200,30 260,45 290,80 C325,105 340,140 330,175 C355,195 360,230 340,255 C355,290 330,320 305,330 C295,365 270,395 235,405 C220,430 185,440 155,425 C120,430 95,405 95,375 C70,360 60,330 75,305 C50,285 50,250 75,230 C60,205 75,175 105,165 C95,135 110,100 140,85 C140,65 145,50 150,40 Z"
+              fill="url(#brGrad)"
+              stroke="hsl(var(--primary))"
+              strokeWidth="2"
+              strokeOpacity="0.5"
+            />
+            {/* Tiny dot for São Paulo */}
+            <circle cx={SP.x} cy={SP.y} r="4" fill="#ef4444" />
+            <circle cx={SP.x} cy={SP.y} r="9" fill="#ef4444" fillOpacity="0.25">
+              <animate attributeName="r" values="6;14;6" dur="1.4s" repeatCount="indefinite" />
+              <animate attributeName="fill-opacity" values="0.4;0;0.4" dur="1.4s" repeatCount="indefinite" />
+            </circle>
+          </svg>
+
+          {/* Magnifier */}
+          <div
+            className="absolute transition-all duration-[480ms] ease-in-out"
+            style={{
+              left: `${(target.x / 400) * 100}%`,
+              top: `${(target.y / 460) * 100}%`,
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <div className="relative">
+              {/* lens */}
+              <div
+                className={`w-24 h-24 rounded-full border-[6px] border-slate-700 bg-white/30 backdrop-blur-[2px] flex items-center justify-center shadow-xl transition-all duration-500 ${
+                  phase >= 1 ? "border-primary bg-primary/10" : ""
+                }`}
+              >
+                {phase >= 1 && (
+                  <span className="font-extrabold text-primary text-sm tracking-wider animate-fade-in text-center leading-tight">
+                    SEU
+                    <br />
+                    GGL
+                  </span>
+                )}
+              </div>
+              {/* handle */}
+              <div
+                className="absolute w-3 h-12 bg-slate-700 rounded-full origin-top"
+                style={{
+                  right: "-6px",
+                  bottom: "-40px",
+                  transform: "rotate(-45deg) translate(8px, -4px)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
