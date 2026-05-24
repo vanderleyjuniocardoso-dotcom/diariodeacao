@@ -173,10 +173,10 @@ const Dashboard = () => {
         {/* Big level badge */}
         <div className="mb-4 rounded-2xl bg-primary-foreground text-primary px-4 py-3 flex items-center gap-3 shadow-lg">
           <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-            {profile?.volunteer_level === 2 ? 2 : 1}
+            {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}
           </div>
           <div className="flex-1">
-            <p className="text-base font-bold font-heading">Nível {profile?.volunteer_level === 2 ? 2 : 1}</p>
+            <p className="text-base font-bold font-heading">Nível {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}</p>
           </div>
           <Trophy className="h-6 w-6" />
         </div>
