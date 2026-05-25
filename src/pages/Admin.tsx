@@ -3,8 +3,9 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
@@ -49,10 +50,10 @@ const Admin = () => {
   const navigate = useNavigate();
   const [volunteers, setVolunteers] = useState<VolunteerSummary[]>([]);
   const [actions, setActions] = useState<ActionDetail[]>([]);
-  const [filter, setFilter] = useState("");
-  const [tab, setTab] = useState<"volunteers" | "actions">("volunteers");
+  const [volunteerFilter, setVolunteerFilter] = useState("");
+  const [photoFilter, setPhotoFilter] = useState("");
   const [loading, setLoading] = useState(true);
-  const [photoModal, setPhotoModal] = useState<{ url: string; volunteer: string; action: string } | null>(null);
+  const [photoModal, setPhotoModal] = useState<{ url: string; volunteer: string; action: string; location: string } | null>(null);
 
   const downloadPhoto = async () => {
     if (!photoModal) return;
@@ -96,7 +97,6 @@ const Admin = () => {
         setActions(enriched);
 
         const map = new Map<string, VolunteerSummary>();
-        // Seed with all profiles so admin can set level even before any action is registered
         for (const p of profilesData || []) {
           map.set(p.id, {
             id: p.id,
@@ -124,10 +124,7 @@ const Admin = () => {
 
   const updateLevel = async (userId: string, level: number) => {
     const { error } = await supabase.from("profiles").update({ volunteer_level: level }).eq("id", userId);
-    if (error) {
-      toast.error("Erro ao atualizar nível");
-      return;
-    }
+    if (error) { toast.error("Erro ao atualizar nível"); return; }
     setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_level: level } : v)));
     toast.success(`Nível atualizado para ${level}`);
   };
@@ -160,22 +157,22 @@ const Admin = () => {
     toast.success("Dados exportados com sucesso!");
   };
 
-  const filteredActions = actions.filter((a) =>
-    a.action_name.toLowerCase().includes(filter.toLowerCase()) ||
-    a.location.toLowerCase().includes(filter.toLowerCase()) ||
-    a.profiles?.full_name?.toLowerCase().includes(filter.toLowerCase())
+  const filteredVolunteers = volunteers.filter((v) =>
+    v.full_name.toLowerCase().includes(volunteerFilter.toLowerCase()) ||
+    v.email.toLowerCase().includes(volunteerFilter.toLowerCase())
   );
 
-  const filteredVolunteers = volunteers.filter((v) =>
-    v.full_name.toLowerCase().includes(filter.toLowerCase()) ||
-    v.email.toLowerCase().includes(filter.toLowerCase())
+  const actionsWithPhotos = actions.filter((a) => !!a.photo_url);
+  const filteredPhotos = actionsWithPhotos.filter((a) =>
+    a.action_name.toLowerCase().includes(photoFilter.toLowerCase()) ||
+    a.location.toLowerCase().includes(photoFilter.toLowerCase()) ||
+    a.profiles?.full_name?.toLowerCase().includes(photoFilter.toLowerCase())
   );
 
   const totalHours = volunteers.reduce((s, v) => s + v.totalHours, 0);
 
   return (
     <div className="min-h-screen bg-background pb-6">
-      {/* Header */}
       <div className="gradient-hero px-5 pt-12 pb-6 rounded-b-3xl">
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="icon" className="text-primary-foreground" onClick={() => navigate("/dashboard")}>
@@ -202,117 +199,117 @@ const Admin = () => {
         </div>
       </div>
 
-      <div className="px-5 mt-5 space-y-4">
-        <AdminBroadcastComposer />
-        <AdminGglManager />
+      <div className="px-5 mt-5">
+        <Tabs defaultValue="volunteers" className="w-full">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="volunteers" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" />Voluntários</TabsTrigger>
+            <TabsTrigger value="engagement" className="text-xs"><Megaphone className="h-3.5 w-3.5 mr-1" />Engajamento</TabsTrigger>
+            <TabsTrigger value="data" className="text-xs"><BarChart3 className="h-3.5 w-3.5 mr-1" />Dados</TabsTrigger>
+          </TabsList>
 
-        {/* Export */}
-        <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
-          <Download className="h-4 w-4 mr-2" /> EXPORTAR DADOS
-        </Button>
-
-        {/* Tabs */}
-        <div className="flex gap-2">
-          <Button variant={tab === "volunteers" ? "default" : "outline"} size="sm" onClick={() => setTab("volunteers")} className="flex-1">
-            <Users className="h-4 w-4 mr-1" /> Voluntários
-          </Button>
-          <Button variant={tab === "actions" ? "default" : "outline"} size="sm" onClick={() => setTab("actions")} className="flex-1">
-            <Heart className="h-4 w-4 mr-1" /> Ações
-          </Button>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar..." value={filter} onChange={(e) => setFilter(e.target.value)} className="pl-10" />
-        </div>
-
-        {loading ? (
-          <div className="text-center py-10 text-muted-foreground">Carregando...</div>
-        ) : tab === "volunteers" ? (
-          <div className="space-y-3">
-            {filteredVolunteers.map((v) => (
-              <div key={v.id} className="glass-card rounded-xl p-4">
-                <p className="font-semibold text-foreground">{v.full_name}</p>
-                <p className="text-xs text-muted-foreground">{v.email}</p>
-                <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{v.totalHours}h</span>
-                  <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{v.totalActions} ações</span>
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-xs font-medium text-foreground">Nível:</span>
-                  <Button
-                    size="sm"
-                    variant={v.volunteer_level === 1 ? "default" : "outline"}
-                    onClick={() => updateLevel(v.id, 1)}
-                    className="h-7 px-3 text-xs"
-                  >
-                    Nível 1
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={v.volunteer_level === 2 ? "default" : "outline"}
-                    onClick={() => updateLevel(v.id, 2)}
-                    className="h-7 px-3 text-xs"
-                  >
-                    Nível 2
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={v.volunteer_level === 3 ? "default" : "outline"}
-                    onClick={() => updateLevel(v.id, 3)}
-                    className="h-7 px-3 text-xs"
-                  >
-                    Nível 3
-                  </Button>
-                </div>
-                <CredentialEditor
-                  initial={v.volunteer_credential ?? ""}
-                  onSave={(value) => updateCredential(v.id, value)}
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredActions.map((a) => (
-              <div key={a.id} className="glass-card rounded-xl overflow-hidden">
-                {a.photo_url && (
-                  <img
-                    src={a.photo_url}
-                    alt=""
-                    className="w-full h-32 object-cover cursor-pointer"
-                    onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name })}
-                  />
-                )}
-                <div className="p-4">
-                  <p className="font-semibold text-foreground">{a.action_name}</p>
-                  <p className="text-xs text-primary font-medium">{a.profiles?.full_name}</p>
-                  <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-                    <span>{new Date(a.action_date).toLocaleDateString("pt-BR")}</span>
-                    <span>{a.location}</span>
-                    <span>{a.donated_hours}h</span>
+          {/* VOLUNTÁRIOS */}
+          <TabsContent value="volunteers" className="space-y-4 mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar voluntário..." value={volunteerFilter} onChange={(e) => setVolunteerFilter(e.target.value)} className="pl-10" />
+            </div>
+            {loading ? (
+              <div className="text-center py-10 text-muted-foreground">Carregando...</div>
+            ) : (
+              <div className="space-y-3">
+                {filteredVolunteers.map((v) => (
+                  <div key={v.id} className="glass-card rounded-xl p-4">
+                    <p className="font-semibold text-foreground">{v.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{v.email}</p>
+                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{v.totalHours}h</span>
+                      <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{v.totalActions} ações</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="text-xs font-medium text-foreground">Nível:</span>
+                      {[1, 2, 3].map((lvl) => (
+                        <Button key={lvl} size="sm" variant={v.volunteer_level === lvl ? "default" : "outline"} onClick={() => updateLevel(v.id, lvl)} className="h-7 px-3 text-xs">
+                          Nível {lvl}
+                        </Button>
+                      ))}
+                    </div>
+                    <CredentialEditor initial={v.volunteer_credential ?? ""} onSave={(value) => updateCredential(v.id, value)} />
                   </div>
-                  {a.description && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{a.description}</p>}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </TabsContent>
+
+          {/* ENGAJAMENTO */}
+          <TabsContent value="engagement" className="space-y-4 mt-4">
+            <AdminBroadcastComposer />
+            <AdminGglManager />
+          </TabsContent>
+
+          {/* DADOS */}
+          <TabsContent value="data" className="space-y-4 mt-4">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="glass-card rounded-xl p-3 text-center">
+                <Users className="h-5 w-5 text-primary mx-auto mb-1" />
+                <p className="text-xl font-bold text-foreground">{volunteers.length}</p>
+                <p className="text-[10px] text-muted-foreground">Voluntários cadastrados</p>
+              </div>
+              <div className="glass-card rounded-xl p-3 text-center">
+                <Clock className="h-5 w-5 text-primary mx-auto mb-1" />
+                <p className="text-xl font-bold text-foreground">{totalHours}</p>
+                <p className="text-[10px] text-muted-foreground">Horas registradas</p>
+              </div>
+              <div className="glass-card rounded-xl p-3 text-center">
+                <Heart className="h-5 w-5 text-primary mx-auto mb-1" />
+                <p className="text-xl font-bold text-foreground">{actions.length}</p>
+                <p className="text-[10px] text-muted-foreground">Ações totais</p>
+              </div>
+            </div>
+
+            <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
+              <Download className="h-4 w-4 mr-2" /> EXPORTAR PLANILHA
+            </Button>
+
+            <div className="glass-card rounded-xl p-4 space-y-3">
+              <div>
+                <h3 className="font-semibold text-foreground">Fotos das ações</h3>
+                <p className="text-xs text-muted-foreground">Toque em uma foto para ver detalhes e baixar.</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Buscar por voluntário, ação ou local..." value={photoFilter} onChange={(e) => setPhotoFilter(e.target.value)} className="pl-10 h-9 text-sm" />
+              </div>
+              {filteredPhotos.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-6">Nenhuma foto encontrada.</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {filteredPhotos.map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name, location: a.location })}
+                      className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
+                    >
+                      <img src={a.photo_url!} alt={a.action_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {photoModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4"
-          onClick={() => setPhotoModal(null)}
-        >
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4" onClick={() => setPhotoModal(null)}>
           <div className="max-w-lg w-full bg-card rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <img src={photoModal.url} alt="" className="w-full max-h-[60vh] object-contain bg-black" />
             <div className="p-4 space-y-1">
-              <p className="text-sm text-muted-foreground">Voluntário</p>
+              <p className="text-xs text-muted-foreground">Voluntário</p>
               <p className="font-semibold text-foreground">{photoModal.volunteer}</p>
-              <p className="text-sm text-muted-foreground mt-2">Ação</p>
+              <p className="text-xs text-muted-foreground mt-2">Ação</p>
               <p className="font-semibold text-foreground">{photoModal.action}</p>
+              <p className="text-xs text-muted-foreground mt-2">Local</p>
+              <p className="font-semibold text-foreground">{photoModal.location}</p>
             </div>
             <div className="flex gap-2 p-4 pt-0">
               <Button variant="outline" className="flex-1" onClick={() => setPhotoModal(null)}>Fechar</Button>
