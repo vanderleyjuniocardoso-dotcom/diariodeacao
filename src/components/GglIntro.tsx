@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import brazilMap from "@/assets/brazil-map.png";
+
 
 interface Props {
   avatarUrl?: string | null;
@@ -25,15 +26,15 @@ const GglIntro = ({ onDone }: Props) => {
     return () => [t1, t2, t3, t4].forEach(clearTimeout);
   }, [onDone]);
 
-  // Approximate São Paulo position in the SVG viewBox(0 0 400 460)
-  const SP = { x: 245, y: 320 };
-  // Wandering positions for the magnifier before stopping on SP
+  // Approximate São Paulo position as % of the map image
+  const SP = { x: 62, y: 70 };
+  // Wandering positions for the magnifier (in %) before stopping on SP
   const search = [
-    { x: 140, y: 120 },
-    { x: 280, y: 180 },
-    { x: 180, y: 260 },
-    { x: 310, y: 270 },
-    { x: 200, y: 360 },
+    { x: 30, y: 25 },
+    { x: 65, y: 35 },
+    { x: 40, y: 55 },
+    { x: 75, y: 55 },
+    { x: 45, y: 78 },
   ];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -74,43 +75,35 @@ const GglIntro = ({ onDone }: Props) => {
         className="absolute inset-0 flex items-center justify-center transition-transform duration-[1100ms] ease-in-out"
         style={{
           transform: phase >= 2 ? "scale(6)" : "scale(1)",
-          transformOrigin: `${(SP.x / 400) * 100}% ${(SP.y / 460) * 100}%`,
+          transformOrigin: `${SP.x}% ${SP.y}%`,
         }}
       >
-        <div className="relative w-[78vw] max-w-[360px] aspect-[400/460]">
-          {/* Brazil silhouette */}
-          <svg
-            viewBox="0 0 400 460"
-            className="absolute inset-0 w-full h-full drop-shadow-md"
+        <div className="relative w-[80vw] max-w-[380px] aspect-square">
+          {/* Brazil map image */}
+          <img
+            src={brazilMap}
+            alt="Mapa do Brasil"
+            className="absolute inset-0 w-full h-full object-contain drop-shadow-md select-none pointer-events-none"
+            draggable={false}
+          />
+
+          {/* Pulsing São Paulo marker */}
+          <div
+            className="absolute"
+            style={{ left: `${SP.x}%`, top: `${SP.y}%`, transform: "translate(-50%, -50%)" }}
           >
-            <defs>
-              <linearGradient id="brGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.85" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
-              </linearGradient>
-            </defs>
-            {/* Simplified Brazil shape */}
-            <path
-              d="M150,40 C200,30 260,45 290,80 C325,105 340,140 330,175 C355,195 360,230 340,255 C355,290 330,320 305,330 C295,365 270,395 235,405 C220,430 185,440 155,425 C120,430 95,405 95,375 C70,360 60,330 75,305 C50,285 50,250 75,230 C60,205 75,175 105,165 C95,135 110,100 140,85 C140,65 145,50 150,40 Z"
-              fill="url(#brGrad)"
-              stroke="hsl(var(--primary))"
-              strokeWidth="2"
-              strokeOpacity="0.5"
-            />
-            {/* Tiny dot for São Paulo */}
-            <circle cx={SP.x} cy={SP.y} r="4" fill="#ef4444" />
-            <circle cx={SP.x} cy={SP.y} r="9" fill="#ef4444" fillOpacity="0.25">
-              <animate attributeName="r" values="6;14;6" dur="1.4s" repeatCount="indefinite" />
-              <animate attributeName="fill-opacity" values="0.4;0;0.4" dur="1.4s" repeatCount="indefinite" />
-            </circle>
-          </svg>
+            <div className="relative w-3 h-3">
+              <div className="absolute inset-0 rounded-full bg-red-500" />
+              <div className="absolute -inset-2 rounded-full bg-red-500/30 animate-ping" />
+            </div>
+          </div>
 
           {/* Magnifier */}
           <div
             className="absolute transition-all duration-[480ms] ease-in-out"
             style={{
-              left: `${(target.x / 400) * 100}%`,
-              top: `${(target.y / 460) * 100}%`,
+              left: `${target.x}%`,
+              top: `${target.y}%`,
               transform: "translate(-50%, -50%)",
             }}
           >
@@ -118,7 +111,7 @@ const GglIntro = ({ onDone }: Props) => {
               {/* lens */}
               <div
                 className={`w-24 h-24 rounded-full border-[6px] border-slate-700 bg-white/30 backdrop-blur-[2px] flex items-center justify-center shadow-xl transition-all duration-500 ${
-                  phase >= 1 ? "border-primary bg-primary/10" : ""
+                  phase >= 1 ? "border-primary bg-primary/20" : ""
                 }`}
               >
                 {phase >= 1 && (
@@ -147,3 +140,4 @@ const GglIntro = ({ onDone }: Props) => {
 };
 
 export default GglIntro;
+
