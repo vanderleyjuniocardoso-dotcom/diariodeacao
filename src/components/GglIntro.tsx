@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import brazilMap from "@/assets/brazil-map.png";
+
 
 interface Props {
   avatarUrl?: string | null;
