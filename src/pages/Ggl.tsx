@@ -3,12 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import GglIntro from "@/components/GglIntro";
-import { MapPin, Building2, Phone, Users, Construction } from "lucide-react";
+import { MapPin, Building2, Phone, Users, Construction, Heart } from "lucide-react";
 
 interface Group {
   id: string;
   unit_name: string;
   cities: string[];
+  unit_actions: string[];
 }
 interface Member {
   id: string;
@@ -34,7 +35,7 @@ const Ggl = () => {
         return;
       }
       const [{ data: g }, { data: ms }] = await Promise.all([
-        supabase.from("ggl_groups").select("id, unit_name, cities").eq("id", gid).maybeSingle(),
+        supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", gid).maybeSingle(),
         supabase.from("ggl_members").select("id, name, phone").eq("ggl_id", gid).order("name"),
       ]);
       setGroup(g as Group | null);
