@@ -35,6 +35,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ totalHours: 0, totalActions: 0, workshops: 0, engagementMonths: 0, sheetHours: 0, peopleImpacted: 0 });
   const [recent, setRecent] = useState<ActionRow[]>([]);
+  const [gglName, setGglName] = useState<string | null>(null);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [selectedAction, setSelectedAction] = useState<ActionRow | null>(null);
@@ -117,6 +118,15 @@ const Dashboard = () => {
     };
   }, [user, profile?.volunteer_credential]);
 
+  useEffect(() => {
+    (async () => {
+      const gid = (profile as any)?.ggl_id;
+      if (!gid) { setGglName(null); return; }
+      const { data } = await supabase.from("ggl_groups").select("unit_name").eq("id", gid).maybeSingle();
+      setGglName((data as any)?.unit_name ?? null);
+    })();
+  }, [(profile as any)?.ggl_id]);
+
   const firstName = profile?.full_name?.split(" ")[0] || "Voluntário";
 
   return (
@@ -179,6 +189,17 @@ const Dashboard = () => {
             <p className="text-base font-bold font-heading">Nível {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}</p>
           </div>
           <Trophy className="h-6 w-6" />
+        </div>
+
+        {/* Seu GGL */}
+        <div className="mb-4 rounded-2xl bg-primary-foreground/15 border border-primary-foreground/25 px-4 py-3 flex items-center gap-3 backdrop-blur-sm">
+          <div className="rounded-xl p-2 bg-primary-foreground/20">
+            <MapPin className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <p className="text-sm text-primary-foreground">
+            <span className="opacity-80">Seu GGL é:</span>{" "}
+            <span className="font-semibold">{gglName ?? "..."}</span>
+          </p>
         </div>
 
         {/* Stats inside blue header */}
