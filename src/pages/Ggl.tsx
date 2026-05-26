@@ -138,6 +138,25 @@ const Ggl = () => {
                 </ul>
               )}
             </div>
+
+            <div className="glass-card rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Heart className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Ações realizadas na unidade</h2>
+              </div>
+              {(group.unit_actions ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma ação cadastrada ainda.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {group.unit_actions.map((a, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                      <span>{a}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </>
         )}
       </div>
