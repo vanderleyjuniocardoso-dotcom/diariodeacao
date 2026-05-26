@@ -9,6 +9,7 @@ interface Group {
   id: string;
   unit_name: string;
   cities: string[];
+  unit_actions: string[];
 }
 interface Member {
   id: string;
@@ -27,9 +28,10 @@ export default function AdminGglManager() {
   const [members, setMembers] = useState<Member[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [newGroup, setNewGroup] = useState({ unit: "", cities: "" });
+  const [newGroup, setNewGroup] = useState({ unit: "", cities: "", actions: "" });
   const [newMember, setNewMember] = useState<Record<string, { name: string; phone: string }>>({});
   const [assignSearch, setAssignSearch] = useState<Record<string, string>>({});
+  const [actionsDraft, setActionsDraft] = useState<Record<string, string>>({});
 
   const load = async () => {
     const [{ data: g }, { data: m }, { data: p }] = await Promise.all([
@@ -50,10 +52,20 @@ export default function AdminGglManager() {
     const unit = newGroup.unit.trim();
     if (!unit) return;
     const cities = newGroup.cities.split(",").map((c) => c.trim()).filter(Boolean);
-    const { error } = await supabase.from("ggl_groups").insert({ unit_name: unit, cities });
+    const unit_actions = newGroup.actions.split(",").map((c) => c.trim()).filter(Boolean);
+    const { error } = await supabase.from("ggl_groups").insert({ unit_name: unit, cities, unit_actions });
     if (error) return toast.error(error.message);
     toast.success("GGL criado");
-    setNewGroup({ unit: "", cities: "" });
+    setNewGroup({ unit: "", cities: "", actions: "" });
+    load();
+  };
+
+  const saveActions = async (groupId: string) => {
+    const raw = actionsDraft[groupId] ?? "";
+    const unit_actions = raw.split(/\n|,/).map((s) => s.trim()).filter(Boolean);
+    const { error } = await supabase.from("ggl_groups").update({ unit_actions }).eq("id", groupId);
+    if (error) return toast.error(error.message);
+    toast.success("Ações atualizadas");
     load();
   };
 
@@ -114,6 +126,12 @@ export default function AdminGglManager() {
           placeholder="Cidades atendidas (separadas por vírgula)"
           value={newGroup.cities}
           onChange={(e) => setNewGroup((p) => ({ ...p, cities: e.target.value }))}
+          className="h-8 text-xs"
+        />
+        <Input
+          placeholder="Ações realizadas na unidade (separadas por vírgula)"
+          value={newGroup.actions}
+          onChange={(e) => setNewGroup((p) => ({ ...p, actions: e.target.value }))}
           className="h-8 text-xs"
         />
         <Button size="sm" onClick={addGroup} className="w-full h-8 text-xs">
@@ -245,6 +263,28 @@ export default function AdminGglManager() {
                           ))}
                         </ul>
                       )}
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-1.5">Ações realizadas na unidade</p>
+                      <p className="text-[11px] text-muted-foreground mb-1">
+                        Uma ação por linha (ou separadas por vírgula). Esta lista aparece para o voluntário em "Seu GGL".
+                      </p>
+                      <textarea
+                        value={actionsDraft[g.id] ?? (g.unit_actions ?? []).join("\n")}
+                        onChange={(e) => setActionsDraft((p) => ({ ...p, [g.id]: e.target.value }))}
+                        rows={4}
+                        className="w-full text-xs rounded-md border border-input bg-background p-2"
+                        placeholder="Ex: Acolhimento à gestantes&#10;Distribuição de cestas básicas"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => saveActions(g.id)}
+                        className="mt-1.5 h-7 text-xs w-full"
+                      >
+                        Salvar ações
+                      </Button>
                     </div>
 
                     <Button

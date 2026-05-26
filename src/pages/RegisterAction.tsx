@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X, Users } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X, Users, Star, Smile } from "lucide-react";
 import confetti from "canvas-confetti";
 
 const fireConfetti = () => {
@@ -59,6 +59,8 @@ const RegisterAction = () => {
     donated_hours: "",
     people_impacted: "",
     description: "",
+    satisfaction_action: "",
+    satisfaction_support: "",
   });
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
@@ -86,6 +88,8 @@ const RegisterAction = () => {
     if (!form.location.trim()) { toast.error("Informe o local da ação"); return; }
     if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas impactadas"); return; }
     if (!form.description.trim()) { toast.error("Conte como foi a experiência"); return; }
+    if (form.satisfaction_action === "") { toast.error("Informe sua satisfação com a ação"); return; }
+    if (form.satisfaction_support === "") { toast.error("Informe sua satisfação com a assistência recebida"); return; }
     if (!photoFile) { toast.error("Adicione uma foto da ação"); return; }
 
     setLoading(true);
@@ -111,7 +115,9 @@ const RegisterAction = () => {
       people_impacted: parseInt(form.people_impacted),
       description: form.description.trim(),
       photo_url,
-    });
+      satisfaction_action: parseInt(form.satisfaction_action),
+      satisfaction_support: parseInt(form.satisfaction_support),
+    } as any);
 
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
@@ -274,6 +280,40 @@ const RegisterAction = () => {
             required
           />
         </div>
+
+        {/* Satisfação */}
+        {[
+          { key: "satisfaction_action", label: "Sua satisfação com a ação", icon: Star },
+          { key: "satisfaction_support", label: "Sua satisfação com a assistência recebida", icon: Smile },
+        ].map(({ key, label, icon: Icon }) => {
+          const value = form[key as "satisfaction_action" | "satisfaction_support"];
+          return (
+            <div key={key} className="space-y-2">
+              <Label><Icon className="inline h-4 w-4 mr-1 text-muted-foreground" />{label} <span className="text-destructive">*</span></Label>
+              <div className="flex items-center justify-between gap-2">
+                {[0, 1, 2, 3, 4, 5].map((n) => {
+                  const selected = value === String(n);
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => update(key, String(n))}
+                      className={`flex-1 h-10 rounded-lg text-sm font-bold border transition-colors ${
+                        selected
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-foreground border-input hover:bg-muted"
+                      }`}
+                      aria-label={`Nota ${n}`}
+                    >
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground">0 = muito ruim · 5 = excelente</p>
+            </div>
+          );
+        })}
 
         {/* Photo upload */}
         <div className="space-y-2">

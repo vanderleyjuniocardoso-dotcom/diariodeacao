@@ -92,9 +92,9 @@ const InstallAppButton = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Instalar VOLUNTARIADO CEJAM</DialogTitle>
+            <DialogTitle>Instalar VOLUNTAGRAM</DialogTitle>
             <DialogDescription>
-              Adicione o app à tela inicial do seu celular para acesso rápido.
+              Adicione o VOLUNTAGRAM à tela inicial do seu celular para acesso rápido.
             </DialogDescription>
           </DialogHeader>
 

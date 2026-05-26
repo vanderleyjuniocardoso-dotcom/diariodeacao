@@ -3,12 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import GglIntro from "@/components/GglIntro";
-import { MapPin, Building2, Phone, Users, Construction } from "lucide-react";
+import { MapPin, Building2, Phone, Users, Construction, Heart } from "lucide-react";
 
 interface Group {
   id: string;
   unit_name: string;
   cities: string[];
+  unit_actions: string[];
 }
 interface Member {
   id: string;
@@ -34,7 +35,7 @@ const Ggl = () => {
         return;
       }
       const [{ data: g }, { data: ms }] = await Promise.all([
-        supabase.from("ggl_groups").select("id, unit_name, cities").eq("id", gid).maybeSingle(),
+        supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", gid).maybeSingle(),
         supabase.from("ggl_members").select("id, name, phone").eq("ggl_id", gid).order("name"),
       ]);
       setGroup(g as Group | null);
@@ -132,6 +133,25 @@ const Ggl = () => {
                           Ligar
                         </a>
                       )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="glass-card rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Heart className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Ações realizadas na unidade</h2>
+              </div>
+              {(group.unit_actions ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma ação cadastrada ainda.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {group.unit_actions.map((a, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                      <span>{a}</span>
                     </li>
                   ))}
                 </ul>
