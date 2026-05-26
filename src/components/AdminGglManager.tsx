@@ -265,6 +265,28 @@ export default function AdminGglManager() {
                       )}
                     </div>
 
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-1.5">Ações realizadas na unidade</p>
+                      <p className="text-[11px] text-muted-foreground mb-1">
+                        Uma ação por linha (ou separadas por vírgula). Esta lista aparece para o voluntário em "Seu GGL".
+                      </p>
+                      <textarea
+                        value={actionsDraft[g.id] ?? (g.unit_actions ?? []).join("\n")}
+                        onChange={(e) => setActionsDraft((p) => ({ ...p, [g.id]: e.target.value }))}
+                        rows={4}
+                        className="w-full text-xs rounded-md border border-input bg-background p-2"
+                        placeholder="Ex: Acolhimento à gestantes&#10;Distribuição de cestas básicas"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => saveActions(g.id)}
+                        className="mt-1.5 h-7 text-xs w-full"
+                      >
+                        Salvar ações
+                      </Button>
+                    </div>
+
                     <Button
                       variant="outline"
                       size="sm"
