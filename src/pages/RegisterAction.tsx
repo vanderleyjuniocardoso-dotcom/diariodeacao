@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X, Users } from "lucide-react";
+import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X, Users, Star, Smile } from "lucide-react";
 import confetti from "canvas-confetti";
 
 const fireConfetti = () => {
@@ -59,6 +59,8 @@ const RegisterAction = () => {
     donated_hours: "",
     people_impacted: "",
     description: "",
+    satisfaction_action: "",
+    satisfaction_support: "",
   });
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
@@ -86,6 +88,8 @@ const RegisterAction = () => {
     if (!form.location.trim()) { toast.error("Informe o local da ação"); return; }
     if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas impactadas"); return; }
     if (!form.description.trim()) { toast.error("Conte como foi a experiência"); return; }
+    if (form.satisfaction_action === "") { toast.error("Informe sua satisfação com a ação"); return; }
+    if (form.satisfaction_support === "") { toast.error("Informe sua satisfação com a assistência recebida"); return; }
     if (!photoFile) { toast.error("Adicione uma foto da ação"); return; }
 
     setLoading(true);
@@ -111,7 +115,9 @@ const RegisterAction = () => {
       people_impacted: parseInt(form.people_impacted),
       description: form.description.trim(),
       photo_url,
-    });
+      satisfaction_action: parseInt(form.satisfaction_action),
+      satisfaction_support: parseInt(form.satisfaction_support),
+    } as any);
 
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
