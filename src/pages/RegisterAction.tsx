@@ -281,6 +281,40 @@ const RegisterAction = () => {
           />
         </div>
 
+        {/* Satisfação */}
+        {[
+          { key: "satisfaction_action", label: "Sua satisfação com a ação", icon: Star },
+          { key: "satisfaction_support", label: "Sua satisfação com a assistência recebida", icon: Smile },
+        ].map(({ key, label, icon: Icon }) => {
+          const value = form[key as "satisfaction_action" | "satisfaction_support"];
+          return (
+            <div key={key} className="space-y-2">
+              <Label><Icon className="inline h-4 w-4 mr-1 text-muted-foreground" />{label} <span className="text-destructive">*</span></Label>
+              <div className="flex items-center justify-between gap-2">
+                {[0, 1, 2, 3, 4, 5].map((n) => {
+                  const selected = value === String(n);
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => update(key, String(n))}
+                      className={`flex-1 h-10 rounded-lg text-sm font-bold border transition-colors ${
+                        selected
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-foreground border-input hover:bg-muted"
+                      }`}
+                      aria-label={`Nota ${n}`}
+                    >
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground">0 = muito ruim · 5 = excelente</p>
+            </div>
+          );
+        })}
+
         {/* Photo upload */}
         <div className="space-y-2">
           <Label>Foto da ação</Label>
