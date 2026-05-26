@@ -70,6 +70,7 @@ export type Database = {
           cities: string[]
           created_at: string
           id: string
+          unit_actions: string[]
           unit_name: string
           updated_at: string
         }
@@ -77,6 +78,7 @@ export type Database = {
           cities?: string[]
           created_at?: string
           id?: string
+          unit_actions?: string[]
           unit_name: string
           updated_at?: string
         }
@@ -84,6 +86,7 @@ export type Database = {
           cities?: string[]
           created_at?: string
           id?: string
+          unit_actions?: string[]
           unit_name?: string
           updated_at?: string
         }
@@ -373,6 +376,8 @@ export type Database = {
           location: string
           people_impacted: number
           photo_url: string | null
+          satisfaction_action: number | null
+          satisfaction_support: number | null
           updated_at: string
           user_id: string
           volunteer_credential: string | null
@@ -389,6 +394,8 @@ export type Database = {
           location: string
           people_impacted?: number
           photo_url?: string | null
+          satisfaction_action?: number | null
+          satisfaction_support?: number | null
           updated_at?: string
           user_id: string
           volunteer_credential?: string | null
@@ -405,6 +412,8 @@ export type Database = {
           location?: string
           people_impacted?: number
           photo_url?: string | null
+          satisfaction_action?: number | null
+          satisfaction_support?: number | null
           updated_at?: string
           user_id?: string
           volunteer_credential?: string | null
