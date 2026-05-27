@@ -150,14 +150,10 @@ const RegisterAction = () => {
 
   if (success) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 bg-background/95 backdrop-blur-sm animate-scale-in">
-        <button
-          onClick={handleCloseSuccess}
-          className="absolute top-6 right-6 w-10 h-10 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
-          aria-label="Fechar"
-        >
-          <X className="h-5 w-5 text-foreground" />
-        </button>
+      <div
+        onClick={handleCloseSuccess}
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6 bg-background/95 backdrop-blur-sm animate-scale-in cursor-pointer"
+      >
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <Heart className="h-10 w-10 text-primary fill-primary" />
         </div>
