@@ -65,7 +65,7 @@ const GglIntro = ({ onDone }: Props) => {
       {/* Caption */}
       <div className="absolute top-12 inset-x-0 text-center px-6 z-10">
         <p className="text-primary font-bold text-lg drop-shadow-sm">
-          {phase < 1 ? "Procurando seu GGL..." : "Encontramos seu GGL"}
+          {phase < 1 ? "Procurando seu GGL..." : "Encontramos!"}
         </p>
         <p className="text-xs text-muted-foreground mt-1">toque para pular</p>
       </div>
