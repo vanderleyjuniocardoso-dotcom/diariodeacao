@@ -148,6 +148,12 @@ const RegisterAction = () => {
     }, 2800);
   };
 
+  useEffect(() => {
+    if (!success) return;
+    const t = window.setTimeout(() => handleCloseSuccess(), 4000);
+    return () => clearTimeout(t);
+  }, [success]);
+
   if (success) {
     return (
       <div
