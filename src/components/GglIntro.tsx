@@ -65,7 +65,7 @@ const GglIntro = ({ onDone }: Props) => {
       {/* Caption */}
       <div className="absolute top-12 inset-x-0 text-center px-6 z-10">
         <p className="text-primary font-bold text-lg drop-shadow-sm">
-          {phase < 1 ? "Procurando seu GGL..." : "Encontramos seu GGL"}
+          {phase < 1 ? "Procurando seu GGL..." : "Encontramos!"}
         </p>
         <p className="text-xs text-muted-foreground mt-1">toque para pular</p>
       </div>
@@ -110,18 +110,11 @@ const GglIntro = ({ onDone }: Props) => {
             <div className="relative">
               {/* lens */}
               <div
-                className={`w-24 h-24 rounded-full border-[6px] border-slate-700 bg-white/30 backdrop-blur-[2px] flex items-center justify-center shadow-xl transition-all duration-500 ${
+                className={`w-24 h-24 rounded-full border-[6px] border-slate-700 bg-white/30 backdrop-blur-[2px] shadow-xl transition-all duration-500 ${
                   phase >= 1 ? "border-primary bg-primary/20" : ""
                 }`}
-              >
-                {phase >= 1 && (
-                  <span className="font-extrabold text-primary text-sm tracking-wider animate-fade-in text-center leading-tight">
-                    SEU
-                    <br />
-                    GGL
-                  </span>
-                )}
-              </div>
+              />
+
               {/* handle */}
               <div
                 className="absolute w-3 h-12 bg-slate-700 rounded-full origin-top"

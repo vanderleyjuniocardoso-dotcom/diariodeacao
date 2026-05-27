@@ -43,7 +43,8 @@ const InstallAppButton = () => {
     };
   }, []);
 
-  if (installed) return null;
+  // Always render so users can find the install button, even if the
+  // browser hasn't fired beforeinstallprompt yet (iOS, in-app browsers, etc.)
 
   const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
   const isIOS = /iPhone|iPad|iPod/i.test(ua);

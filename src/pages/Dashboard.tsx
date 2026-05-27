@@ -192,13 +192,13 @@ const Dashboard = () => {
         </div>
 
         {/* Seu GGL */}
-        <div className="mb-4 rounded-2xl bg-primary-foreground/15 border border-primary-foreground/25 px-4 py-3 flex items-center gap-3 backdrop-blur-sm">
-          <div className="rounded-xl p-2 bg-primary-foreground/20">
-            <MapPin className="h-4 w-4 text-primary-foreground" />
+        <div className="mb-4 rounded-2xl bg-primary-foreground text-primary px-4 py-3 flex items-center gap-3 shadow-lg">
+          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+            <MapPin className="h-5 w-5" />
           </div>
-          <p className="text-sm text-primary-foreground">
+          <p className="text-sm flex-1">
             <span className="opacity-80">Seu GGL é:</span>{" "}
-            <span className="font-semibold">{gglName ?? "..."}</span>
+            <span className="font-bold font-heading">{gglName ?? "..."}</span>
           </p>
         </div>
 
