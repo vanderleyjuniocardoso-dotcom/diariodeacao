@@ -84,8 +84,12 @@ const WelcomeOverlay = () => {
       }`}
       onClick={() => {
         setClosing(true);
-        setTimeout(() => setShow(false), 400);
+        setTimeout(() => {
+          setShow(false);
+          navigate("/volunteers", { state: { fromWelcome: true } });
+        }, 400);
       }}
+
       role="dialog"
       aria-label="Boas-vindas"
     >
