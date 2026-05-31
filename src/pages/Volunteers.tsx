@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { Users, Plus, Home, Send, User as UserIcon, UsersRound } from "lucide-react";
@@ -38,9 +39,15 @@ interface Conversation {
 
 const Volunteers = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [list, setList] = useState<VolunteerRow[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [showIntro, setShowIntro] = useState(() => !localStorage.getItem("voluntagram_intro_seen"));
+  // Show the "world connecting people" intro every time the user opens the
+  // Voluntagram tab, except when they were just brought here automatically
+  // right after the welcome mascot animation on app open.
+  const [showIntro, setShowIntro] = useState(
+    () => !(location.state as { fromWelcome?: boolean } | null)?.fromWelcome,
+  );
   const [createOpen, setCreateOpen] = useState(false);
   const [commentsPost, setCommentsPost] = useState<FeedPost | null>(null);
   const [motivation, setMotivation] = useState<{ id: string; name: string } | null>(null);
@@ -48,9 +55,9 @@ const Volunteers = () => {
   const [volunteersListOpen, setVolunteersListOpen] = useState(false);
 
   const dismissIntro = () => {
-    localStorage.setItem("voluntagram_intro_seen", "1");
     setShowIntro(false);
   };
+
 
 
   useEffect(() => {

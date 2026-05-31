@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/contexts/AuthContext";
 import mascote from "@/assets/mascote-voluntario.png";
+
 
 const SESSION_KEY = "welcome_shown";
 
@@ -41,6 +43,7 @@ const fireConfetti = () => {
 
 const WelcomeOverlay = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [closing, setClosing] = useState(false);
 
@@ -55,8 +58,11 @@ const WelcomeOverlay = () => {
 
     // start closing animation
     const t2 = setTimeout(() => setClosing(true), 9400);
-    // unmount
-    const t3 = setTimeout(() => setShow(false), 10000);
+    // unmount + navigate directly to Voluntagram
+    const t3 = setTimeout(() => {
+      setShow(false);
+      navigate("/volunteers", { state: { fromWelcome: true } });
+    }, 10000);
 
     return () => {
       clearTimeout(t1);
@@ -64,6 +70,7 @@ const WelcomeOverlay = () => {
       clearTimeout(t3);
     };
   }, [loading, user?.id]);
+
 
   if (!show) return null;
 
@@ -77,8 +84,12 @@ const WelcomeOverlay = () => {
       }`}
       onClick={() => {
         setClosing(true);
-        setTimeout(() => setShow(false), 400);
+        setTimeout(() => {
+          setShow(false);
+          navigate("/volunteers", { state: { fromWelcome: true } });
+        }, 400);
       }}
+
       role="dialog"
       aria-label="Boas-vindas"
     >
