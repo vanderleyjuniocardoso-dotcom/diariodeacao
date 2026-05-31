@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/contexts/AuthContext";
 import mascote from "@/assets/mascote-voluntario.png";
+
 
 const SESSION_KEY = "welcome_shown";
 
