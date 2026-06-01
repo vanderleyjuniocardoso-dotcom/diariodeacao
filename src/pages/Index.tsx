@@ -10,7 +10,7 @@ const Index = () => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) navigate("/volunteers", { replace: true });
+    if (!loading && user) navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
   }, [user, loading, navigate]);
 
   return (
