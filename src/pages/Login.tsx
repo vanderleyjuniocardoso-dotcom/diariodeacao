@@ -38,7 +38,7 @@ const Login = () => {
       return;
     }
     if (result.redirected) return;
-    navigate("/volunteers");
+    navigate("/volunteers", { state: { fromWelcome: true } });
   };
 
   return (
