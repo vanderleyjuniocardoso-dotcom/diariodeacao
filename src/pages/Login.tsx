@@ -25,7 +25,7 @@ const Login = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      navigate("/volunteers");
+      navigate("/volunteers", { state: { fromWelcome: true } });
     }
   };
 
@@ -38,7 +38,7 @@ const Login = () => {
       return;
     }
     if (result.redirected) return;
-    navigate("/volunteers");
+    navigate("/volunteers", { state: { fromWelcome: true } });
   };
 
   return (
