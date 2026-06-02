@@ -55,9 +55,12 @@ const Signup = () => {
     }
     const userId = data.user?.id;
     if (userId) {
-      // Save credential on profile
-      if (form.volunteer_credential.trim()) {
-        await supabase.from("profiles").update({ volunteer_credential: form.volunteer_credential.trim() }).eq("id", userId);
+      // Save credential + cpf on profile
+      const update: any = {};
+      if (form.volunteer_credential.trim()) update.volunteer_credential = form.volunteer_credential.trim();
+      if (cpf) update.cpf = cpf;
+      if (Object.keys(update).length) {
+        await supabase.from("profiles").update(update).eq("id", userId);
       }
       if (avatarFile) {
         try {
