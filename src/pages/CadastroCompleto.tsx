@@ -101,9 +101,29 @@ const CadastroCompleto = () => {
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
 
+      const d = parsed.data;
       const { error } = await supabase.from("volunteer_registrations").insert({
-        ...parsed.data,
+        cpf: d.cpf,
+        full_name: d.full_name,
+        social_name: d.social_name || null,
+        whatsapp: d.whatsapp,
+        email: d.email,
+        gender: d.gender,
+        birth_date: d.birth_date,
+        rg: d.rg,
+        marital_status: d.marital_status,
+        city: d.city,
+        neighborhood: d.neighborhood,
+        address: d.address,
+        education: d.education,
+        area_of_work: d.area_of_work,
+        profession: d.profession,
+        works_at_cejam: d.works_at_cejam,
         cejam_unit: f.works_at_cejam === "sim" ? f.cejam_unit.trim() : null,
+        how_found_program: d.how_found_program,
+        shirt_size: d.shirt_size,
+        kit_unit: d.kit_unit,
+        agreed_terms: d.agreed_terms,
         photo_url: pub.publicUrl,
       });
       if (error) throw error;
