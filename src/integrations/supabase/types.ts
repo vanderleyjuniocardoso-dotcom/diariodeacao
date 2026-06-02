@@ -588,6 +588,7 @@ export type Database = {
         Returns: {
           found: boolean
           full_name: string
+          has_account: boolean
           has_registration_pending: boolean
         }[]
       }
