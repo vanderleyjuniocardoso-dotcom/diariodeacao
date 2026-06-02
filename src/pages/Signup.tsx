@@ -1,19 +1,26 @@
 import { useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera, IdCard } from "lucide-react";
+import { formatCPF } from "@/lib/cpf";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "", volunteer_credential: "" });
+  const location = useLocation();
+  const prefill = (location.state as { cpf?: string; fullName?: string } | null) || {};
+  const [form, setForm] = useState({
+    full_name: prefill.fullName || "",
+    email: "", password: "", phone: "", unit: "", volunteer_credential: "",
+  });
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cpf = prefill.cpf || "";
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
 
