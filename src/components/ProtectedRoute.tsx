@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/cpf-gate" replace />;
   if (adminOnly && !isAdmin) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
