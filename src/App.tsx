@@ -20,6 +20,9 @@ import VolunteerProfile from "./pages/VolunteerProfile";
 import PostDetail from "./pages/PostDetail";
 import Trilha from "./pages/Trilha";
 import Ggl from "./pages/Ggl";
+import CpfGate from "./pages/CpfGate";
+import CadastroCompleto from "./pages/CadastroCompleto";
+import AguardandoAprovacao from "./pages/AguardandoAprovacao";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
 
@@ -35,6 +38,9 @@ const App = () => (
           <WelcomeOverlay />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/cpf-gate" element={<CpfGate />} />
+            <Route path="/cadastro-completo" element={<CadastroCompleto />} />
+            <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,19 +1,32 @@
 import { useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera, IdCard } from "lucide-react";
+import { formatCPF } from "@/lib/cpf";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", unit: "", volunteer_credential: "" });
+  const location = useLocation();
+  const prefill = (location.state as { cpf?: string; fullName?: string } | null) || {};
+  const [form, setForm] = useState({
+    full_name: prefill.fullName || "",
+    email: "", password: "", phone: "", unit: "", volunteer_credential: "",
+  });
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cpf = prefill.cpf || "";
+
+  // Cadastro só via /cpf-gate
+  if (!cpf) {
+    navigate("/cpf-gate", { replace: true });
+    return null;
+  }
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
 
@@ -48,9 +61,12 @@ const Signup = () => {
     }
     const userId = data.user?.id;
     if (userId) {
-      // Save credential on profile
-      if (form.volunteer_credential.trim()) {
-        await supabase.from("profiles").update({ volunteer_credential: form.volunteer_credential.trim() }).eq("id", userId);
+      // Save credential + cpf on profile
+      const update: any = {};
+      if (form.volunteer_credential.trim()) update.volunteer_credential = form.volunteer_credential.trim();
+      if (cpf) update.cpf = cpf;
+      if (Object.keys(update).length) {
+        await supabase.from("profiles").update(update).eq("id", userId);
       }
       if (avatarFile) {
         try {
@@ -109,6 +125,16 @@ const Signup = () => {
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarSelect} />
             <p className="text-xs text-muted-foreground mt-2">Foto de perfil</p>
           </div>
+
+          {cpf && (
+            <div className="space-y-1.5">
+              <Label>CPF</Label>
+              <div className="relative">
+                <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={formatCPF(cpf)} readOnly className="pl-10 bg-muted" />
+              </div>
+            </div>
+          )}
 
           {fields.map(({ key, label, icon: Icon, type, required }) => (
             <div key={key} className="space-y-1.5">

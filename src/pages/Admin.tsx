@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
+import AdminAuthorizedBase from "@/components/AdminAuthorizedBase";
+import AdminPendingRegistrations from "@/components/AdminPendingRegistrations";
 
 interface VolunteerSummary {
   id: string;
@@ -201,11 +203,21 @@ const Admin = () => {
 
       <div className="px-5 mt-5">
         <Tabs defaultValue="volunteers" className="w-full">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="volunteers" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" />Voluntários</TabsTrigger>
-            <TabsTrigger value="engagement" className="text-xs"><Megaphone className="h-3.5 w-3.5 mr-1" />Engajamento</TabsTrigger>
-            <TabsTrigger value="data" className="text-xs"><BarChart3 className="h-3.5 w-3.5 mr-1" />Dados</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-5 h-auto">
+            <TabsTrigger value="volunteers" className="text-[10px] px-1"><Users className="h-3 w-3 mr-0.5" />Cadastrados</TabsTrigger>
+            <TabsTrigger value="base" className="text-[10px] px-1"><IdCard className="h-3 w-3 mr-0.5" />Base CPF</TabsTrigger>
+            <TabsTrigger value="pending" className="text-[10px] px-1"><Inbox className="h-3 w-3 mr-0.5" />Pendentes</TabsTrigger>
+            <TabsTrigger value="engagement" className="text-[10px] px-1"><Megaphone className="h-3 w-3 mr-0.5" />Engaj.</TabsTrigger>
+            <TabsTrigger value="data" className="text-[10px] px-1"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="base" className="space-y-4 mt-4">
+            <AdminAuthorizedBase />
+          </TabsContent>
+
+          <TabsContent value="pending" className="space-y-4 mt-4">
+            <AdminPendingRegistrations />
+          </TabsContent>
 
           {/* VOLUNTÁRIOS */}
           <TabsContent value="volunteers" className="space-y-4 mt-4">

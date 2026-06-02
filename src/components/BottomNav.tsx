@@ -1,8 +1,9 @@
-import { Home, PlusCircle, Users, TrendingUp, MapPin } from "lucide-react";
+import { Home, PlusCircle, Users, TrendingUp, MapPin, Shield } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
-const tabs = [
+const baseTabs = [
   { icon: Users, label: "Voluntagram", path: "/volunteers" },
   { icon: Home, label: "Impacto", path: "/dashboard" },
   { icon: PlusCircle, label: "Diário de Ação", path: "/register-action" },
@@ -13,6 +14,8 @@ const tabs = [
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
+  const tabs = isAdmin ? [...baseTabs, { icon: Shield, label: "ADM", path: "/admin" }] : baseTabs;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg safe-area-bottom">
