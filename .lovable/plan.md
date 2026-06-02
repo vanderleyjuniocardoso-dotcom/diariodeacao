@@ -1,86 +1,79 @@
-# Rede Social de Voluntários (estilo Instagram)
+## Visão geral
 
-Transformar a aba **Voluntários** em uma mini rede social embutida no app, com feed, perfis, curtidas, comentários, mensagens e "terapia motivacional".
+Adiciona um portão por CPF antes do fluxo de e-mail/senha atual, um formulário de cadastro completo com aprovação manual do ADM, e melhora o painel ADM com importação em massa de voluntários autorizados (Nome / CPF / Credencial).
 
-## O que será construído
+## Fluxo do usuário
 
-### 1. Feed (tela principal da aba)
-- Lista vertical de posts (foto + legenda) dos voluntários, ordenada do mais recente para o mais antigo
-- Cada post mostra: avatar, nome, credencial, tempo ("há 2h"), foto (opcional), texto, contador de curtidas e comentários
-- Botões: ❤️ curtir, 💬 comentar, ✉️ mandar mensagem direta, 💙 enviar mensagem motivacional
-- Botão flutuante **"+"** para criar nova postagem (foto da galeria/câmera + legenda)
-- Pull-to-refresh e realtime (novo post aparece automaticamente)
+1. **Primeira abertura do app** (rota nova `/cpf-gate`, antes de Login/Signup)
+   - Campo único: CPF (sem pontos/traços, validação dígito verificador).
+   - **CPF encontrado** em `admin_volunteers` e ainda sem conta → vai para `/signup` com nome pré-preenchido e CPF travado.
+   - **CPF encontrado** e já tem conta → vai para `/login` com e-mail pré-preenchido (se disponível) ou só pede e-mail+senha.
+   - **CPF não encontrado** → vai para `/cadastro-completo` (formulário longo).
+2. **Cadastro completo** → grava em `volunteer_registrations` com status `pending` e mostra tela "Aguarde aprovação do ADM".
+3. **ADM aprova** no painel → registro vira linha em `admin_volunteers` (Nome+CPF+Credencial) e os demais campos ficam guardados em `volunteer_registrations` (aprovado) para o ADM consultar/exportar.
+4. **Usuário volta**, digita CPF de novo → reconhecido → segue para signup normal.
 
-### 2. Criar postagem
-- Modal com upload de foto (opcional, bucket `feed-posts`) + textarea
-- Validação (texto até 2000 caracteres, imagem até 5MB)
+A tela `/cpf-gate` é o destino padrão de quem não está autenticado. Login/Signup só são alcançáveis vindo dela.
 
-### 3. Curtidas
-- Toque no coração curte/descurte instantaneamente (otimista)
-- Mostra os 3 últimos nomes que curtiram + contador
+## Painel ADM
 
-### 4. Comentários
-- Sheet/modal abre lista de comentários do post
-- Campo para adicionar comentário (até 500 caracteres)
-- Realtime
+- A página `/admin` continua existindo, mas vira a **aba "ADM"** na BottomNav (substitui a página atual no sentido de só ter um ponto de entrada). Aparece **só** para usuários com role `admin`.
+- Aba "Voluntários" do painel ganha 3 sub-seções:
+  - **Lista atual** (o que já existe: voluntários cadastrados, nível, credencial).
+  - **Base autorizada** (`admin_volunteers`): tabela com Nome / CPF / Credencial, busca, editar/excluir linha, e dois botões de importação:
+    - **Upload de planilha** (.xlsx ou .csv) — usa `xlsx` (já no projeto) para parsear no browser.
+    - **Colar da planilha** — textarea que aceita TSV/CSV colado direto do Excel/Sheets.
+    - Ambos mostram preview antes de gravar, deduplicam por CPF, e fazem upsert em lote.
+  - **Pendentes de aprovação** (`volunteer_registrations` status=pending): card por solicitante com todos os campos + foto, botões **Aprovar** / **Rejeitar**.
 
-### 5. Perfil de voluntário (clique no avatar/nome)
-- Página com: foto grande, nome, credencial, nível, horas totais, bio
-- Grid dos posts dele (estilo Instagram)
-- Botões: "Enviar mensagem" e "Enviar motivação"
-- O próprio usuário pode editar a bio no seu perfil
+## Mudanças técnicas
 
-### 6. Mensagens diretas
-- Mantém o chat 1-a-1 já existente (`volunteer_messages`)
-- Lista de conversas vira sub-aba "Mensagens" no topo do feed
+### Banco (migration)
 
-### 7. Mensagens motivacionais ("Terapia")
-- Botão dedicado: abre modal com sugestões prontas ("Você é incrível!", "Continue brilhando ✨", etc.) + campo livre
-- Marca a mensagem com tipo `motivational` para destacar com visual diferente (gradiente + ícone 💙) no chat
-- Pequeno feed extra "Mural de Motivação" no topo (carrossel horizontal das últimas motivações públicas recebidas pelo usuário)
+- **Tabela `admin_volunteers`**
+  - `cpf` text PK (11 dígitos), `full_name` text, `credencial` text nullable, `created_at`, `created_by` uuid.
+  - RLS: SELECT para `authenticated` (qualquer logado pode validar CPF próprio via RPC), INSERT/UPDATE/DELETE só admin.
+  - Mais seguro: SELECT bloqueado e validação via RPC `public.check_cpf(_cpf text)` SECURITY DEFINER que retorna `{ exists, full_name }` — assim ninguém enumera CPFs.
+- **Tabela `volunteer_registrations`**
+  - Todos os campos do formulário longo + `status` ('pending'|'approved'|'rejected') + `photo_url` + `created_at` + `reviewed_by`/`reviewed_at`.
+  - RLS: INSERT permitido para `anon` (cadastro acontece antes do login), SELECT/UPDATE só admin. O próprio solicitante consulta status via RPC pública por CPF.
+- **`profiles`**: adicionar coluna `cpf` text unique nullable, `nome_social`, `cadastro_completo_id` uuid → liga ao registration aprovado.
+- **Storage**: novo bucket público `volunteer-photos` (ou usar `avatars`) para a foto de credencial enviada antes do login.
 
-### 8. Notificações
-- Push (usa edge function `send-push` existente) quando alguém curte, comenta, manda mensagem ou motivação
+### Edge function
 
-## Banco de dados (novas tabelas)
+- `approve-registration` (service role): admin chama → cria linha em `admin_volunteers`, marca registration como `approved`. Não cria auth user — o usuário cria a conta normalmente via signup depois.
+- `check-cpf` pode ser só uma RPC, não precisa edge function.
 
-- **`feed_posts`**: `id, user_id, content, image_url, created_at, updated_at`
-- **`post_likes`**: `id, post_id, user_id, created_at` (unique post_id+user_id)
-- **`post_comments`**: `id, post_id, user_id, content, created_at`
-- **`motivational_messages`**: `id, sender_id, recipient_id, content, preset, created_at, read_at`
-- **`profiles`**: adicionar coluna `bio text`
+### Frontend
 
-Todas com RLS:
-- Posts/comentários/curtidas: visíveis para qualquer autenticado, criação/edição/exclusão só pelo dono
-- Motivacionais: visíveis para sender e recipient
+- Nova página `src/pages/CpfGate.tsx` — usada como destino raiz para não-autenticados.
+- Nova página `src/pages/CadastroCompleto.tsx` — formulário longo com Zod (campos obrigatórios, validações de CPF/RG/data, upload de foto para `volunteer-photos`, checkbox de declaração).
+- Nova página `src/pages/AguardandoAprovacao.tsx` — tela final do cadastro pendente.
+- `src/pages/Login.tsx` e `src/pages/Signup.tsx`: aceitam state `{ cpf, fullName }` para travar campos.
+- `src/pages/Index.tsx` / `ProtectedRoute`: redireciona para `/cpf-gate` quem não tem sessão.
+- `BottomNav`: adiciona aba **ADM** condicional ao `isAdmin` do `AuthContext`, depois de "Seu GGL".
+- `src/pages/Admin.tsx`: nova aba interna "Base autorizada" com importador (upload + paste) e nova aba "Pendentes".
+- Novo componente `AdminBulkImport.tsx` com preview e upsert em lotes de 500.
 
-Realtime habilitado em `feed_posts`, `post_likes`, `post_comments`, `motivational_messages`.
+## Validações importantes
 
-Bucket de storage **`feed-posts`** (público) para imagens.
+- CPF: 11 dígitos numéricos, validação de dígito verificador.
+- RG: só dígitos (texto, sem formato fixo).
+- Tamanho máximo de campos com Zod, evitando injection em URLs.
+- Foto: max 5MB, jpg/png/webp.
+- "Declaro que li" obrigatório (boolean true).
+- Mensagens de erro em português, claras.
 
-## Arquivos a criar/alterar
+## Ordem de execução
 
-**Novos componentes**
-- `src/components/feed/FeedList.tsx`
-- `src/components/feed/PostCard.tsx`
-- `src/components/feed/CreatePostModal.tsx`
-- `src/components/feed/CommentsSheet.tsx`
-- `src/components/feed/MotivationalModal.tsx`
-- `src/components/feed/MotivationalMural.tsx`
+1. Migration (tabelas + RPC + bucket + grants + RLS).
+2. Edge function `approve-registration`.
+3. Páginas frontend novas (CpfGate, CadastroCompleto, AguardandoAprovacao).
+4. Ajustar Login/Signup/Index/ProtectedRoute/BottomNav.
+5. Painel ADM: importador e aba pendentes.
 
-**Novas páginas**
-- `src/pages/VolunteerProfile.tsx` (rota `/voluntario/:id`)
+## Notas
 
-**Alterar**
-- `src/pages/Volunteers.tsx` → vira o feed (com sub-abas: Feed | Voluntários | Mensagens)
-- `src/App.tsx` → adicionar rota do perfil
-- `src/integrations/supabase/types.ts` → regenerado automaticamente após migration
-
-## Fluxo
-1. Migration (tabelas + RLS + bucket + realtime)
-2. Componentes do feed + criar post + curtir/comentar
-3. Perfil do voluntário com posts
-4. Mensagens motivacionais (modal + mural + destaque no chat)
-5. Notificações push nos eventos
-
-Após sua aprovação eu rodo a migration e implemento tudo.
+- Como o cadastro completo acontece **antes** do login, a tabela `volunteer_registrations` aceita INSERT anônimo — por isso protegemos com rate limiting via Edge Function opcional num passo futuro se virar problema.
+- Os e-mails de admin continuam sendo definidos via `user_roles` (role `admin`) como já é hoje — nada muda aí. Para promover novos admins, segue sendo manual no backend.

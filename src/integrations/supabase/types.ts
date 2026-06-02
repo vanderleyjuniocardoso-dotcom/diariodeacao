@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_volunteers: {
+        Row: {
+          cpf: string
+          created_at: string
+          created_by: string | null
+          credencial: string | null
+          full_name: string
+          updated_at: string
+        }
+        Insert: {
+          cpf: string
+          created_at?: string
+          created_by?: string | null
+          credencial?: string | null
+          full_name: string
+          updated_at?: string
+        }
+        Update: {
+          cpf?: string
+          created_at?: string
+          created_by?: string | null
+          credencial?: string | null
+          full_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feed_posts: {
         Row: {
           content: string
@@ -240,12 +267,14 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          cpf: string | null
           created_at: string
           email: string
           full_name: string
           ggl_id: string | null
           id: string
           phone: string | null
+          social_name: string | null
           unit: string | null
           updated_at: string
           volunteer_credential: string | null
@@ -254,12 +283,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string
           email: string
           full_name: string
           ggl_id?: string | null
           id: string
           phone?: string | null
+          social_name?: string | null
           unit?: string | null
           updated_at?: string
           volunteer_credential?: string | null
@@ -268,12 +299,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string
           email?: string
           full_name?: string
           ggl_id?: string | null
           id?: string
           phone?: string | null
+          social_name?: string | null
           unit?: string | null
           updated_at?: string
           volunteer_credential?: string | null
@@ -448,11 +481,116 @@ export type Database = {
         }
         Relationships: []
       }
+      volunteer_registrations: {
+        Row: {
+          address: string
+          agreed_terms: boolean
+          area_of_work: string
+          birth_date: string
+          cejam_unit: string | null
+          city: string
+          cpf: string
+          created_at: string
+          education: string
+          email: string
+          full_name: string
+          gender: string
+          how_found_program: string
+          id: string
+          kit_unit: string
+          marital_status: string
+          neighborhood: string
+          photo_url: string | null
+          profession: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rg: string
+          shirt_size: string
+          social_name: string | null
+          status: Database["public"]["Enums"]["registration_status"]
+          updated_at: string
+          whatsapp: string
+          works_at_cejam: boolean
+        }
+        Insert: {
+          address: string
+          agreed_terms?: boolean
+          area_of_work: string
+          birth_date: string
+          cejam_unit?: string | null
+          city: string
+          cpf: string
+          created_at?: string
+          education: string
+          email: string
+          full_name: string
+          gender: string
+          how_found_program: string
+          id?: string
+          kit_unit: string
+          marital_status: string
+          neighborhood: string
+          photo_url?: string | null
+          profession: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rg: string
+          shirt_size: string
+          social_name?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
+          updated_at?: string
+          whatsapp: string
+          works_at_cejam: boolean
+        }
+        Update: {
+          address?: string
+          agreed_terms?: boolean
+          area_of_work?: string
+          birth_date?: string
+          cejam_unit?: string | null
+          city?: string
+          cpf?: string
+          created_at?: string
+          education?: string
+          email?: string
+          full_name?: string
+          gender?: string
+          how_found_program?: string
+          id?: string
+          kit_unit?: string
+          marital_status?: string
+          neighborhood?: string
+          photo_url?: string | null
+          profession?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rg?: string
+          shirt_size?: string
+          social_name?: string | null
+          status?: Database["public"]["Enums"]["registration_status"]
+          updated_at?: string
+          whatsapp?: string
+          works_at_cejam?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      approve_registration: { Args: { _id: string }; Returns: undefined }
+      check_cpf: {
+        Args: { _cpf: string }
+        Returns: {
+          found: boolean
+          full_name: string
+          has_registration_pending: boolean
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -460,9 +598,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      reject_registration: {
+        Args: { _id: string; _reason?: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      registration_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -591,6 +734,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      registration_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
