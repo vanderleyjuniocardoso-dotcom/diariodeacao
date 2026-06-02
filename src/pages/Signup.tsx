@@ -120,6 +120,16 @@ const Signup = () => {
             <p className="text-xs text-muted-foreground mt-2">Foto de perfil</p>
           </div>
 
+          {cpf && (
+            <div className="space-y-1.5">
+              <Label>CPF</Label>
+              <div className="relative">
+                <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={formatCPF(cpf)} readOnly className="pl-10 bg-muted" />
+              </div>
+            </div>
+          )}
+
           {fields.map(({ key, label, icon: Icon, type, required }) => (
             <div key={key} className="space-y-1.5">
               <Label htmlFor={key}>{label}</Label>
