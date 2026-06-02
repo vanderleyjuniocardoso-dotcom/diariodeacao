@@ -22,6 +22,12 @@ const Signup = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const cpf = prefill.cpf || "";
 
+  // Cadastro só via /cpf-gate
+  if (!cpf) {
+    navigate("/cpf-gate", { replace: true });
+    return null;
+  }
+
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
 
   const onAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
