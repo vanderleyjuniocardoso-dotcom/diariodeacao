@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,18 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, IdCard } from "lucide-react";
 import { formatCPF, isValidCPF, onlyDigits } from "@/lib/cpf";
+import { useAuth } from "@/contexts/AuthContext";
 import logoVoluntariado from "@/assets/logo-voluntariado.png";
 
 const CpfGate = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [cpf, setCpf] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
+  }, [user, authLoading, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
