@@ -9,6 +9,8 @@ import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone 
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
+import AdminAuthorizedBase from "@/components/AdminAuthorizedBase";
+import AdminPendingRegistrations from "@/components/AdminPendingRegistrations";
 
 interface VolunteerSummary {
   id: string;
