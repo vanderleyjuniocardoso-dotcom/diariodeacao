@@ -29,7 +29,9 @@ const CpfGate = () => {
       return;
     }
     const row = Array.isArray(data) ? data[0] : data;
-    if (row?.found) {
+    if (row?.has_account) {
+      navigate("/login");
+    } else if (row?.found) {
       navigate("/signup", { state: { cpf: digits, fullName: row.full_name } });
     } else if (row?.has_registration_pending) {
       navigate("/aguardando-aprovacao", { state: { cpf: digits } });
