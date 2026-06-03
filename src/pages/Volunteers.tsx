@@ -16,6 +16,7 @@ import DirectMessageDialog from "@/components/feed/DirectMessageDialog";
 import StoriesBar from "@/components/feed/StoriesBar";
 import AdminBroadcastBanner from "@/components/feed/AdminBroadcastBanner";
 import VolunteersListSheet from "@/components/feed/VolunteersListSheet";
+import NotificationPermissionBanner from "@/components/NotificationPermissionBanner";
 import type { FeedPost } from "@/components/feed/PostCard";
 
 
@@ -190,6 +191,7 @@ const Volunteers = () => {
         </div>
 
         <TabsContent value="feed" className="mt-3 space-y-3">
+          <NotificationPermissionBanner />
           <AdminBroadcastBanner />
           <StoriesBar />
           <MotivationalMural />

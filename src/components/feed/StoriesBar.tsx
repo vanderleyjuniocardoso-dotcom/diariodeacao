@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Camera, Image as ImageIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +20,9 @@ export default function StoriesBar() {
   const [groups, setGroups] = useState<StoryGroup[]>([]);
   const [uploading, setUploading] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     const { data } = await supabase
@@ -108,7 +110,7 @@ export default function StoriesBar() {
         <button
           onClick={() => {
             if (uploading) return;
-            fileInput.current?.click();
+            setPickerOpen(true);
           }}
           className="flex flex-col items-center gap-1 flex-shrink-0 active:scale-95 transition"
         >
@@ -130,6 +132,14 @@ export default function StoriesBar() {
           ref={fileInput}
           type="file"
           accept="image/*"
+          className="hidden"
+          onChange={onPick}
+        />
+        <input
+          ref={cameraInput}
+          type="file"
+          accept="image/*"
+          capture="environment"
           className="hidden"
           onChange={onPick}
         />
@@ -171,6 +181,51 @@ export default function StoriesBar() {
           onClose={() => setOpenIndex(null)}
           onDeleted={load}
         />
+      )}
+
+      {pickerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-end"
+          onClick={() => setPickerOpen(false)}
+        >
+          <div
+            className="w-full bg-background rounded-t-2xl p-4 pb-8 animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-base">Novo story</h3>
+              <button onClick={() => setPickerOpen(false)} className="p-1">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                setPickerOpen(false);
+                cameraInput.current?.click();
+              }}
+              className="w-full flex items-center gap-3 p-4 rounded-xl border border-border active:bg-muted transition mb-2"
+            >
+              <Camera className="h-6 w-6 text-primary" />
+              <div className="text-left">
+                <p className="font-medium text-sm">Abrir câmera</p>
+                <p className="text-xs text-muted-foreground">Tirar foto agora e publicar</p>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setPickerOpen(false);
+                fileInput.current?.click();
+              }}
+              className="w-full flex items-center gap-3 p-4 rounded-xl border border-border active:bg-muted transition"
+            >
+              <ImageIcon className="h-6 w-6 text-primary" />
+              <div className="text-left">
+                <p className="font-medium text-sm">Escolher da galeria</p>
+                <p className="text-xs text-muted-foreground">Selecionar uma foto existente</p>
+              </div>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
