@@ -43,6 +43,8 @@ const App = () => (
             <Route path="/cpf-gate" element={<CpfGate />} />
             <Route path="/cadastro-completo" element={<CadastroCompleto />} />
             <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
+            <Route path="/boas-vindas/agendar" element={<AgendarBoasVindas />} />
+            <Route path="/minha-jornada" element={<MinhaJornada />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
