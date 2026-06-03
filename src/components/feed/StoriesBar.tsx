@@ -110,7 +110,7 @@ export default function StoriesBar() {
         <button
           onClick={() => {
             if (uploading) return;
-            fileInput.current?.click();
+            setPickerOpen(true);
           }}
           className="flex flex-col items-center gap-1 flex-shrink-0 active:scale-95 transition"
         >
@@ -132,6 +132,14 @@ export default function StoriesBar() {
           ref={fileInput}
           type="file"
           accept="image/*"
+          className="hidden"
+          onChange={onPick}
+        />
+        <input
+          ref={cameraInput}
+          type="file"
+          accept="image/*"
+          capture="environment"
           className="hidden"
           onChange={onPick}
         />
