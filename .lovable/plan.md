@@ -1,79 +1,86 @@
-## Visão geral
+# Plano de implementação
 
-Adiciona um portão por CPF antes do fluxo de e-mail/senha atual, um formulário de cadastro completo com aprovação manual do ADM, e melhora o painel ADM com importação em massa de voluntários autorizados (Nome / CPF / Credencial).
+Funcionalidade grande dividida em 6 blocos. Vou executar todos em sequência se aprovar.
 
-## Fluxo do usuário
+## 1. Liberar seu acesso ADM
+- Inserir na `admin_volunteers` seu CPF `04950942182` com nome e credencial inicial.
+- Garantir role `admin` no `user_roles` para o usuário com e-mail `vanderley.oliveira@cejam.org.br` (se ainda não tiver).
+- Vincular CPF ao seu `profiles` para o gate passar.
 
-1. **Primeira abertura do app** (rota nova `/cpf-gate`, antes de Login/Signup)
-   - Campo único: CPF (sem pontos/traços, validação dígito verificador).
-   - **CPF encontrado** em `admin_volunteers` e ainda sem conta → vai para `/signup` com nome pré-preenchido e CPF travado.
-   - **CPF encontrado** e já tem conta → vai para `/login` com e-mail pré-preenchido (se disponível) ou só pede e-mail+senha.
-   - **CPF não encontrado** → vai para `/cadastro-completo` (formulário longo).
-2. **Cadastro completo** → grava em `volunteer_registrations` com status `pending` e mostra tela "Aguarde aprovação do ADM".
-3. **ADM aprova** no painel → registro vira linha em `admin_volunteers` (Nome+CPF+Credencial) e os demais campos ficam guardados em `volunteer_registrations` (aprovado) para o ADM consultar/exportar.
-4. **Usuário volta**, digita CPF de novo → reconhecido → segue para signup normal.
+## 2. Exportar voluntários (Aba Voluntários do ADM)
+- Botão "Exportar Excel" em `AdminPendingRegistrations` e nova seção "Cadastros aprovados".
+- Gera `.xlsx` via `xlsx` (já no projeto) com colunas **na mesma ordem do formulário longo**: Nome completo, Nome social, CPF, RG, Data nasc., Gênero, E-mail, WhatsApp, Estado civil, Município, Bairro, Endereço, Escolaridade, Área de atuação, Profissão, Trabalha CEJAM, Unidade CEJAM, Como conheceu, Foto (URL), Tamanho camiseta, Unidade kit, Aceitou termos, Status, Criado em.
 
-A tela `/cpf-gate` é o destino padrão de quem não está autenticado. Login/Signup só são alcançáveis vindo dela.
+## 3. Reunião de Boas-Vindas
 
-## Painel ADM
+### Banco
+- `welcome_meeting_slots(id, month 1-12, slot_date, slot_time, capacity, notes, created_at)` — admin gerencia.
+- `welcome_meeting_bookings(id, slot_id, registration_id (ou profile_id), volunteer_name, volunteer_phone, attended bool, checked_at, created_at)`.
+- Trigger/coluna em `volunteer_registrations`: `welcome_meeting_booking_id`.
 
-- A página `/admin` continua existindo, mas vira a **aba "ADM"** na BottomNav (substitui a página atual no sentido de só ter um ponto de entrada). Aparece **só** para usuários com role `admin`.
-- Aba "Voluntários" do painel ganha 3 sub-seções:
-  - **Lista atual** (o que já existe: voluntários cadastrados, nível, credencial).
-  - **Base autorizada** (`admin_volunteers`): tabela com Nome / CPF / Credencial, busca, editar/excluir linha, e dois botões de importação:
-    - **Upload de planilha** (.xlsx ou .csv) — usa `xlsx` (já no projeto) para parsear no browser.
-    - **Colar da planilha** — textarea que aceita TSV/CSV colado direto do Excel/Sheets.
-    - Ambos mostram preview antes de gravar, deduplicam por CPF, e fazem upsert em lote.
-  - **Pendentes de aprovação** (`volunteer_registrations` status=pending): card por solicitante com todos os campos + foto, botões **Aprovar** / **Rejeitar**.
+### Fluxo voluntário (logo após enviar cadastro longo)
+- Nova página `/boas-vindas/agendar?reg=<id>`: título "Escolha a data da sua reunião de Boas Vindas" + texto explicativo + 12 blocos de meses.
+- Clicar no mês → lista de horários disponíveis daquele mês. Selecionar grava booking com nome/whatsapp já do registration.
+- Tela final: "Sua reunião de boas vindas será: [data, mês, hora]" + "Sua chegada é motivo de grande alegria para nós."
+- Em vez de ir direto para `/aguardando-aprovacao`, vai para essa página primeiro.
 
-## Mudanças técnicas
+### Notificação 08h do dia
+- Função agendada (pg_cron + edge function `send-welcome-meeting-reminders`) que roda diariamente 08h e envia push para quem tem booking no dia: "Sua reunião de boas vindas é hoje às HH:MM".
 
-### Banco (migration)
+## 4. Aba Gestão (ADM)
+Nova aba "Gestão" na página `/admin`. Conteúdo:
 
-- **Tabela `admin_volunteers`**
-  - `cpf` text PK (11 dígitos), `full_name` text, `credencial` text nullable, `created_at`, `created_by` uuid.
-  - RLS: SELECT para `authenticated` (qualquer logado pode validar CPF próprio via RPC), INSERT/UPDATE/DELETE só admin.
-  - Mais seguro: SELECT bloqueado e validação via RPC `public.check_cpf(_cpf text)` SECURITY DEFINER que retorna `{ exists, full_name }` — assim ninguém enumera CPFs.
-- **Tabela `volunteer_registrations`**
-  - Todos os campos do formulário longo + `status` ('pending'|'approved'|'rejected') + `photo_url` + `created_at` + `reviewed_by`/`reviewed_at`.
-  - RLS: INSERT permitido para `anon` (cadastro acontece antes do login), SELECT/UPDATE só admin. O próprio solicitante consulta status via RPC pública por CPF.
-- **`profiles`**: adicionar coluna `cpf` text unique nullable, `nome_social`, `cadastro_completo_id` uuid → liga ao registration aprovado.
-- **Storage**: novo bucket público `volunteer-photos` (ou usar `avatars`) para a foto de credencial enviada antes do login.
+### 4.1 Reunião de Boas Vindas
+- 12 blocos de mês. Dentro de cada: lista de slots (data + hora + capacidade), botões adicionar/remover.
+- Para cada slot, abaixo: "Os voluntários que participarão nesse dia serão:" + lista (nome + whatsapp) com **checkbox** para marcar presença.
+- Ao marcar check → roda RPC `confirm_attendance(booking_id)` que:
+  - marca `attended=true`
+  - calcula turma destino: mês do slot N → turma `T(N+1)26` (jan→T0226, ..., nov→T1226). Dez (12) não tem destino, deixa pendente ou ignora.
+  - cria/atribui voluntário ao `magna_class` correspondente.
 
-### Edge function
+### 4.2 Capacitação Magna
+- 12 blocos de turmas: T0126…T1226.
+- Cada bloco lista voluntários (nome + whatsapp) com:
+  - Botão **Iniciar Capacitação** (libera a barra de progresso).
+  - Slider/barra 0–100% (só editável após iniciar).
+  - Salva em `magna_enrollments(id, class_code, registration_id, volunteer_name, volunteer_phone, started bool, progress int, completed_at, created_at)`.
 
-- `approve-registration` (service role): admin chama → cria linha em `admin_volunteers`, marca registration como `approved`. Não cria auth user — o usuário cria a conta normalmente via signup depois.
-- `check-cpf` pode ser só uma RPC, não precisa edge function.
+### 4.3 Vídeo de Integração
+- Upload de vídeo para bucket `integration-video` (público), guarda URL em `app_settings(key, value)`.
+- Substituível a qualquer momento.
 
-### Frontend
+## 5. Tela do voluntário (pós cadastro/check)
 
-- Nova página `src/pages/CpfGate.tsx` — usada como destino raiz para não-autenticados.
-- Nova página `src/pages/CadastroCompleto.tsx` — formulário longo com Zod (campos obrigatórios, validações de CPF/RG/data, upload de foto para `volunteer-photos`, checkbox de declaração).
-- Nova página `src/pages/AguardandoAprovacao.tsx` — tela final do cadastro pendente.
-- `src/pages/Login.tsx` e `src/pages/Signup.tsx`: aceitam state `{ cpf, fullName }` para travar campos.
-- `src/pages/Index.tsx` / `ProtectedRoute`: redireciona para `/cpf-gate` quem não tem sessão.
-- `BottomNav`: adiciona aba **ADM** condicional ao `isAdmin` do `AuthContext`, depois de "Seu GGL".
-- `src/pages/Admin.tsx`: nova aba interna "Base autorizada" com importador (upload + paste) e nova aba "Pendentes".
-- Novo componente `AdminBulkImport.tsx` com preview e upsert em lotes de 500.
+Nova página `/minha-jornada` (ou dashboard do voluntário pendente) com estados:
 
-## Validações importantes
+1. **Booking feito, sem check**: "Sua reunião de boas vindas será: …"
+2. **Recebeu check (attended=true) mas sem `started`**: "Parabéns! Você passou pela primeira etapa, aguarde o contato do ADM para iniciar a capacitação Magna."
+3. **`started=true` e progress<100**: "Você começou a Capacitação Magna, veja sua progressão:" + barra espelho (read-only, realtime).
+4. **progress=100 e vídeo não assistido**: "PARABÉNS, VOCÊ CONCLUIU A CAPACITAÇÃO MAGNA. VEJA AGORA O VIDEO DE INTEGRAÇÃO DO PROGRAMA." + botão "Iniciar vídeo de integração".
+5. **Vídeo terminou**: botão "Pedir autorização para o VOLUNTAGRAM" → cria pendência tipo `voluntagram_access_requests`.
+6. **ADM aprovou liberação** (novo card na aba Voluntários): aprovar → executa fluxo atual `approve_registration` que cria `admin_volunteers` com credencial **auto-gerada**.
 
-- CPF: 11 dígitos numéricos, validação de dígito verificador.
-- RG: só dígitos (texto, sem formato fixo).
-- Tamanho máximo de campos com Zod, evitando injection em URLs.
-- Foto: max 5MB, jpg/png/webp.
-- "Declaro que li" obrigatório (boolean true).
-- Mensagens de erro em português, claras.
+Realtime via Supabase channels nas tabelas `magna_enrollments` e `welcome_meeting_bookings`.
 
-## Ordem de execução
+## 6. Credencial automática
+- Função `next_credential()` em SQL: pega a maior credencial existente em `admin_volunteers` no formato `VOLUNT<digits>`, incrementa preservando o nº de dígitos do maior (ex: VOLUNT01→VOLUNT02; VOLUNT1201→VOLUNT1202).
+- `approve_registration` passa a chamar `next_credential()` se não houver credencial manual.
+- Coluna nova `admin_volunteers.source` (`'manual' | 'auto'`) para identificar quem entrou via fluxo automático. Marcador visual na lista da Base autorizada.
 
-1. Migration (tabelas + RPC + bucket + grants + RLS).
-2. Edge function `approve-registration`.
-3. Páginas frontend novas (CpfGate, CadastroCompleto, AguardandoAprovacao).
-4. Ajustar Login/Signup/Index/ProtectedRoute/BottomNav.
-5. Painel ADM: importador e aba pendentes.
+## Resumo técnico de migrações
+1. `admin_volunteers`: + coluna `source text default 'manual'`.
+2. `welcome_meeting_slots` + RLS (admin CRUD, authenticated read).
+3. `welcome_meeting_bookings` + RLS (anon insert se vier de registration; admin tudo; voluntário lê o próprio via RPC).
+4. `magna_enrollments` + RLS.
+5. `voluntagram_access_requests` + RLS.
+6. `app_settings(key text pk, value jsonb)` + RLS (admin write, authenticated read).
+7. Funções: `next_credential`, `confirm_attendance`, `start_magna`, `set_magna_progress`, `request_voluntagram_access`, atualização do `approve_registration`.
+8. Storage bucket `integration-video` (público).
+9. Cron + edge function `send-welcome-meeting-reminders` (08h).
 
 ## Notas
+- Push notifications já existe estrutura (`push_subscriptions`, `send-push`); reaproveito.
+- Vídeo: usa `<video>` HTML simples; detecto `onEnded` para liberar botão.
+- Não vou tocar nas abas/animações já existentes.
 
-- Como o cadastro completo acontece **antes** do login, a tabela `volunteer_registrations` aceita INSERT anônimo — por isso protegemos com rate limiting via Edge Function opcional num passo futuro se virar problema.
-- Os e-mails de admin continuam sendo definidos via `user_roles` (role `admin`) como já é hoje — nada muda aí. Para promover novos admins, segue sendo manual no backend.
+Confirma para eu prosseguir?
