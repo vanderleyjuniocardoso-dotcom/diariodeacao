@@ -23,6 +23,8 @@ import Ggl from "./pages/Ggl";
 import CpfGate from "./pages/CpfGate";
 import CadastroCompleto from "./pages/CadastroCompleto";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
+import AgendarBoasVindas from "./pages/AgendarBoasVindas";
+import MinhaJornada from "./pages/MinhaJornada";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
 
