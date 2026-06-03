@@ -16,6 +16,7 @@ import DirectMessageDialog from "@/components/feed/DirectMessageDialog";
 import StoriesBar from "@/components/feed/StoriesBar";
 import AdminBroadcastBanner from "@/components/feed/AdminBroadcastBanner";
 import VolunteersListSheet from "@/components/feed/VolunteersListSheet";
+import NotificationPermissionBanner from "@/components/NotificationPermissionBanner";
 import type { FeedPost } from "@/components/feed/PostCard";
 
 
