@@ -191,6 +191,7 @@ const Volunteers = () => {
         </div>
 
         <TabsContent value="feed" className="mt-3 space-y-3">
+          <NotificationPermissionBanner />
           <AdminBroadcastBanner />
           <StoriesBar />
           <MotivationalMural />
