@@ -103,6 +103,7 @@ const CadastroCompleto = () => {
 
       const d = parsed.data;
       const { data: inserted, error } = await supabase.from("volunteer_registrations").insert({
+        status: "pending",
         cpf: d.cpf,
         full_name: d.full_name,
         social_name: d.social_name || null,
