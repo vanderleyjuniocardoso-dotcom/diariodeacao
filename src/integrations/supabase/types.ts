@@ -846,6 +846,33 @@ export type Database = {
         Returns: undefined
       }
       start_magna: { Args: { _enrollment_id: string }; Returns: undefined }
+      submit_volunteer_registration: {
+        Args: {
+          _address: string
+          _agreed_terms: boolean
+          _area_of_work: string
+          _birth_date: string
+          _cejam_unit: string
+          _city: string
+          _cpf: string
+          _education: string
+          _email: string
+          _full_name: string
+          _gender: string
+          _how_found_program: string
+          _kit_unit: string
+          _marital_status: string
+          _neighborhood: string
+          _photo_url: string
+          _profession: string
+          _rg: string
+          _shirt_size: string
+          _social_name: string
+          _whatsapp: string
+          _works_at_cejam: boolean
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user"

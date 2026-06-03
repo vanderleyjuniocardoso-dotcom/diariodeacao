@@ -102,36 +102,35 @@ const CadastroCompleto = () => {
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
 
       const d = parsed.data;
-      const { data: inserted, error } = await supabase.from("volunteer_registrations").insert({
-        status: "pending",
-        cpf: d.cpf,
-        full_name: d.full_name,
-        social_name: d.social_name || null,
-        whatsapp: d.whatsapp,
-        email: d.email,
-        gender: d.gender,
-        birth_date: d.birth_date,
-        rg: d.rg,
-        marital_status: d.marital_status,
-        city: d.city,
-        neighborhood: d.neighborhood,
-        address: d.address,
-        education: d.education,
-        area_of_work: d.area_of_work,
-        profession: d.profession,
-        works_at_cejam: d.works_at_cejam,
-        cejam_unit: f.works_at_cejam === "sim" ? f.cejam_unit.trim() : null,
-        how_found_program: d.how_found_program,
-        shirt_size: d.shirt_size,
-        kit_unit: d.kit_unit,
-        agreed_terms: d.agreed_terms,
-        photo_url: pub.publicUrl,
-      }).select("id").single();
+      const { data: registrationId, error } = await (supabase.rpc as any)("submit_volunteer_registration", {
+        _cpf: d.cpf,
+        _full_name: d.full_name,
+        _social_name: d.social_name || null,
+        _whatsapp: d.whatsapp,
+        _email: d.email,
+        _gender: d.gender,
+        _birth_date: d.birth_date,
+        _rg: d.rg,
+        _marital_status: d.marital_status,
+        _city: d.city,
+        _neighborhood: d.neighborhood,
+        _address: d.address,
+        _education: d.education,
+        _area_of_work: d.area_of_work,
+        _profession: d.profession,
+        _works_at_cejam: d.works_at_cejam,
+        _cejam_unit: f.works_at_cejam === "sim" ? f.cejam_unit.trim() : null,
+        _how_found_program: d.how_found_program,
+        _shirt_size: d.shirt_size,
+        _kit_unit: d.kit_unit,
+        _agreed_terms: d.agreed_terms,
+        _photo_url: pub.publicUrl,
+      });
       if (error) throw error;
       toast.success("Cadastro enviado!");
       navigate("/boas-vindas/agendar", {
         state: {
-          registrationId: inserted.id,
+          registrationId,
           cpf: cpfDigits,
           fullName: d.full_name,
           phone: d.whatsapp,
