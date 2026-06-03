@@ -23,6 +23,8 @@ import Ggl from "./pages/Ggl";
 import CpfGate from "./pages/CpfGate";
 import CadastroCompleto from "./pages/CadastroCompleto";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
+import AgendarBoasVindas from "./pages/AgendarBoasVindas";
+import MinhaJornada from "./pages/MinhaJornada";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
 
@@ -41,6 +43,8 @@ const App = () => (
             <Route path="/cpf-gate" element={<CpfGate />} />
             <Route path="/cadastro-completo" element={<CadastroCompleto />} />
             <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
+            <Route path="/boas-vindas/agendar" element={<AgendarBoasVindas />} />
+            <Route path="/minha-jornada" element={<MinhaJornada />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

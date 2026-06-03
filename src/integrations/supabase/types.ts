@@ -45,6 +45,7 @@ export type Database = {
           created_by: string | null
           credencial: string | null
           full_name: string
+          source: string
           updated_at: string
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           created_by?: string | null
           credencial?: string | null
           full_name: string
+          source?: string
           updated_at?: string
         }
         Update: {
@@ -61,7 +63,29 @@ export type Database = {
           created_by?: string | null
           credencial?: string | null
           full_name?: string
+          source?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
@@ -147,6 +171,72 @@ export type Database = {
             columns: ["ggl_id"]
             isOneToOne: false
             referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      magna_enrollments: {
+        Row: {
+          booking_id: string | null
+          class_code: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          progress: number
+          registration_id: string | null
+          started: boolean
+          started_at: string | null
+          updated_at: string
+          video_watched: boolean
+          volunteer_email: string | null
+          volunteer_name: string
+          volunteer_phone: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          class_code: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          registration_id?: string | null
+          started?: boolean
+          started_at?: string | null
+          updated_at?: string
+          video_watched?: boolean
+          volunteer_email?: string | null
+          volunteer_name: string
+          volunteer_phone?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          class_code?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          registration_id?: string | null
+          started?: boolean
+          started_at?: string | null
+          updated_at?: string
+          video_watched?: boolean
+          volunteer_email?: string | null
+          volunteer_name?: string
+          volunteer_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "magna_enrollments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "welcome_meeting_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "magna_enrollments_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_registrations"
             referencedColumns: ["id"]
           },
         ]
@@ -397,6 +487,51 @@ export type Database = {
         }
         Relationships: []
       }
+      voluntagram_access_requests: {
+        Row: {
+          created_at: string
+          enrollment_id: string | null
+          id: string
+          registration_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          registration_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          registration_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voluntagram_access_requests_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "magna_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voluntagram_access_requests_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       volunteer_actions: {
         Row: {
           action_date: string
@@ -510,6 +645,7 @@ export type Database = {
           social_name: string | null
           status: Database["public"]["Enums"]["registration_status"]
           updated_at: string
+          welcome_booking_id: string | null
           whatsapp: string
           works_at_cejam: boolean
         }
@@ -541,6 +677,7 @@ export type Database = {
           social_name?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           updated_at?: string
+          welcome_booking_id?: string | null
           whatsapp: string
           works_at_cejam: boolean
         }
@@ -572,8 +709,96 @@ export type Database = {
           social_name?: string | null
           status?: Database["public"]["Enums"]["registration_status"]
           updated_at?: string
+          welcome_booking_id?: string | null
           whatsapp?: string
           works_at_cejam?: boolean
+        }
+        Relationships: []
+      }
+      welcome_meeting_bookings: {
+        Row: {
+          attended: boolean
+          checked_at: string | null
+          created_at: string
+          id: string
+          registration_id: string | null
+          reminder_sent_at: string | null
+          slot_id: string
+          volunteer_email: string | null
+          volunteer_name: string
+          volunteer_phone: string | null
+        }
+        Insert: {
+          attended?: boolean
+          checked_at?: string | null
+          created_at?: string
+          id?: string
+          registration_id?: string | null
+          reminder_sent_at?: string | null
+          slot_id: string
+          volunteer_email?: string | null
+          volunteer_name: string
+          volunteer_phone?: string | null
+        }
+        Update: {
+          attended?: boolean
+          checked_at?: string | null
+          created_at?: string
+          id?: string
+          registration_id?: string | null
+          reminder_sent_at?: string | null
+          slot_id?: string
+          volunteer_email?: string | null
+          volunteer_name?: string
+          volunteer_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welcome_meeting_bookings_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welcome_meeting_bookings_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "welcome_meeting_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      welcome_meeting_slots: {
+        Row: {
+          capacity: number
+          created_at: string
+          created_by: string | null
+          id: string
+          month: number
+          notes: string | null
+          slot_date: string
+          slot_time: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          month: number
+          notes?: string | null
+          slot_date: string
+          slot_time: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          month?: number
+          notes?: string | null
+          slot_date?: string
+          slot_time?: string
         }
         Relationships: []
       }
@@ -592,6 +817,10 @@ export type Database = {
           has_registration_pending: boolean
         }[]
       }
+      confirm_attendance: {
+        Args: { _attended?: boolean; _booking_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -599,10 +828,24 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_video_watched: {
+        Args: { _enrollment_id: string }
+        Returns: undefined
+      }
+      next_credential: { Args: never; Returns: string }
       reject_registration: {
         Args: { _id: string; _reason?: string }
         Returns: undefined
       }
+      request_voluntagram_access: {
+        Args: { _enrollment_id: string }
+        Returns: string
+      }
+      set_magna_progress: {
+        Args: { _enrollment_id: string; _progress: number }
+        Returns: undefined
+      }
+      start_magna: { Args: { _enrollment_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"

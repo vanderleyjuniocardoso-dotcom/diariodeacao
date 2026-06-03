@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
 import AdminAuthorizedBase from "@/components/AdminAuthorizedBase";
 import AdminPendingRegistrations from "@/components/AdminPendingRegistrations";
+import AdminWelcomeMeetings from "@/components/AdminWelcomeMeetings";
+import AdminMagnaClasses from "@/components/AdminMagnaClasses";
+import AdminIntegrationVideo from "@/components/AdminIntegrationVideo";
+import AdminVoluntagramRequests from "@/components/AdminVoluntagramRequests";
 
 interface VolunteerSummary {
   id: string;
@@ -203,13 +207,32 @@ const Admin = () => {
 
       <div className="px-5 mt-5">
         <Tabs defaultValue="volunteers" className="w-full">
-          <TabsList className="w-full grid grid-cols-5 h-auto">
-            <TabsTrigger value="volunteers" className="text-[10px] px-1"><Users className="h-3 w-3 mr-0.5" />Cadastrados</TabsTrigger>
-            <TabsTrigger value="base" className="text-[10px] px-1"><IdCard className="h-3 w-3 mr-0.5" />Base CPF</TabsTrigger>
-            <TabsTrigger value="pending" className="text-[10px] px-1"><Inbox className="h-3 w-3 mr-0.5" />Pendentes</TabsTrigger>
-            <TabsTrigger value="engagement" className="text-[10px] px-1"><Megaphone className="h-3 w-3 mr-0.5" />Engaj.</TabsTrigger>
-            <TabsTrigger value="data" className="text-[10px] px-1"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-6 h-auto">
+            <TabsTrigger value="volunteers" className="text-[9px] px-0.5"><Users className="h-3 w-3 mr-0.5" />Cadast.</TabsTrigger>
+            <TabsTrigger value="base" className="text-[9px] px-0.5"><IdCard className="h-3 w-3 mr-0.5" />Base</TabsTrigger>
+            <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
+            <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
+            <TabsTrigger value="engagement" className="text-[9px] px-0.5"><Megaphone className="h-3 w-3 mr-0.5" />Engaj.</TabsTrigger>
+            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="gestao" className="space-y-5 mt-4">
+            <section>
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-1.5"><Settings className="h-3.5 w-3.5 text-primary" />Reunião de Boas Vindas</h3>
+              <AdminWelcomeMeetings />
+            </section>
+            <section>
+              <h3 className="font-semibold text-sm mb-2">Capacitação Magna</h3>
+              <AdminMagnaClasses />
+            </section>
+            <section>
+              <h3 className="font-semibold text-sm mb-2">Pedidos de acesso ao VOLUNTAGRAM</h3>
+              <AdminVoluntagramRequests />
+            </section>
+            <section>
+              <AdminIntegrationVideo />
+            </section>
+          </TabsContent>
 
           <TabsContent value="base" className="space-y-4 mt-4">
             <AdminAuthorizedBase />
