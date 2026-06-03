@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
 import AdminAuthorizedBase from "@/components/AdminAuthorizedBase";
 import AdminPendingRegistrations from "@/components/AdminPendingRegistrations";
+import AdminWelcomeMeetings from "@/components/AdminWelcomeMeetings";
+import AdminMagnaClasses from "@/components/AdminMagnaClasses";
+import AdminIntegrationVideo from "@/components/AdminIntegrationVideo";
+import AdminVoluntagramRequests from "@/components/AdminVoluntagramRequests";
 
 interface VolunteerSummary {
   id: string;
