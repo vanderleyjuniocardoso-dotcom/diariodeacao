@@ -20,7 +20,9 @@ export default function StoriesBar() {
   const [groups, setGroups] = useState<StoryGroup[]>([]);
   const [uploading, setUploading] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     const { data } = await supabase
