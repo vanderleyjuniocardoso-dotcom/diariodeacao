@@ -40,7 +40,7 @@ const CpfGate = () => {
     } else if (row?.found) {
       navigate("/signup", { state: { cpf: digits, fullName: row.full_name } });
     } else if (row?.has_registration_pending) {
-      navigate("/aguardando-aprovacao", { state: { cpf: digits } });
+      navigate("/minha-jornada", { state: { cpf: digits } });
     } else {
       navigate("/cadastro-completo", { state: { cpf: digits } });
     }
