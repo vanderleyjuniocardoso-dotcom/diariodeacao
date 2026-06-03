@@ -102,7 +102,7 @@ const CadastroCompleto = () => {
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
 
       const d = parsed.data;
-      const { error } = await supabase.from("volunteer_registrations").insert({
+      const { data: inserted, error } = await supabase.from("volunteer_registrations").insert({
         cpf: d.cpf,
         full_name: d.full_name,
         social_name: d.social_name || null,
@@ -125,10 +125,18 @@ const CadastroCompleto = () => {
         kit_unit: d.kit_unit,
         agreed_terms: d.agreed_terms,
         photo_url: pub.publicUrl,
-      });
+      }).select("id").single();
       if (error) throw error;
       toast.success("Cadastro enviado!");
-      navigate("/aguardando-aprovacao", { state: { cpf: cpfDigits } });
+      navigate("/boas-vindas/agendar", {
+        state: {
+          registrationId: inserted.id,
+          cpf: cpfDigits,
+          fullName: d.full_name,
+          phone: d.whatsapp,
+          email: d.email,
+        },
+      });
     } catch (err: any) {
       toast.error(err.message || "Erro ao enviar cadastro");
     } finally {
