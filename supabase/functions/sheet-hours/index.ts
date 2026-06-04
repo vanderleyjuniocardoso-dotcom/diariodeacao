@@ -63,8 +63,12 @@ Deno.serve(async (req) => {
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const GOOGLE_SHEETS_API_KEY = Deno.env.get('GOOGLE_SHEETS_API_KEY');
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
-    if (!GOOGLE_SHEETS_API_KEY) throw new Error('GOOGLE_SHEETS_API_KEY is not configured');
+    if (!LOVABLE_API_KEY || !GOOGLE_SHEETS_API_KEY) {
+      // Integração com planilha desativada — retorna sem erro
+      return new Response(JSON.stringify({ hours: 0, found: false, disabled: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const { credential } = await req.json();
     if (!credential || typeof credential !== 'string') {
