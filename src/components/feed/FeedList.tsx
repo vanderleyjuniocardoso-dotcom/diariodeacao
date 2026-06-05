@@ -19,7 +19,7 @@ export default function FeedList({ onOpenComments, onOpenMessage, onOpenMotivati
     const missing = rows.map((r) => r.user_id).filter((id) => !profilesCache.current.has(id));
     if (missing.length > 0) {
       const { data } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("id, full_name, avatar_url, volunteer_credential")
         .in("id", missing);
       (data ?? []).forEach((p: any) =>

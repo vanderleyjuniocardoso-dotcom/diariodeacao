@@ -29,7 +29,7 @@ export default function VolunteersListSheet({ open, onOpenChange }: Props) {
     (async () => {
       setLoading(true);
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("id, full_name, volunteer_level, avatar_url, volunteer_credential")
         .order("full_name", { ascending: true });
       const { data: actions } = await supabase.from("volunteer_actions").select("user_id, donated_hours");

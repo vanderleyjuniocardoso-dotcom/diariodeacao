@@ -804,7 +804,53 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          ggl_id: string | null
+          id: string | null
+          social_name: string | null
+          unit: string | null
+          volunteer_credential: string | null
+          volunteer_level: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          ggl_id?: string | null
+          id?: string | null
+          social_name?: string | null
+          unit?: string | null
+          volunteer_credential?: string | null
+          volunteer_level?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          ggl_id?: string | null
+          id?: string | null
+          social_name?: string | null
+          unit?: string | null
+          volunteer_credential?: string | null
+          volunteer_level?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approve_registration: { Args: { _id: string }; Returns: undefined }
@@ -820,6 +866,85 @@ export type Database = {
       confirm_attendance: {
         Args: { _attended?: boolean; _booking_id: string }
         Returns: undefined
+      }
+      get_my_access_request: {
+        Args: { _enrollment_id: string }
+        Returns: {
+          id: string
+          status: string
+        }[]
+      }
+      get_my_booking: {
+        Args: { _registration_id: string }
+        Returns: {
+          attended: boolean
+          id: string
+          registration_id: string
+          slot_id: string
+        }[]
+      }
+      get_my_enrollment: {
+        Args: { _registration_id: string }
+        Returns: {
+          class_code: string
+          id: string
+          progress: number
+          started: boolean
+          video_watched: boolean
+        }[]
+      }
+      get_own_profile: {
+        Args: never
+        Returns: {
+          avatar_url: string | null
+          bio: string | null
+          cpf: string | null
+          created_at: string
+          email: string
+          full_name: string
+          ggl_id: string | null
+          id: string
+          phone: string | null
+          social_name: string | null
+          unit: string | null
+          updated_at: string
+          volunteer_credential: string | null
+          volunteer_level: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_public_profile: {
+        Args: { _id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          full_name: string
+          ggl_id: string
+          id: string
+          social_name: string
+          unit: string
+          volunteer_credential: string
+          volunteer_level: number
+        }[]
+      }
+      get_public_profiles: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          bio: string
+          full_name: string
+          ggl_id: string
+          id: string
+          social_name: string
+          unit: string
+          volunteer_credential: string
+          volunteer_level: number
+        }[]
       }
       has_role: {
         Args: {

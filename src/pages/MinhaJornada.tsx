@@ -36,39 +36,25 @@ const MinhaJornada = () => {
     }
     if (!regIdLocal) { setLoading(false); return; }
 
-    const { data: b } = await supabase
-      .from("welcome_meeting_bookings")
-      .select("id, slot_id, attended")
-      .eq("registration_id", regIdLocal)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setBooking((b as Booking) || null);
+    const { data: b } = await supabase.rpc("get_my_booking", { _registration_id: regIdLocal });
+    const bookingRow = Array.isArray(b) && b.length ? (b[0] as any) : null;
+    setBooking(bookingRow as Booking | null);
 
-    if (b) {
-      const { data: s } = await supabase.from("welcome_meeting_slots").select("id, slot_date, slot_time, month").eq("id", b.slot_id).maybeSingle();
+    if (bookingRow) {
+      const { data: s } = await supabase.from("welcome_meeting_slots").select("id, slot_date, slot_time, month").eq("id", bookingRow.slot_id).maybeSingle();
       setSlot((s as Slot) || null);
     }
 
-    const { data: e } = await supabase
-      .from("magna_enrollments")
-      .select("id, class_code, started, progress, video_watched")
-      .eq("registration_id", regIdLocal)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setEnrollment((e as Enrollment) || null);
+    const { data: e } = await supabase.rpc("get_my_enrollment", { _registration_id: regIdLocal });
+    const enrollmentRow = Array.isArray(e) && e.length ? (e[0] as any) : null;
+    setEnrollment(enrollmentRow as Enrollment | null);
 
-    if (e) {
-      const { data: r } = await supabase
-        .from("voluntagram_access_requests")
-        .select("id, status")
-        .eq("enrollment_id", e.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      setAccessReq((r as AccessReq) || null);
+    if (enrollmentRow) {
+      const { data: r } = await supabase.rpc("get_my_access_request", { _enrollment_id: enrollmentRow.id });
+      const reqRow = Array.isArray(r) && r.length ? (r[0] as any) : null;
+      setAccessReq(reqRow as AccessReq | null);
     }
+
 
     const { data: setting } = await supabase.from("app_settings").select("value").eq("key","integration_video_url").maybeSingle();
     if (setting?.value && typeof setting.value === "object" && "url" in (setting.value as any)) {
@@ -79,18 +65,14 @@ const MinhaJornada = () => {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
-  // realtime
+  // polling (substitui realtime, pois agora as tabelas não são lidas por anon)
   useEffect(() => {
     if (!regId) return;
-    const ch = supabase
-      .channel(`journey-${regId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "magna_enrollments", filter: `registration_id=eq.${regId}` }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "welcome_meeting_bookings", filter: `registration_id=eq.${regId}` }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "voluntagram_access_requests", filter: `registration_id=eq.${regId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const id = setInterval(() => { load(); }, 15000);
+    return () => clearInterval(id);
     // eslint-disable-next-line
   }, [regId]);
+
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 

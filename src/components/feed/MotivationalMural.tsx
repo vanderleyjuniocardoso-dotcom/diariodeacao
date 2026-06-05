@@ -28,7 +28,7 @@ export default function MotivationalMural() {
         .limit(10);
       const ids = Array.from(new Set((data ?? []).map((m) => m.sender_id)));
       const { data: profs } = ids.length
-        ? await supabase.from("profiles").select("id, full_name").in("id", ids)
+        ? await supabase.from("profiles_public" as any).select("id, full_name").in("id", ids)
         : { data: [] };
       const map = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
       if (!mounted) return;

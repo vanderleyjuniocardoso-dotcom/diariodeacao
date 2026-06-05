@@ -37,12 +37,10 @@ const AgendarBoasVindas = () => {
         .order("slot_date");
       setSlots((data as Slot[]) || []);
 
-      const { data: existing } = await supabase
-        .from("welcome_meeting_bookings")
-        .select("id, slot_id")
-        .eq("registration_id", st.registrationId)
-        .maybeSingle();
-      if (existing) setBooking(existing as Booking);
+      const { data: existing } = await supabase.rpc("get_my_booking", { _registration_id: st.registrationId });
+      const existingRow = Array.isArray(existing) && existing.length ? (existing[0] as any) : null;
+      if (existingRow) setBooking(existingRow as Booking);
+
       setLoading(false);
     })();
   }, [st.registrationId, navigate]);

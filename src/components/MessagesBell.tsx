@@ -45,7 +45,7 @@ const MessagesBell = () => {
 
     const senderIds = Array.from(new Set(data.map((m) => m.sender_id)));
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("profiles_public" as any)
       .select("id, full_name, avatar_url")
       .in("id", senderIds);
     const map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
@@ -103,11 +103,11 @@ const MessagesBell = () => {
         async (payload) => {
           const row = payload.new as any;
           const { data: sender } = await supabase
-            .from("profiles")
+            .from("profiles_public" as any)
             .select("full_name, avatar_url")
             .eq("id", row.sender_id)
             .single();
-          const name = sender?.full_name ?? "Voluntário";
+          const name = (sender as any)?.full_name ?? "Voluntário";
 
           toast(`Nova mensagem de ${name}`, {
             description: row.message,
@@ -134,7 +134,7 @@ const MessagesBell = () => {
               sender_id: row.sender_id,
               read_at: row.read_at,
               sender_name: name,
-              sender_avatar: sender?.avatar_url ?? null,
+              sender_avatar: (sender as any)?.avatar_url ?? null,
             },
             ...prev,
           ]);

@@ -33,7 +33,7 @@ export default function StoriesBar() {
     const rows = (data ?? []) as Row[];
     const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
     const { data: profs } = userIds.length
-      ? await supabase.from("profiles").select("id, full_name, avatar_url").in("id", userIds)
+      ? await supabase.from("profiles_public" as any).select("id, full_name, avatar_url").in("id", userIds)
       : { data: [] };
     const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
 
