@@ -225,6 +225,70 @@ const CadastroCompleto = () => {
           <Input value={f.kit_unit} onChange={(e) => set("kit_unit", e.target.value)} required />
         </Field>
 
+        <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-4 max-h-80 overflow-y-auto text-xs leading-relaxed text-foreground/90">
+          <h3 className="text-sm font-bold font-heading text-center">ACEITE DOS TERMOS ABAIXO</h3>
+          <p className="font-semibold text-center">TERMO DE ADESÃO AO PROGRAMA DE VOLUNTARIADO CEJAM E A CAPACITAÇÃO MAGNA</p>
+          <p>O Termo de Adesão ao Voluntariado estabelece as diretrizes legais para o vínculo de trabalho voluntário, baseado na Lei nº 9608 de 18/02/1998.</p>
+          <p>Após o preenchimento da ficha de cadastro, nossa equipe entrará em contato para que você possa ter acesso ao termo de adesão e participar de nossa Capacitação Magna para Voluntários.</p>
+
+          <p className="font-semibold mt-2">Lei do Voluntariado – Lei nº 9.608, de 18 de fevereiro de 1998</p>
+          <p>Dispõe sobre o serviço voluntário e dá outras providências</p>
+          <p><b>Art. 1°</b> – Considera-se serviço voluntário, para fins desta Lei, a atividade não remunerada, prestada por pessoa física a entidade pública de qualquer natureza, ou a Instituição privada de fins não lucrativos, que tenha objetivos cívicos, culturais, educacionais, científicos, recreativos ou de assistência social, inclusive mutualidade. Parágrafo único. O serviço voluntário não gera vínculo empregatício, nem obrigação de natureza trabalhista, previdenciária ou afim.</p>
+          <p><b>Art. 2°</b> – O serviço voluntário será exercido mediante a celebração de Termo de Adesão entre a entidade, pública ou privada, e o prestador do serviço voluntário, dele devendo constar o objeto e as condições de seu exercício.</p>
+          <p><b>Art. 3°</b> – O prestador de serviço voluntário poderá ser ressarcido pelas despesas que comprovadamente realizar no desempenho das atividades voluntárias. Parágrafo único. As despesas a serem ressarcidas deverão estar expressamente autorizadas pela entidade a que for prestado o serviço voluntário.</p>
+          <p><b>Art. 4°</b> – Esta Lei entra em vigor na data de sua publicação.</p>
+          <p><b>Art. 5°</b> – Revogam-se as disposições em contrário.</p>
+          <p>Fernando Henrique Cardoso. Brasília, 18 de fevereiro de 1998; 177º da Independência e 110º da República.</p>
+
+          <p className="font-semibold mt-2">Alteração – Lei nº 13.297, de 16 de junho de 2016</p>
+          <p>O Ato em referência altera o artigo 1º da Lei 9.608, de 18/02/98, para incluir a assistência à pessoa como objetivo de atividade não remunerada reconhecida como serviço voluntário.</p>
+          <p><b>Art. 1º</b> O caput do art. 1º da Lei nº 9.608, de 18 de fevereiro de 1998, passa a vigorar com a seguinte redação: "Art. 1º Considera-se serviço voluntário, para os fins desta Lei, a atividade não remunerada prestada por pessoa física a entidade pública de qualquer natureza ou a instituição privada de fins não lucrativos que tenha objetivos cívicos, culturais, educacionais, científicos, recreativos ou de assistência à pessoa."</p>
+          <p><b>Art. 2º</b> Esta Lei entra em vigor na data de sua publicação.</p>
+          <p>Michel Temer, Alexandre de Moraes, Ronaldo Nogueira de Oliveira. Brasília, 16 de junho de 2016.</p>
+
+          <p className="font-semibold mt-2">TRATAMENTO DE DADOS PESSOAIS: ESCLARECIMENTOS ACERCA DA FINALIDADE, PRAZO E USO DA IMAGEM</p>
+          <p className="italic">Disposições acerca da Lei Geral de Proteção de Dados</p>
+          <p><b>Art. 1º Finalidade:</b> O fornecimento dos dados pessoais do titular a serem preenchidos neste termo tem como finalidade a formalização de seu cadastro, identificação e poderão ser utilizados para atividade relacionadas ao regular, como controle de acesso, emissão de crachás, emissão de eventual certificado e outras atividades, não se limitando a essas, mas que necessitarem de identificação pessoal.</p>
+          <p>Parágrafo Único: seus dados poderão ser compartilhados com parceiros em atividades exclusivamente relacionadas à função, como emissão de cartões, acessos a edifícios e outros.</p>
+          <p><b>Art. 2º Prazo:</b> Enquanto perdurar a atividade, devidamente formalizada e em vigor, entre o titular dos dados e o CEJAM e empresa empregada, haverá o tratamento desses dados em conformidade com as finalidades acima.</p>
+          <p><b>Art. 3º Uso de Imagem:</b> O titular manifesta consentimento de uso de sua imagem para as finalidades aqui dispostas, fornecendo-o de forma gratuita e livre.</p>
+          <p><b>Art. 4º Consentimento:</b> Ao preencher este formulário, o titular expressa seu consentimento para o uso e tratamento de seus dados pessoais que serão realizados conforme as finalidades e durante o prazo aqui estabelecido.</p>
+          <p>Parágrafo Único: O consentimento ao tratamento dos dados pessoais poderá ser revogado pelo titular a qualquer momento, situação em que CEJAM cessará o tratamento e será encerrada a respectiva participação do titular nas atividades de voluntariado.</p>
+
+          <p className="font-semibold mt-2">TERMO DE CONFIDENCIALIDADE</p>
+          <p>Exercendo a função de voluntário, por meio do presente Termo, comprometo-me:</p>
+          <p>a) manter absoluto sigilo acerca de todas as informações administrativas, técnicas contábeis, fiscais e cadastrais da organização, dos clientes internos e externos e usuários dos serviços de saúde desta, bem como de dados, documentos, procedimentos e informações a que tenha acesso ou que venha a ter conhecimento por qualquer meio, ainda que não pertinentes ou diretamente vinculados às minhas atividades, compromisso esse que se estende mesmo após encerradas minhas atividades de voluntariado no CEJAM;</p>
+          <p>b) seguir as diretrizes, políticas, treinamentos e instruções ministrados pela entidade quanto às normas de Governança Corporativa, Programa de Integridade e Programa de Conformidade LGPD, principalmente em assuntos relacionados à confidencialidade de informações que vier a ter acesso em virtude de minhas atividades de voluntariado no CEJAM;</p>
+          <p>c) a reconhecer que pertence exclusivamente à Instituição, clientes e fornecedores desta os programas de computador disponibilizados, bem como os direitos de autoria e de propriedade, incluindo códigos-fontes, bases de dados, derivativos, rotinas ou aplicativos desenvolvidos a partir dos programas, documentação, desenhos, informações técnicas, patentes, marcas, material de propaganda, análises de marketing, lista de clientes e usuários dos serviços de saúde, sendo que todos têm caráter de informação confidencial e sigilosa, obrigando-se, assim, a não divulgá-los, copiá-los, cedê-los, transferi-los ou torná-los disponíveis a terceiros, sob qualquer hipótese, tampouco utilizá-los, em benefício próprio ou de terceiros, mesmo após encerradas minhas atividades de voluntariado no CEJAM;</p>
+          <p>d) caso me seja franqueado acesso e autorização a utilizar a rede interna de computadores da Instituição ou softwares ERP, entre outros relacionados e não limitados a estes, ou de onde estiver desenvolvendo minhas atividades, tendo acesso ao correio eletrônico, à internet além de banco de dados da instituição, obrigo-me a fazer uso comedido de tais recursos e estritamente no limite das necessidades do serviço, sendo expressamente vedada a utilização de tais meios de comunicação e informação para finalidades pessoais ou estranhas às atividades a serem desenvolvidas durante minhas atividades no CEJAM. Comprometo-me, ainda, a não veicular dados, informações ou mensagens injuriosas da Instituição, seus colaboradores, fornecedores e/ou demais interessados internos e externos.</p>
+          <p>e) estou ciente que a infração a estas normas constitui falta funcional punível administrativamente, sem prejuízo da responsabilidade penal e civil de acordo com a Legislação vigente, responsabilizando-me, inclusive, pelos danos que vier causar à Instituição ou a terceiros, em decorrência do uso indevido das informações por mim acessadas.</p>
+
+          <p className="font-semibold mt-2">CONDIÇÕES GERAIS:</p>
+          <p>O trabalho voluntário a ser desempenhado junto ao PROGRAMA DE VOLUNTARIADO CEJAM de acordo com a Lei nº 9.608 de 18/02/98, é atividade não remunerada, e não gera vínculo empregatício nem funcional, ou quaisquer obrigações trabalhistas e previdenciárias ou afins;</p>
+          <p>É imprescindível a participação do voluntário na capacitação magna do PROGRAMA DE VOLUNTARIADO CEJAM, bem como dos cursos de treinamento oferecidos para cada projeto. Podendo ao INSTITUTO CEJAM interromper a participação de voluntários que não estiverem devidamente capacitados para atuação.</p>
+          <p>Compete ao Voluntário participar das atividades e cumprir com empenho e interesse a função estabelecida. A discordância ou o descumprimento das normas estabelecidas no Regimento Interno acarretará o afastamento ou desligamento do voluntário;</p>
+          <p>Será de inteira responsabilidade do voluntário qualquer dano ou prejuízo que vier a causar ao PROGRAMA DE VOLUNTARIADO CEJAM;</p>
+          <p>O voluntário isenta o INSTITUTO CEJAM de qualquer responsabilidade referente a acidentes pessoais ou materiais, que por ventura, venham a ocorrer no desempenho de suas atividades;</p>
+          <p>O trabalho voluntário não poderá ultrapassar 08 (oito) horas semanais.</p>
+
+          <p className="font-semibold mt-2">CONDIÇÕES PARA O DESLIGAMENTO:</p>
+          <p>O desligamento do voluntário poderá ocorrer sob as seguintes condições:</p>
+          <p><b>Por iniciativa do voluntário:</b> O voluntário tem o direito de se desligar do programa a qualquer momento, mediante manifestação de vontade e assinatura do Termo de Desligamento.</p>
+          <p><b>Por iniciativa do Instituto CEJAM:</b> O Instituto poderá desligar o voluntário em caso de:</p>
+          <p>– Quebra de ética ou conduta incompatível com os valores do Instituto;</p>
+          <p>– Violação das leis de voluntariado;</p>
+          <p>– Ausência de engajamento, incluindo: ausência nas atividades e ações; falta de resposta após três tentativas de contato (mensagem, ligação ou e-mail).</p>
+          <p>O desligamento será formalizado mediante a assinatura do Termo de Desligamento. Nos casos em que não seja possível o contato com o voluntário, o Termo será assinado pelo Gestor de Voluntariado e pela Gerente do Instituto.</p>
+          <p>O presente Termo de Adesão estará em vigor por 01 (um) ano, quando deverá ser renovado, caso seja de interesse de ambas as partes. Declaro estar ciente da legislação específica, termos em anexo, regimento interno e descritivo de função, e que aceito atuar como voluntário conforme este Termo de Adesão.</p>
+
+          <p className="font-semibold mt-2">DECLARAÇÃO DE RECEBIMENTO, LEITURA E OBSERVÂNCIA AO CÓDIGO DE ÉTICA CEJAM</p>
+          <p className="italic">Disposições acerca do Programa de Integridade – CEJAM</p>
+          <p>O CEJAM possui programa de integridade zelando em questões relacionadas ao combate à corrupção, ética nos serviços realizados, gerenciamento de riscos e conformidade com normas internas e externas que são abordadas de maneira integrada e tratadas consistentemente como forma de assegurar a sustentabilidade diante dos pilares estratégicos do CEJAM - Atenção Primária em Saúde, Sinergia da Rede de Serviços, Equipe Multidisciplinar, Tecnologia da Informação e Geração e Disseminação de Conhecimento.</p>
+          <p>Para que a entidade atinja seus objetivos, missão, visão e valores, é fundamental que as pessoas físicas e jurídicas participantes de suas atividades estejam em rigorosa sintonia com a legislação nacional, principalmente leis anticorrupção, como Lei N° 12.846/2013, seu respectivo regulamento disciplinado pelo Decreto Presidencial N° 8.420/2015, lei de improbidade administrativa e Lei Geral de Proteção de Dados, não se limitando a estas.</p>
+          <p><b>Declaração de recebimento, leitura e observância ao código de ética CEJAM:</b> Em conformidade com o Programa de Integridade – CEJAM, declaro que recebi acesso ao link do Código de ética do CEJAM e/ou sua cópia, expresso meu compromisso a seguir suas disposições, incentivar meus colegas no mesmo sentido e, sempre que necessário, consultar o referido documento para esclarecimentos de dúvidas.</p>
+          <p>Link Código de Ética e Conduta – CEJAM: <a href="https://cejam.org.br/codigo-etica-conduta" target="_blank" rel="noopener noreferrer" className="text-primary underline">https://cejam.org.br/codigo-etica-conduta</a></p>
+        </div>
+
         <label className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
           <Checkbox checked={f.agreed_terms} onCheckedChange={(c) => set("agreed_terms", !!c)} className="mt-0.5" />
           <span className="text-sm">Declaro que li e estou de acordo com todas as informações apresentadas acima.</span>
