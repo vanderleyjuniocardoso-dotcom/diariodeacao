@@ -10,6 +10,7 @@ const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","A
 interface Slot { id: string; month: number; slot_date: string; slot_time: string; capacity: number; }
 interface Booking {
   id: string; slot_id: string; volunteer_name: string; volunteer_phone: string | null; attended: boolean;
+  registration_id: string | null;
 }
 
 const AdminWelcomeMeetings = () => {
@@ -25,10 +26,22 @@ const AdminWelcomeMeetings = () => {
       supabase.from("welcome_meeting_slots").select("*").order("slot_date"),
       supabase.from("welcome_meeting_bookings").select("*").order("created_at"),
     ]);
+    const allBookings = (b as Booking[]) || [];
+    const regIds = Array.from(new Set(allBookings.map((x) => x.registration_id).filter(Boolean) as string[]));
+    let approvedSet = new Set<string>();
+    if (regIds.length) {
+      const { data: regs } = await supabase
+        .from("volunteer_registrations")
+        .select("id, status")
+        .in("id", regIds)
+        .eq("status", "approved");
+      approvedSet = new Set((regs || []).map((r: any) => r.id));
+    }
     setSlots((s as Slot[]) || []);
-    setBookings((b as Booking[]) || []);
+    setBookings(allBookings.filter((x) => x.registration_id && approvedSet.has(x.registration_id)));
     setLoading(false);
   };
+
 
   useEffect(() => { load(); }, []);
 
