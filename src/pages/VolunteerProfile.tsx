@@ -48,8 +48,9 @@ export default function VolunteerProfile() {
         supabase.from("feed_posts").select("id, image_url, content, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(60),
         supabase.from("volunteer_actions").select("donated_hours").eq("user_id", id),
       ]);
-      setProfile(p as Profile);
-      setBioDraft(p?.bio ?? "");
+      setProfile(p as unknown as Profile);
+      setBioDraft((p as any)?.bio ?? "");
+
       setPosts(ps ?? []);
       setHours((acts ?? []).reduce((s: number, a: any) => s + Number(a.donated_hours ?? 0), 0));
     })();
