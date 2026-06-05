@@ -95,7 +95,7 @@ const Login = () => {
         </Button>
 
         <p className="text-center mt-6 text-sm text-muted-foreground">
-          Não tem conta? <Link to="/signup" className="text-primary font-medium hover:underline">Criar conta</Link>
+          Não tem conta? <Link to="/cpf-gate" className="text-primary font-medium hover:underline">Criar conta</Link>
         </p>
       </div>
     </div>
