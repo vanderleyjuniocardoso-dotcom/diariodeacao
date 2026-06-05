@@ -42,7 +42,7 @@ export default function CommentsSheet({ post, onClose }: Props) {
         .limit(200);
       const ids = Array.from(new Set((data ?? []).map((c) => c.user_id)));
       const { data: profiles } = ids.length
-        ? await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids)
+        ? await supabase.from("profiles_public" as any).select("id, full_name, avatar_url").in("id", ids)
         : { data: [] };
       const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
       if (!mounted) return;

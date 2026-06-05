@@ -44,7 +44,7 @@ export default function VolunteerProfile() {
     if (!id) return;
     (async () => {
       const [{ data: p }, { data: ps }, { data: acts }] = await Promise.all([
-        supabase.from("profiles").select("id, full_name, avatar_url, volunteer_credential, volunteer_level, bio").eq("id", id).maybeSingle(),
+        supabase.from("profiles_public" as any).select("id, full_name, avatar_url, volunteer_credential, volunteer_level, bio").eq("id", id).maybeSingle(),
         supabase.from("feed_posts").select("id, image_url, content, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(60),
         supabase.from("volunteer_actions").select("donated_hours").eq("user_id", id),
       ]);
