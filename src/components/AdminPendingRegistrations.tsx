@@ -54,12 +54,39 @@ const AdminPendingRegistrations = () => {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data: regs } = await supabase
       .from("volunteer_registrations")
       .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
-    setList((data as Reg[]) || []);
+    const allRegs = (regs as Reg[]) || [];
+    const ids = allRegs.map((r) => r.id);
+    let withBooking: Reg[] = [];
+    if (ids.length) {
+      const { data: bks } = await supabase
+        .from("welcome_meeting_bookings")
+        .select("registration_id, slot_id")
+        .in("registration_id", ids);
+      const slotIds = Array.from(new Set((bks || []).map((b: any) => b.slot_id)));
+      const slotMap = new Map<string, { slot_date: string; slot_time: string }>();
+      if (slotIds.length) {
+        const { data: sls } = await supabase
+          .from("welcome_meeting_slots")
+          .select("id, slot_date, slot_time")
+          .in("id", slotIds);
+        (sls || []).forEach((s: any) => slotMap.set(s.id, { slot_date: s.slot_date, slot_time: s.slot_time }));
+      }
+      const bookingByReg = new Map<string, { slot_date: string; slot_time: string }>();
+      (bks || []).forEach((b: any) => {
+        const sl = slotMap.get(b.slot_id);
+        if (sl && b.registration_id) bookingByReg.set(b.registration_id, sl);
+      });
+      withBooking = allRegs
+        .filter((r) => bookingByReg.has(r.id))
+        .map((r) => ({ ...r, booking_date: bookingByReg.get(r.id)!.slot_date, booking_time: bookingByReg.get(r.id)!.slot_time }));
+    }
+    setList(withBooking);
+
 
     // Completed = voluntagram access approved (final step before going to Base)
     const { data: reqs } = await supabase
