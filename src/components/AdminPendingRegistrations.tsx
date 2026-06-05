@@ -29,7 +29,10 @@ interface Reg {
   shirt_size: string;
   kit_unit: string;
   created_at: string;
+  booking_date?: string | null;
+  booking_time?: string | null;
 }
+
 
 interface CompletedVolunteer {
   name: string;
@@ -51,12 +54,39 @@ const AdminPendingRegistrations = () => {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data: regs } = await supabase
       .from("volunteer_registrations")
       .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
-    setList((data as Reg[]) || []);
+    const allRegs = (regs as Reg[]) || [];
+    const ids = allRegs.map((r) => r.id);
+    let withBooking: Reg[] = [];
+    if (ids.length) {
+      const { data: bks } = await supabase
+        .from("welcome_meeting_bookings")
+        .select("registration_id, slot_id")
+        .in("registration_id", ids);
+      const slotIds = Array.from(new Set((bks || []).map((b: any) => b.slot_id)));
+      const slotMap = new Map<string, { slot_date: string; slot_time: string }>();
+      if (slotIds.length) {
+        const { data: sls } = await supabase
+          .from("welcome_meeting_slots")
+          .select("id, slot_date, slot_time")
+          .in("id", slotIds);
+        (sls || []).forEach((s: any) => slotMap.set(s.id, { slot_date: s.slot_date, slot_time: s.slot_time }));
+      }
+      const bookingByReg = new Map<string, { slot_date: string; slot_time: string }>();
+      (bks || []).forEach((b: any) => {
+        const sl = slotMap.get(b.slot_id);
+        if (sl && b.registration_id) bookingByReg.set(b.registration_id, sl);
+      });
+      withBooking = allRegs
+        .filter((r) => bookingByReg.has(r.id))
+        .map((r) => ({ ...r, booking_date: bookingByReg.get(r.id)!.slot_date, booking_time: bookingByReg.get(r.id)!.slot_time }));
+    }
+    setList(withBooking);
+
 
     // Completed = voluntagram access approved (final step before going to Base)
     const { data: reqs } = await supabase
@@ -160,7 +190,7 @@ const AdminPendingRegistrations = () => {
         {loading ? (
           <p className="text-center text-muted-foreground py-6 text-sm">Carregando...</p>
         ) : list.length === 0 ? (
-          <p className="text-center text-muted-foreground py-10 text-sm">Nenhum cadastro pendente.</p>
+          <p className="text-center text-muted-foreground py-10 text-sm">Nenhum cadastro aguardando autorização.</p>
         ) : list.map((r) => (
           <div key={r.id} className="glass-card rounded-xl p-4 space-y-3">
             <div className="flex gap-3">
@@ -170,8 +200,14 @@ const AdminPendingRegistrations = () => {
                 {r.social_name && <p className="text-xs text-muted-foreground">Nome social: {r.social_name}</p>}
                 <p className="text-xs text-muted-foreground font-mono">CPF {r.cpf}</p>
                 <p className="text-xs text-muted-foreground">{r.email} · {r.whatsapp}</p>
+                {r.booking_date && (
+                  <p className="text-xs text-primary mt-1">
+                    Reunião agendada: {new Date(r.booking_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} às {(r.booking_time || "").slice(0,5)}
+                  </p>
+                )}
               </div>
             </div>
+
             <details className="text-xs">
               <summary className="cursor-pointer text-primary font-medium">Ver todos os dados</summary>
               <dl className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 text-xs">
@@ -193,7 +229,7 @@ const AdminPendingRegistrations = () => {
             </details>
             <div className="flex gap-2">
               <Button size="sm" variant="hero" className="flex-1" onClick={() => approve(r.id)} disabled={acting === r.id}>
-                {acting === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" />Aprovar</>}
+                {acting === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" />Autorizar</>}
               </Button>
               <Button size="sm" variant="outline" className="flex-1 text-destructive" onClick={() => reject(r.id)} disabled={acting === r.id}>
                 <X className="h-3.5 w-3.5 mr-1" />Rejeitar

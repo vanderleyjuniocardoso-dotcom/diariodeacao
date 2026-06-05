@@ -961,6 +961,10 @@ export type Database = {
           volunteer_level: number
         }[]
       }
+      grant_voluntagram_credential: {
+        Args: { _registration_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
