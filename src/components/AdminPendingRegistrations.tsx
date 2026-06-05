@@ -190,7 +190,7 @@ const AdminPendingRegistrations = () => {
         {loading ? (
           <p className="text-center text-muted-foreground py-6 text-sm">Carregando...</p>
         ) : list.length === 0 ? (
-          <p className="text-center text-muted-foreground py-10 text-sm">Nenhum cadastro pendente.</p>
+          <p className="text-center text-muted-foreground py-10 text-sm">Nenhum cadastro aguardando autorização.</p>
         ) : list.map((r) => (
           <div key={r.id} className="glass-card rounded-xl p-4 space-y-3">
             <div className="flex gap-3">
@@ -200,8 +200,14 @@ const AdminPendingRegistrations = () => {
                 {r.social_name && <p className="text-xs text-muted-foreground">Nome social: {r.social_name}</p>}
                 <p className="text-xs text-muted-foreground font-mono">CPF {r.cpf}</p>
                 <p className="text-xs text-muted-foreground">{r.email} · {r.whatsapp}</p>
+                {r.booking_date && (
+                  <p className="text-xs text-primary mt-1">
+                    Reunião agendada: {new Date(r.booking_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} às {(r.booking_time || "").slice(0,5)}
+                  </p>
+                )}
               </div>
             </div>
+
             <details className="text-xs">
               <summary className="cursor-pointer text-primary font-medium">Ver todos os dados</summary>
               <dl className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 text-xs">
