@@ -134,7 +134,7 @@ const MessagesBell = () => {
               sender_id: row.sender_id,
               read_at: row.read_at,
               sender_name: name,
-              sender_avatar: sender?.avatar_url ?? null,
+              sender_avatar: (sender as any)?.avatar_url ?? null,
             },
             ...prev,
           ]);
