@@ -128,6 +128,7 @@ const CadastroCompleto = () => {
       });
       if (error) throw error;
       toast.success("Cadastro enviado!");
+      try { localStorage.setItem("known_user_cpf", cpfDigits); } catch {}
       navigate("/boas-vindas/agendar", {
         state: {
           registrationId,
