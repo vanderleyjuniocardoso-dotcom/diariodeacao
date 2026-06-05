@@ -108,8 +108,7 @@ const AgendarBoasVindas = () => {
       </div>
 
       <div className="px-5 mt-5 max-w-md mx-auto space-y-2">
-        {MONTHS.map((name, idx) => {
-          const month = idx + 1;
+        {visibleMonths.map(({ name, month }) => {
           const available = monthsWithSlots.has(month);
           const monthSlots = slots.filter((s) => s.month === month);
           const open = openMonth === month;
