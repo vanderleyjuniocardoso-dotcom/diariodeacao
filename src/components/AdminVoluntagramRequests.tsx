@@ -35,7 +35,7 @@ const AdminVoluntagramRequests = () => {
 
   const approve = async (r: Req) => {
     if (!r.registration_id) { toast.error("Cadastro não vinculado"); return; }
-    const { error: e1 } = await supabase.rpc("approve_registration", { _id: r.registration_id });
+    const { error: e1 } = await supabase.rpc("grant_voluntagram_credential", { _registration_id: r.registration_id });
     if (e1) { toast.error(e1.message); return; }
     const { error: e2 } = await supabase.from("voluntagram_access_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", r.id);
     if (e2) { toast.error(e2.message); return; }
@@ -45,6 +45,7 @@ const AdminVoluntagramRequests = () => {
     toast.success("Acesso liberado e credencial gerada");
     load();
   };
+
 
   const reject = async (r: Req) => {
     const { error } = await supabase.from("voluntagram_access_requests").update({ status: "rejected", reviewed_at: new Date().toISOString() }).eq("id", r.id);
