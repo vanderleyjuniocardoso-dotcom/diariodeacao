@@ -90,6 +90,8 @@ const AgendarBoasVindas = () => {
   }
 
   const monthsWithSlots = new Set(slots.map((s) => s.month));
+  const currentMonth = new Date().getMonth() + 1;
+  const visibleMonths = MONTHS.map((name, idx) => ({ name, month: idx + 1 })).filter((m) => m.month >= currentMonth);
 
   return (
     <div className="min-h-screen bg-background pb-10">
