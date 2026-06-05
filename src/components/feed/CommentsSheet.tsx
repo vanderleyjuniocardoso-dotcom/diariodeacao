@@ -67,7 +67,7 @@ export default function CommentsSheet({ post, onClose }: Props) {
         async (payload) => {
           const row = payload.new as any;
           const { data: prof } = await supabase
-            .from("profiles")
+            .from("profiles_public" as any)
             .select("full_name, avatar_url")
             .eq("id", row.user_id)
             .maybeSingle();
