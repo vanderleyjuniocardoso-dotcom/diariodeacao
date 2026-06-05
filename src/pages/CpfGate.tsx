@@ -21,6 +21,38 @@ const CpfGate = () => {
     if (!authLoading && user) navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
   }, [user, authLoading, navigate]);
 
+  // Auto-trigger native install prompt + request notification permission on first visit
+  useEffect(() => {
+    const tryInstall = async () => {
+      try {
+        // @ts-ignore
+        const ev = window.__deferredInstallPrompt as any;
+        if (ev && typeof ev.prompt === "function" && !localStorage.getItem("install_prompted")) {
+          localStorage.setItem("install_prompted", "1");
+          await ev.prompt();
+          await ev.userChoice?.catch(() => {});
+        }
+      } catch {}
+      try {
+        if ("Notification" in window && Notification.permission === "default") {
+          await Notification.requestPermission();
+        }
+        if ("serviceWorker" in navigator) {
+          const { subscribeToPush, isInIframe } = await import("@/lib/push");
+          if (!isInIframe) await subscribeToPush().catch(() => {});
+        }
+      } catch {}
+    };
+    const handler = () => tryInstall();
+    window.addEventListener("pwa-install-available", handler);
+    tryInstall();
+    return () => window.removeEventListener("pwa-install-available", handler);
+  }, []);
+
+  const rememberCpf = (digits: string) => {
+    try { localStorage.setItem("known_user_cpf", digits); } catch {}
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const digits = onlyDigits(cpf);
@@ -37,10 +69,13 @@ const CpfGate = () => {
     }
     const row = Array.isArray(data) ? data[0] : data;
     if (row?.has_account) {
+      rememberCpf(digits);
       navigate("/login");
     } else if (row?.found) {
+      rememberCpf(digits);
       navigate("/signup", { state: { cpf: digits, fullName: row.full_name } });
     } else if (row?.has_registration_pending) {
+      rememberCpf(digits);
       navigate("/minha-jornada", { state: { cpf: digits } });
     } else {
       navigate("/cadastro-completo", { state: { cpf: digits } });
