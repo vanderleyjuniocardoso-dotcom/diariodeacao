@@ -114,6 +114,18 @@ const AdminAuthorizedBase = () => {
     setRows((p) => p.filter((r) => r.cpf !== cpf));
   };
 
+  const removeAll = async () => {
+    if (!rows.length) return;
+    const msg = `Tem certeza que deseja EXCLUIR TODOS os ${rows.length} voluntários da base autorizada? Esta ação não pode ser desfeita.`;
+    if (!confirm(msg)) return;
+    const confirmText = prompt('Digite "EXCLUIR TUDO" para confirmar:');
+    if (confirmText !== "EXCLUIR TUDO") { toast.error("Confirmação inválida"); return; }
+    const { error } = await supabase.from("admin_volunteers").delete().neq("cpf", "");
+    if (error) { toast.error(error.message); return; }
+    toast.success("Base autorizada esvaziada");
+    setRows([]);
+  };
+
   return (
     <div className="space-y-4">
       <div className="glass-card rounded-xl p-4 space-y-3">
