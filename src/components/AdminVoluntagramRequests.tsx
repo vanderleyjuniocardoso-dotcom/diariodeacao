@@ -39,6 +39,9 @@ const AdminVoluntagramRequests = () => {
     if (e1) { toast.error(e1.message); return; }
     const { error: e2 } = await supabase.from("voluntagram_access_requests").update({ status: "approved", reviewed_at: new Date().toISOString() }).eq("id", r.id);
     if (e2) { toast.error(e2.message); return; }
+    // Sync para planilha Google Sheets (não bloqueia o fluxo)
+    supabase.functions.invoke("sync-volunteer-to-sheet", { body: { registration_id: r.registration_id } })
+      .then(({ error }) => { if (error) console.warn("sheet sync:", error.message); });
     toast.success("Acesso liberado e credencial gerada");
     load();
   };
