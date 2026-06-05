@@ -65,18 +65,14 @@ const MinhaJornada = () => {
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
-  // realtime
+  // polling (substitui realtime, pois agora as tabelas não são lidas por anon)
   useEffect(() => {
     if (!regId) return;
-    const ch = supabase
-      .channel(`journey-${regId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "magna_enrollments", filter: `registration_id=eq.${regId}` }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "welcome_meeting_bookings", filter: `registration_id=eq.${regId}` }, () => load())
-      .on("postgres_changes", { event: "*", schema: "public", table: "voluntagram_access_requests", filter: `registration_id=eq.${regId}` }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const id = setInterval(() => { load(); }, 15000);
+    return () => clearInterval(id);
     // eslint-disable-next-line
   }, [regId]);
+
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
