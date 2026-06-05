@@ -47,20 +47,17 @@ const AgendarBoasVindas = () => {
 
   const choose = async (slot: Slot) => {
     setSubmitting(true);
-    const { data, error } = await supabase
-      .from("welcome_meeting_bookings")
-      .insert({
-        slot_id: slot.id,
-        registration_id: st.registrationId,
-        volunteer_name: st.fullName || "",
-        volunteer_phone: st.phone || null,
-        volunteer_email: st.email || null,
-      })
-      .select("id, slot_id")
-      .single();
+    const { data, error } = await supabase.rpc("create_booking", {
+      _slot_id: slot.id,
+      _registration_id: st.registrationId!,
+      _volunteer_name: st.fullName || "",
+      _volunteer_phone: st.phone || null,
+      _volunteer_email: st.email || null,
+    });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
-    setBooking(data as Booking);
+    const row = Array.isArray(data) && data.length ? (data[0] as any) : null;
+    if (row) setBooking(row as Booking);
     toast.success("Reunião agendada!");
   };
 

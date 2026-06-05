@@ -867,6 +867,21 @@ export type Database = {
         Args: { _attended?: boolean; _booking_id: string }
         Returns: undefined
       }
+      create_booking: {
+        Args: {
+          _registration_id: string
+          _slot_id: string
+          _volunteer_email: string
+          _volunteer_name: string
+          _volunteer_phone: string
+        }
+        Returns: {
+          attended: boolean
+          id: string
+          registration_id: string
+          slot_id: string
+        }[]
+      }
       get_my_access_request: {
         Args: { _enrollment_id: string }
         Returns: {
