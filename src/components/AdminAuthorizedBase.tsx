@@ -114,6 +114,18 @@ const AdminAuthorizedBase = () => {
     setRows((p) => p.filter((r) => r.cpf !== cpf));
   };
 
+  const removeAll = async () => {
+    if (!rows.length) return;
+    const msg = `Tem certeza que deseja EXCLUIR TODOS os ${rows.length} voluntários da base autorizada? Esta ação não pode ser desfeita.`;
+    if (!confirm(msg)) return;
+    const confirmText = prompt('Digite "EXCLUIR TUDO" para confirmar:');
+    if (confirmText !== "EXCLUIR TUDO") { toast.error("Confirmação inválida"); return; }
+    const { error } = await supabase.from("admin_volunteers").delete().neq("cpf", "");
+    if (error) { toast.error(error.message); return; }
+    toast.success("Base autorizada esvaziada");
+    setRows([]);
+  };
+
   return (
     <div className="space-y-4">
       <div className="glass-card rounded-xl p-4 space-y-3">
@@ -182,8 +194,13 @@ const AdminAuthorizedBase = () => {
       )}
 
       <div className="glass-card rounded-xl p-4 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold">Base autorizada ({rows.length})</h3>
+          {rows.length > 0 && (
+            <Button variant="destructive" size="sm" onClick={removeAll}>
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" />Excluir todos
+            </Button>
+          )}
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
