@@ -9,6 +9,7 @@ import { Loader2, IdCard } from "lucide-react";
 import { formatCPF, isValidCPF, onlyDigits } from "@/lib/cpf";
 import { useAuth } from "@/contexts/AuthContext";
 import logoVoluntariado from "@/assets/logo-voluntariado.png";
+import InstallAppButton from "@/components/InstallAppButton";
 
 const CpfGate = () => {
   const navigate = useNavigate();
