@@ -1,28 +1,21 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Heart, Loader2, Mail, Lock, User, Phone, Building, Camera, IdCard } from "lucide-react";
+import { Heart, Loader2, Mail, Lock, IdCard } from "lucide-react";
 import { formatCPF } from "@/lib/cpf";
 
 const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const prefill = (location.state as { cpf?: string; fullName?: string } | null) || {};
-  const [form, setForm] = useState({
-    full_name: prefill.fullName || "",
-    email: "", password: "", phone: "", unit: "", volunteer_credential: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const cpf = prefill.cpf || "";
 
-  // Cadastro só via /cpf-gate
   if (!cpf) {
     navigate("/cpf-gate", { replace: true });
     return null;
@@ -30,69 +23,51 @@ const Signup = () => {
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
 
-  const onAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setAvatarFile(f);
-    setAvatarPreview(URL.createObjectURL(f));
-  };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.full_name.trim() || !form.email.trim() || !form.password || !form.phone.trim() || !form.unit.trim() || !form.volunteer_credential.trim()) {
+    if (!form.email.trim() || !form.password || !form.confirmPassword) {
       toast.error("Preencha todos os campos");
       return;
     }
-    if (!avatarFile) { toast.error("Selecione uma foto de perfil"); return; }
     if (form.password.length < 8) { toast.error("A senha deve ter pelo menos 8 caracteres"); return; }
+    if (form.password !== form.confirmPassword) { toast.error("As senhas não coincidem"); return; }
+
     setLoading(true);
+
+    // Lookup credential and registration data by CPF
+    const [{ data: adminVol }, { data: registration }] = await Promise.all([
+      supabase.from("admin_volunteers").select("credencial, full_name").eq("cpf", cpf).maybeSingle(),
+      (supabase.from as any)("volunteer_registrations").select("*").eq("cpf", cpf).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    ]);
+
+    const fullName = prefill.fullName || adminVol?.full_name || registration?.full_name || "";
+    const phone = registration?.whatsapp || "";
+    const unit = registration?.kit_unit || "";
+
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
-        data: { full_name: form.full_name, phone: form.phone, unit: form.unit },
+        data: { full_name: fullName, phone, unit },
         emailRedirectTo: window.location.origin,
       },
     });
-    if (error) {
-      setLoading(false);
-      toast.error(error.message);
-      return;
-    }
+    if (error) { setLoading(false); toast.error(error.message); return; }
+
     const userId = data.user?.id;
     if (userId) {
-      // Save credential + cpf on profile
-      const update: any = {};
-      if (form.volunteer_credential.trim()) update.volunteer_credential = form.volunteer_credential.trim();
-      if (cpf) update.cpf = cpf;
-      if (Object.keys(update).length) {
-        await supabase.from("profiles").update(update).eq("id", userId);
-      }
-      if (avatarFile) {
-        try {
-          const ext = avatarFile.name.split(".").pop();
-          const path = `${userId}/avatar-${Date.now()}.${ext}`;
-          const { error: upErr } = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true });
-          if (!upErr) {
-            const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-            await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", userId);
-          }
-        } catch {}
-      }
+      const update: any = { cpf };
+      if (adminVol?.credencial) update.volunteer_credential = adminVol.credencial;
+      if (fullName) update.full_name = fullName;
+      if (phone) update.phone = phone;
+      if (unit) update.unit = unit;
+      if (registration?.photo_url) update.avatar_url = registration.photo_url;
+      await supabase.from("profiles").update(update).eq("id", userId);
     }
     setLoading(false);
     toast.success("Conta criada! Verifique seu e-mail para confirmar.");
     navigate("/login");
   };
-
-  const fields = [
-    { key: "full_name", label: "Nome completo", icon: User, type: "text", required: true },
-    { key: "email", label: "E-mail", icon: Mail, type: "email", required: true },
-    { key: "password", label: "Senha", icon: Lock, type: "password", required: true },
-    { key: "volunteer_credential", label: "Credencial do voluntário (Entre em contato com a equipe para pedir sua credencial)", icon: IdCard, type: "text", required: true },
-    { key: "phone", label: "Telefone", icon: Phone, type: "tel", required: true },
-    { key: "unit", label: "Unidade / Departamento", icon: Building, type: "text", required: true },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-10 bg-background">
@@ -106,53 +81,37 @@ const Signup = () => {
         </div>
 
         <form onSubmit={handleSignup} className="space-y-3">
-          {/* Avatar upload */}
-          <div className="flex flex-col items-center mb-2">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="relative w-20 h-20 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center overflow-hidden hover:border-primary transition"
-            >
-              {avatarPreview ? (
-                <img src={avatarPreview} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <Camera className="h-6 w-6 text-muted-foreground" />
-              )}
-              <span className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                <Camera className="h-3 w-3" />
-              </span>
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarSelect} />
-            <p className="text-xs text-muted-foreground mt-2">Foto de perfil</p>
+          <div className="space-y-1.5">
+            <Label>CPF</Label>
+            <div className="relative">
+              <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={formatCPF(cpf)} readOnly className="pl-10 bg-muted" />
+            </div>
           </div>
 
-          {cpf && (
-            <div className="space-y-1.5">
-              <Label>CPF</Label>
-              <div className="relative">
-                <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input value={formatCPF(cpf)} readOnly className="pl-10 bg-muted" />
-              </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">E-mail</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="pl-10" required />
             </div>
-          )}
+          </div>
 
-          {fields.map(({ key, label, icon: Icon, type, required }) => (
-            <div key={key} className="space-y-1.5">
-              <Label htmlFor={key}>{label}</Label>
-              <div className="relative">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id={key}
-                  type={type}
-                  value={form[key as keyof typeof form]}
-                  onChange={(e) => update(key, e.target.value)}
-                  className="pl-10"
-                  required={required}
-                  minLength={key === "password" ? 8 : undefined}
-                />
-              </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Criar senha</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="password" type="password" value={form.password} onChange={(e) => update("password", e.target.value)} className="pl-10" required minLength={8} />
             </div>
-          ))}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmPassword">Confirmar senha</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input id="confirmPassword" type="password" value={form.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} className="pl-10" required minLength={8} />
+            </div>
+          </div>
 
           <Button type="submit" variant="hero" size="lg" className="w-full mt-4" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Criar conta"}
