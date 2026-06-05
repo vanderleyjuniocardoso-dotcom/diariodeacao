@@ -229,7 +229,7 @@ const AdminPendingRegistrations = () => {
             </details>
             <div className="flex gap-2">
               <Button size="sm" variant="hero" className="flex-1" onClick={() => approve(r.id)} disabled={acting === r.id}>
-                {acting === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" />Aprovar</>}
+                {acting === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3.5 w-3.5 mr-1" />Autorizar</>}
               </Button>
               <Button size="sm" variant="outline" className="flex-1 text-destructive" onClick={() => reject(r.id)} disabled={acting === r.id}>
                 <X className="h-3.5 w-3.5 mr-1" />Rejeitar
