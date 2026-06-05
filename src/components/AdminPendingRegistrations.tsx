@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, Loader2, Download } from "lucide-react";
+import { Check, X, Loader2, Download, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Reg {
   id: string;
@@ -31,10 +31,23 @@ interface Reg {
   created_at: string;
 }
 
+interface CompletedVolunteer {
+  name: string;
+  cpf: string;
+  completedAt: string; // ISO
+}
+
+const MONTHS = [
+  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
+];
+
 const AdminPendingRegistrations = () => {
   const [list, setList] = useState<Reg[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
+  const [completed, setCompleted] = useState<CompletedVolunteer[]>([]);
+  const [openMonth, setOpenMonth] = useState<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -44,10 +57,36 @@ const AdminPendingRegistrations = () => {
       .eq("status", "pending")
       .order("created_at", { ascending: false });
     setList((data as Reg[]) || []);
+
+    // Completed = voluntagram access approved (final step before going to Base)
+    const { data: reqs } = await supabase
+      .from("voluntagram_access_requests")
+      .select("registration_id, reviewed_at, status")
+      .eq("status", "approved")
+      .not("reviewed_at", "is", null);
+    const regIds = Array.from(new Set((reqs || []).map((r: any) => r.registration_id).filter(Boolean)));
+    let nameMap = new Map<string, { full_name: string; cpf: string }>();
+    if (regIds.length) {
+      const { data: regs } = await supabase
+        .from("volunteer_registrations")
+        .select("id, full_name, cpf")
+        .in("id", regIds);
+      nameMap = new Map((regs || []).map((r: any) => [r.id, { full_name: r.full_name, cpf: r.cpf }]));
+    }
+    const completedList: CompletedVolunteer[] = (reqs || [])
+      .map((r: any) => {
+        const reg = nameMap.get(r.registration_id);
+        if (!reg) return null;
+        return { name: reg.full_name, cpf: reg.cpf, completedAt: r.reviewed_at } as CompletedVolunteer;
+      })
+      .filter(Boolean) as CompletedVolunteer[];
+    setCompleted(completedList);
+
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
 
   const approve = async (id: string) => {
     setActing(id);
