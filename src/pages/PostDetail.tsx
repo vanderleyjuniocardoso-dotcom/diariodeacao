@@ -25,7 +25,7 @@ export default function PostDetail() {
       const { data: p } = await supabase.from("feed_posts").select("*").eq("id", id).maybeSingle();
       if (!p) return;
       const { data: author } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("full_name, avatar_url, volunteer_credential")
         .eq("id", p.user_id)
         .maybeSingle();

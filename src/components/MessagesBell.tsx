@@ -45,7 +45,7 @@ const MessagesBell = () => {
 
     const senderIds = Array.from(new Set(data.map((m) => m.sender_id)));
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("profiles_public" as any)
       .select("id, full_name, avatar_url")
       .in("id", senderIds);
     const map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
@@ -103,7 +103,7 @@ const MessagesBell = () => {
         async (payload) => {
           const row = payload.new as any;
           const { data: sender } = await supabase
-            .from("profiles")
+            .from("profiles_public" as any)
             .select("full_name, avatar_url")
             .eq("id", row.sender_id)
             .single();

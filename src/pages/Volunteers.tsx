@@ -64,7 +64,7 @@ const Volunteers = () => {
   useEffect(() => {
     (async () => {
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("id, full_name, volunteer_level, avatar_url, volunteer_credential")
         .order("full_name", { ascending: true });
 
@@ -115,7 +115,7 @@ const Volunteers = () => {
 
       if (otherIds.size > 0) {
         const { data: profs } = await supabase
-          .from("profiles")
+          .from("profiles_public" as any)
           .select("id, full_name, avatar_url")
           .in("id", Array.from(otherIds));
         (profs ?? []).forEach((p: any) => {
