@@ -11,7 +11,12 @@ const Index = () => {
 
   useEffect(() => {
     if (loading) return;
-    if (user) navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
+    if (user) {
+      navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
+      return;
+    }
+    const knownCpf = typeof window !== "undefined" ? localStorage.getItem("known_user_cpf") : null;
+    if (knownCpf) navigate("/login", { replace: true });
     else navigate("/cpf-gate", { replace: true });
   }, [user, loading, navigate]);
 
