@@ -29,7 +29,10 @@ interface Reg {
   shirt_size: string;
   kit_unit: string;
   created_at: string;
+  booking_date?: string | null;
+  booking_time?: string | null;
 }
+
 
 interface CompletedVolunteer {
   name: string;
