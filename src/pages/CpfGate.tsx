@@ -115,6 +115,10 @@ const CpfGate = () => {
             Se seu CPF estiver cadastrado, liberamos o acesso. Caso contrário, você poderá se inscrever.
           </p>
         </form>
+
+        <div className="mt-4">
+          <InstallAppButton />
+        </div>
       </div>
     </div>
   );
