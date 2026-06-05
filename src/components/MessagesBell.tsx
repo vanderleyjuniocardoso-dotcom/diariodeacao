@@ -107,7 +107,7 @@ const MessagesBell = () => {
             .select("full_name, avatar_url")
             .eq("id", row.sender_id)
             .single();
-          const name = sender?.full_name ?? "Voluntário";
+          const name = (sender as any)?.full_name ?? "Voluntário";
 
           toast(`Nova mensagem de ${name}`, {
             description: row.message,
