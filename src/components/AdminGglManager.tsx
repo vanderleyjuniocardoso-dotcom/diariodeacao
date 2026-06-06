@@ -171,7 +171,7 @@ export default function AdminGglManager() {
                 {isOpen && (
                   <div className="p-3 pt-0 space-y-3 border-t border-border">
                     <div>
-                      <p className="text-xs font-semibold text-foreground mb-1.5">Integrantes</p>
+                      <p className="text-xs font-semibold text-foreground mb-1.5">Gestores do GGL (nome e WhatsApp)</p>
                       {gMembers.length === 0 && (
                         <p className="text-[11px] text-muted-foreground mb-1">Nenhum integrante.</p>
                       )}
