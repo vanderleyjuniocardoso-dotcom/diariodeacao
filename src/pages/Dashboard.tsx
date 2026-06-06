@@ -201,8 +201,8 @@ const Dashboard = () => {
             <MapPin className="h-5 w-5" />
           </div>
           <p className="text-sm flex-1">
-            <span className="opacity-80">Seu GGL é:</span>{" "}
-            <span className="font-bold font-heading">{gglName ?? "..."}</span>
+            <span className="opacity-80">GGL é:</span>{" "}
+            <span className="font-bold font-heading">{sheetGglName ?? gglName ?? "..."}</span>
           </p>
         </div>
 
