@@ -82,12 +82,13 @@ const RegisterAction = () => {
     // Validação: todos os campos são obrigatórios
     if (!form.volunteer_name.trim()) { toast.error("Informe seu nome"); return; }
     if (!form.volunteer_credential.trim()) { toast.error("Informe sua credencial"); return; }
-    if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
+    if (form.works_at_cejam === "") { toast.error("Informe se você trabalha no CEJAM"); return; }
     if (!form.category) { toast.error("Selecione uma categoria"); return; }
+    if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
     if (!form.action_date) { toast.error("Informe a data da ação"); return; }
-    if (!form.donated_hours || parseFloat(form.donated_hours) <= 0) { toast.error("Informe as horas doadas"); return; }
+    if (!form.donated_hours || parseFloat(form.donated_hours) <= 0) { toast.error("Informe quantas horas durou"); return; }
+    if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas beneficiadas"); return; }
     if (!form.location.trim()) { toast.error("Informe o local da ação"); return; }
-    if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas impactadas"); return; }
     if (!form.description.trim()) { toast.error("Conte como foi a experiência"); return; }
     if (form.satisfaction_action === "") { toast.error("Informe sua satisfação com a ação"); return; }
     if (form.satisfaction_support === "") { toast.error("Informe sua satisfação com a assistência recebida"); return; }
@@ -123,17 +124,36 @@ const RegisterAction = () => {
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
 
-    // Sincroniza horas na planilha (coluna AG)
+    // Sincroniza horas na planilha (coluna AG da base)
     try {
-      const { data: syncData, error: syncError } = await supabase.functions.invoke("sheet-add-hours", {
+      await supabase.functions.invoke("sheet-add-hours", {
         body: { credential: form.volunteer_credential.trim(), hours: parseFloat(form.donated_hours) },
       });
-      if (syncError || (syncData && syncData.ok === false)) {
-        console.warn("Falha ao sincronizar com a planilha:", syncError || syncData?.error);
-        toast.warning("Ação registrada, mas não foi possível atualizar a planilha.");
-      }
     } catch (err) {
       console.warn("Erro ao chamar sheet-add-hours:", err);
+    }
+
+    // Envia para a aba "DIÁRIO DE AÇÃO DO APP"
+    try {
+      await supabase.functions.invoke("sheet-action-diary", {
+        body: {
+          volunteer_name: form.volunteer_name.trim(),
+          volunteer_credential: form.volunteer_credential.trim(),
+          works_at_cejam: form.works_at_cejam === "sim",
+          category: form.category,
+          action_name: form.action_name.trim(),
+          action_date: form.action_date,
+          donated_hours: parseFloat(form.donated_hours),
+          people_impacted: parseInt(form.people_impacted),
+          location: form.location.trim(),
+          description: form.description.trim(),
+          satisfaction_action: parseInt(form.satisfaction_action),
+          satisfaction_support: parseInt(form.satisfaction_support),
+          photo_url,
+        },
+      });
+    } catch (err) {
+      console.warn("Erro ao chamar sheet-action-diary:", err);
     }
 
     fireConfetti();
