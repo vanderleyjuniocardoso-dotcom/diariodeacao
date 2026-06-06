@@ -77,15 +77,18 @@ const Dashboard = () => {
         .order("action_date", { ascending: false });
 
       let sheetHours = 0;
+      let sheetGgl: string | null = null;
       const credential = profile?.volunteer_credential?.trim();
       if (credential) {
         try {
           const { data: sh } = await supabase.functions.invoke("sheet-hours", { body: { credential } });
           if (sh && typeof sh.hours === "number") sheetHours = sh.hours;
+          if (sh && typeof sh.gglName === "string" && sh.gglName.trim()) sheetGgl = sh.gglName.trim();
         } catch (e) {
           console.error("sheet-hours invoke failed", e);
         }
       }
+      if (!cancelled) setSheetGglName(sheetGgl);
 
       if (cancelled) return;
       if (data) {
