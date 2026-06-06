@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ totalHours: 0, totalActions: 0, workshops: 0, engagementMonths: 0, sheetHours: 0, peopleImpacted: 0 });
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [gglName, setGglName] = useState<string | null>(null);
+  const [sheetGglName, setSheetGglName] = useState<string | null>(null);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [selectedAction, setSelectedAction] = useState<ActionRow | null>(null);
