@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
@@ -163,7 +163,10 @@ const Admin = () => {
     toast.success("Dados exportados com sucesso!");
   };
 
-  const filteredVolunteers = volunteers.filter((v) =>
+  const rankedVolunteers = [...volunteers]
+    .sort((a, b) => b.totalHours - a.totalHours || b.totalActions - a.totalActions)
+    .map((v, i) => ({ ...v, rank: i + 1 }));
+  const filteredVolunteers = rankedVolunteers.filter((v) =>
     v.full_name.toLowerCase().includes(volunteerFilter.toLowerCase()) ||
     v.email.toLowerCase().includes(volunteerFilter.toLowerCase())
   );
@@ -208,7 +211,7 @@ const Admin = () => {
       <div className="px-5 mt-5">
         <Tabs defaultValue="volunteers" className="w-full">
           <TabsList className="w-full grid grid-cols-6 h-auto">
-            <TabsTrigger value="volunteers" className="text-[9px] px-0.5"><Users className="h-3 w-3 mr-0.5" />Cadast.</TabsTrigger>
+            <TabsTrigger value="volunteers" className="text-[9px] px-0.5"><Trophy className="h-3 w-3 mr-0.5" />Ranking</TabsTrigger>
             <TabsTrigger value="base" className="text-[9px] px-0.5"><IdCard className="h-3 w-3 mr-0.5" />Base</TabsTrigger>
             <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
             <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
@@ -252,25 +255,31 @@ const Admin = () => {
               <div className="text-center py-10 text-muted-foreground">Carregando...</div>
             ) : (
               <div className="space-y-3">
-                {filteredVolunteers.map((v) => (
-                  <div key={v.id} className="glass-card rounded-xl p-4">
-                    <p className="font-semibold text-foreground">{v.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{v.email}</p>
-                    <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{v.totalHours}h</span>
-                      <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{v.totalActions} ações</span>
+                {filteredVolunteers.map((v) => {
+                  const medal = v.rank === 1 ? "#FFD700" : v.rank === 2 ? "#C0C0C0" : v.rank === 3 ? "#CD7F32" : null;
+                  return (
+                    <div key={v.id} className="glass-card rounded-xl p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-muted-foreground w-6">{v.rank}º</span>
+                        {medal && <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: medal, fill: medal }} />}
+                        <p className="font-semibold text-foreground flex-1">{v.full_name}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 ml-8">Nível {v.volunteer_level}</p>
+                      <div className="flex gap-4 mt-2 ml-8 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{v.totalHours}h</span>
+                        <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{v.totalActions} ações</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-3 ml-8">
+                        <span className="text-xs font-medium text-foreground">Nível:</span>
+                        {[1, 2, 3].map((lvl) => (
+                          <Button key={lvl} size="sm" variant={v.volunteer_level === lvl ? "default" : "outline"} onClick={() => updateLevel(v.id, lvl)} className="h-7 px-3 text-xs">
+                            {lvl}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-3">
-                      <span className="text-xs font-medium text-foreground">Nível:</span>
-                      {[1, 2, 3].map((lvl) => (
-                        <Button key={lvl} size="sm" variant={v.volunteer_level === lvl ? "default" : "outline"} onClick={() => updateLevel(v.id, lvl)} className="h-7 px-3 text-xs">
-                          Nível {lvl}
-                        </Button>
-                      ))}
-                    </div>
-                    <CredentialEditor initial={v.volunteer_credential ?? ""} onSave={(value) => updateCredential(v.id, value)} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>
