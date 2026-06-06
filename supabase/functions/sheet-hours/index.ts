@@ -8,21 +8,20 @@ const SHEET_NAME = 'BASE DE VOLUNTÁRIOS';
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_sheets/v4';
 
 // In-memory cache (persists between warm invocations of the same edge worker)
-const CACHE_TTL_MS = 30_000; // 30s — quick refresh so AG column edits propagate fast
-let cache: { at: number; credCol: any[][]; hoursCol: any[][] } | null = null;
-let inflight: Promise<{ credCol: any[][]; hoursCol: any[][] }> | null = null;
+const CACHE_TTL_MS = 30_000; // 30s — quick refresh so column edits propagate fast
+let cache: { at: number; credCol: any[][]; hoursCol: any[][]; gglCol: any[][] } | null = null;
+let inflight: Promise<{ credCol: any[][]; hoursCol: any[][]; gglCol: any[][] }> | null = null;
 
 async function fetchSheet(LOVABLE_API_KEY: string, GOOGLE_SHEETS_API_KEY: string) {
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
-    return { credCol: cache.credCol, hoursCol: cache.hoursCol };
+    return { credCol: cache.credCol, hoursCol: cache.hoursCol, gglCol: cache.gglCol };
   }
   if (inflight) return inflight;
 
   inflight = (async () => {
-    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C4:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AG4:AG`)}`;
+    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C4:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AG4:AG`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AE4:AE`)}`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`;
 
-    // Retry with exponential backoff on 429/5xx
     let lastErr = '';
     for (let attempt = 0; attempt < 3; attempt++) {
       const resp = await fetch(url, {
@@ -35,17 +34,17 @@ async function fetchSheet(LOVABLE_API_KEY: string, GOOGLE_SHEETS_API_KEY: string
       if (resp.ok) {
         const credCol: any[][] = data.valueRanges?.[0]?.values ?? [];
         const hoursCol: any[][] = data.valueRanges?.[1]?.values ?? [];
-        cache = { at: Date.now(), credCol, hoursCol };
-        return { credCol, hoursCol };
+        const gglCol: any[][] = data.valueRanges?.[2]?.values ?? [];
+        cache = { at: Date.now(), credCol, hoursCol, gglCol };
+        return { credCol, hoursCol, gglCol };
       }
       lastErr = `Sheets API failed [${resp.status}]: ${JSON.stringify(data)}`;
       if (resp.status !== 429 && resp.status < 500) break;
       await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
     }
-    // Serve stale cache if available, otherwise return empty (don't 500 the client)
-    if (cache) return { credCol: cache.credCol, hoursCol: cache.hoursCol };
+    if (cache) return { credCol: cache.credCol, hoursCol: cache.hoursCol, gglCol: cache.gglCol };
     console.error('sheet-hours fetch failed, returning empty:', lastErr);
-    return { credCol: [], hoursCol: [] };
+    return { credCol: [], hoursCol: [], gglCol: [] };
   })();
 
   try {
@@ -78,22 +77,24 @@ Deno.serve(async (req) => {
     }
 
     const target = credential.trim().toLowerCase();
-    const { credCol, hoursCol } = await fetchSheet(LOVABLE_API_KEY, GOOGLE_SHEETS_API_KEY);
+    const { credCol, hoursCol, gglCol } = await fetchSheet(LOVABLE_API_KEY, GOOGLE_SHEETS_API_KEY);
 
     let hours = 0;
     let found = false;
+    let gglName = '';
     for (let i = 0; i < credCol.length; i++) {
       const cell = String(credCol[i]?.[0] ?? '').trim().toLowerCase();
       if (cell && cell === target) {
         const raw = hoursCol[i]?.[0];
         const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace(',', '.'));
         if (!isNaN(num)) hours = num;
+        gglName = String(gglCol[i]?.[0] ?? '').trim();
         found = true;
         break;
       }
     }
 
-    return new Response(JSON.stringify({ hours, found }), {
+    return new Response(JSON.stringify({ hours, found, gglName }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

@@ -171,9 +171,9 @@ export default function AdminGglManager() {
                 {isOpen && (
                   <div className="p-3 pt-0 space-y-3 border-t border-border">
                     <div>
-                      <p className="text-xs font-semibold text-foreground mb-1.5">Integrantes</p>
+                      <p className="text-xs font-semibold text-foreground mb-1.5">Gestores do GGL (nome e WhatsApp)</p>
                       {gMembers.length === 0 && (
-                        <p className="text-[11px] text-muted-foreground mb-1">Nenhum integrante.</p>
+                        <p className="text-[11px] text-muted-foreground mb-1">Nenhum gestor cadastrado.</p>
                       )}
                       <ul className="space-y-1 mb-2">
                         {gMembers.map((m) => (
@@ -204,7 +204,7 @@ export default function AdminGglManager() {
                           className="h-7 text-xs"
                         />
                         <Input
-                          placeholder="Telefone"
+                          placeholder="WhatsApp"
                           value={newMember[g.id]?.phone ?? ""}
                           onChange={(e) =>
                             setNewMember((p) => ({

@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ totalHours: 0, totalActions: 0, workshops: 0, engagementMonths: 0, sheetHours: 0, peopleImpacted: 0 });
   const [recent, setRecent] = useState<ActionRow[]>([]);
   const [gglName, setGglName] = useState<string | null>(null);
+  const [sheetGglName, setSheetGglName] = useState<string | null>(null);
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [selectedAction, setSelectedAction] = useState<ActionRow | null>(null);
@@ -76,15 +77,18 @@ const Dashboard = () => {
         .order("action_date", { ascending: false });
 
       let sheetHours = 0;
+      let sheetGgl: string | null = null;
       const credential = profile?.volunteer_credential?.trim();
       if (credential) {
         try {
           const { data: sh } = await supabase.functions.invoke("sheet-hours", { body: { credential } });
           if (sh && typeof sh.hours === "number") sheetHours = sh.hours;
+          if (sh && typeof sh.gglName === "string" && sh.gglName.trim()) sheetGgl = sh.gglName.trim();
         } catch (e) {
           console.error("sheet-hours invoke failed", e);
         }
       }
+      if (!cancelled) setSheetGglName(sheetGgl);
 
       if (cancelled) return;
       if (data) {
@@ -197,8 +201,8 @@ const Dashboard = () => {
             <MapPin className="h-5 w-5" />
           </div>
           <p className="text-sm flex-1">
-            <span className="opacity-80">Seu GGL é:</span>{" "}
-            <span className="font-bold font-heading">{gglName ?? "..."}</span>
+            <span className="opacity-80">GGL é:</span>{" "}
+            <span className="font-bold font-heading">{sheetGglName ?? gglName ?? "..."}</span>
           </p>
         </div>
 
