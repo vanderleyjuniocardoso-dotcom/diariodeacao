@@ -8,7 +8,7 @@ const SHEET_NAME = 'BASE DE VOLUNTÁRIOS';
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_sheets/v4';
 
 // In-memory cache (persists between warm invocations of the same edge worker)
-const CACHE_TTL_MS = 5 * 60_000; // 5min — keeps us well under 300 reads/min quota across cold workers
+const CACHE_TTL_MS = 30_000; // 30s — quick refresh so AG column edits propagate fast
 let cache: { at: number; credCol: any[][]; hoursCol: any[][] } | null = null;
 let inflight: Promise<{ credCol: any[][]; hoursCol: any[][] }> | null = null;
 
