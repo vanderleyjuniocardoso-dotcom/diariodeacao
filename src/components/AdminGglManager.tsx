@@ -204,7 +204,7 @@ export default function AdminGglManager() {
                           className="h-7 text-xs"
                         />
                         <Input
-                          placeholder="Telefone"
+                          placeholder="WhatsApp"
                           value={newMember[g.id]?.phone ?? ""}
                           onChange={(e) =>
                             setNewMember((p) => ({
