@@ -19,7 +19,7 @@ async function fetchSheet(LOVABLE_API_KEY: string, GOOGLE_SHEETS_API_KEY: string
   if (inflight) return inflight;
 
   inflight = (async () => {
-    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C5:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AF5:AF`)}`;
+    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C4:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AG4:AG`)}`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`;
 
     // Retry with exponential backoff on 429/5xx
