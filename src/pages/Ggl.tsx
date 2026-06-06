@@ -133,7 +133,7 @@ const Ggl = () => {
             <div className="glass-card rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Users className="h-5 w-5 text-primary" />
-                <h2 className="font-semibold text-foreground">Integrantes</h2>
+                <h2 className="font-semibold text-foreground">Gestores do GGL</h2>
               </div>
               {members.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nenhum integrante cadastrado.</p>
