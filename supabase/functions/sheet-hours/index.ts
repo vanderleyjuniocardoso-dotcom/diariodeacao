@@ -8,7 +8,7 @@ const SHEET_NAME = 'BASE DE VOLUNTÁRIOS';
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/google_sheets/v4';
 
 // In-memory cache (persists between warm invocations of the same edge worker)
-const CACHE_TTL_MS = 5 * 60_000; // 5min — keeps us well under 300 reads/min quota across cold workers
+const CACHE_TTL_MS = 30_000; // 30s — quick refresh so AG column edits propagate fast
 let cache: { at: number; credCol: any[][]; hoursCol: any[][] } | null = null;
 let inflight: Promise<{ credCol: any[][]; hoursCol: any[][] }> | null = null;
 
@@ -19,7 +19,7 @@ async function fetchSheet(LOVABLE_API_KEY: string, GOOGLE_SHEETS_API_KEY: string
   if (inflight) return inflight;
 
   inflight = (async () => {
-    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C5:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AF5:AF`)}`;
+    const ranges = `ranges=${encodeURIComponent(`${SHEET_NAME}!C4:C`)}&ranges=${encodeURIComponent(`${SHEET_NAME}!AG4:AG`)}`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${ranges}&valueRenderOption=UNFORMATTED_VALUE`;
 
     // Retry with exponential backoff on 429/5xx
