@@ -211,7 +211,7 @@ const Admin = () => {
       <div className="px-5 mt-5">
         <Tabs defaultValue="volunteers" className="w-full">
           <TabsList className="w-full grid grid-cols-6 h-auto">
-            <TabsTrigger value="volunteers" className="text-[9px] px-0.5"><Users className="h-3 w-3 mr-0.5" />Cadast.</TabsTrigger>
+            <TabsTrigger value="volunteers" className="text-[9px] px-0.5"><Trophy className="h-3 w-3 mr-0.5" />Ranking</TabsTrigger>
             <TabsTrigger value="base" className="text-[9px] px-0.5"><IdCard className="h-3 w-3 mr-0.5" />Base</TabsTrigger>
             <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
             <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
