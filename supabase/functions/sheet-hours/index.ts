@@ -77,22 +77,24 @@ Deno.serve(async (req) => {
     }
 
     const target = credential.trim().toLowerCase();
-    const { credCol, hoursCol } = await fetchSheet(LOVABLE_API_KEY, GOOGLE_SHEETS_API_KEY);
+    const { credCol, hoursCol, gglCol } = await fetchSheet(LOVABLE_API_KEY, GOOGLE_SHEETS_API_KEY);
 
     let hours = 0;
     let found = false;
+    let gglName = '';
     for (let i = 0; i < credCol.length; i++) {
       const cell = String(credCol[i]?.[0] ?? '').trim().toLowerCase();
       if (cell && cell === target) {
         const raw = hoursCol[i]?.[0];
         const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '0').replace(',', '.'));
         if (!isNaN(num)) hours = num;
+        gglName = String(gglCol[i]?.[0] ?? '').trim();
         found = true;
         break;
       }
     }
 
-    return new Response(JSON.stringify({ hours, found }), {
+    return new Response(JSON.stringify({ hours, found, gglName }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
