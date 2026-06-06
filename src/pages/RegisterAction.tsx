@@ -253,12 +253,33 @@ const RegisterAction = () => {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
-          <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
+          <Label><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Você trabalha no CEJAM?</Label>
+          <div className="flex gap-2">
+            {[
+              { v: "sim", label: "Sim" },
+              { v: "nao", label: "Não" },
+            ].map((opt) => {
+              const selected = form.works_at_cejam === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => update("works_at_cejam", opt.v)}
+                  className={`flex-1 h-10 rounded-lg text-sm font-semibold border transition-colors ${
+                    selected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-input hover:bg-muted"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="category"><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Categoria</Label>
+          <Label htmlFor="category"><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Qual a categoria da ação?</Label>
           <Select value={form.category} onValueChange={(v) => update("category", v)} required>
             <SelectTrigger id="category">
               <SelectValue placeholder="Selecione uma categoria" />
@@ -271,29 +292,34 @@ const RegisterAction = () => {
           </Select>
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
+          <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="date"><Calendar className="inline h-4 w-4 mr-1 text-muted-foreground" />Data</Label>
+            <Label htmlFor="date"><Calendar className="inline h-4 w-4 mr-1 text-muted-foreground" />Data da ação</Label>
             <Input id="date" type="date" value={form.action_date} onChange={(e) => update("action_date", e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="hours"><Clock className="inline h-4 w-4 mr-1 text-muted-foreground" />Horas doadas</Label>
+            <Label htmlFor="hours"><Clock className="inline h-4 w-4 mr-1 text-muted-foreground" />Quantas horas durou?</Label>
             <Input id="hours" type="number" step="0.5" min="0.5" value={form.donated_hours} onChange={(e) => update("donated_hours", e.target.value)} placeholder="Ex: 4" required />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="location"><MapPin className="inline h-4 w-4 mr-1 text-muted-foreground" />Local</Label>
-          <Input id="location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Ex: Centro Comunitário São Paulo" required />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="impacted"><Users className="inline h-4 w-4 mr-1 text-muted-foreground" />Pessoas impactadas</Label>
+          <Label htmlFor="impacted"><Users className="inline h-4 w-4 mr-1 text-muted-foreground" />Quantas pessoas beneficiadas?</Label>
           <Input id="impacted" type="number" min="0" step="1" value={form.people_impacted} onChange={(e) => update("people_impacted", e.target.value)} placeholder="Ex: 50" required />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="desc"><Heart className="inline h-4 w-4 mr-1 text-muted-foreground" />Como foi a experiência?</Label>
+          <Label htmlFor="location"><MapPin className="inline h-4 w-4 mr-1 text-muted-foreground" />Local da ação</Label>
+          <Input id="location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Ex: Centro Comunitário São Paulo" required />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="desc"><Heart className="inline h-4 w-4 mr-1 text-muted-foreground" />Como foi a sua experiência?</Label>
           <Textarea
             id="desc"
             value={form.description}
@@ -303,6 +329,7 @@ const RegisterAction = () => {
             required
           />
         </div>
+
 
         {/* Satisfação */}
         {[
