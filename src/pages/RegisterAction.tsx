@@ -52,12 +52,13 @@ const RegisterAction = () => {
   const [form, setForm] = useState({
     volunteer_name: "",
     volunteer_credential: "",
-    action_name: "",
+    works_at_cejam: "",
     category: "",
+    action_name: "",
     action_date: new Date().toISOString().split("T")[0],
-    location: "",
     donated_hours: "",
     people_impacted: "",
+    location: "",
     description: "",
     satisfaction_action: "",
     satisfaction_support: "",
@@ -81,12 +82,13 @@ const RegisterAction = () => {
     // Validação: todos os campos são obrigatórios
     if (!form.volunteer_name.trim()) { toast.error("Informe seu nome"); return; }
     if (!form.volunteer_credential.trim()) { toast.error("Informe sua credencial"); return; }
-    if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
+    if (form.works_at_cejam === "") { toast.error("Informe se você trabalha no CEJAM"); return; }
     if (!form.category) { toast.error("Selecione uma categoria"); return; }
+    if (!form.action_name.trim()) { toast.error("Informe o nome da ação"); return; }
     if (!form.action_date) { toast.error("Informe a data da ação"); return; }
-    if (!form.donated_hours || parseFloat(form.donated_hours) <= 0) { toast.error("Informe as horas doadas"); return; }
+    if (!form.donated_hours || parseFloat(form.donated_hours) <= 0) { toast.error("Informe quantas horas durou"); return; }
+    if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas beneficiadas"); return; }
     if (!form.location.trim()) { toast.error("Informe o local da ação"); return; }
-    if (!form.people_impacted || parseInt(form.people_impacted) < 0) { toast.error("Informe o número de pessoas impactadas"); return; }
     if (!form.description.trim()) { toast.error("Conte como foi a experiência"); return; }
     if (form.satisfaction_action === "") { toast.error("Informe sua satisfação com a ação"); return; }
     if (form.satisfaction_support === "") { toast.error("Informe sua satisfação com a assistência recebida"); return; }
@@ -122,17 +124,36 @@ const RegisterAction = () => {
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
 
-    // Sincroniza horas na planilha (coluna AG)
+    // Sincroniza horas na planilha (coluna AG da base)
     try {
-      const { data: syncData, error: syncError } = await supabase.functions.invoke("sheet-add-hours", {
+      await supabase.functions.invoke("sheet-add-hours", {
         body: { credential: form.volunteer_credential.trim(), hours: parseFloat(form.donated_hours) },
       });
-      if (syncError || (syncData && syncData.ok === false)) {
-        console.warn("Falha ao sincronizar com a planilha:", syncError || syncData?.error);
-        toast.warning("Ação registrada, mas não foi possível atualizar a planilha.");
-      }
     } catch (err) {
       console.warn("Erro ao chamar sheet-add-hours:", err);
+    }
+
+    // Envia para a aba "DIÁRIO DE AÇÃO DO APP"
+    try {
+      await supabase.functions.invoke("sheet-action-diary", {
+        body: {
+          volunteer_name: form.volunteer_name.trim(),
+          volunteer_credential: form.volunteer_credential.trim(),
+          works_at_cejam: form.works_at_cejam === "sim",
+          category: form.category,
+          action_name: form.action_name.trim(),
+          action_date: form.action_date,
+          donated_hours: parseFloat(form.donated_hours),
+          people_impacted: parseInt(form.people_impacted),
+          location: form.location.trim(),
+          description: form.description.trim(),
+          satisfaction_action: parseInt(form.satisfaction_action),
+          satisfaction_support: parseInt(form.satisfaction_support),
+          photo_url,
+        },
+      });
+    } catch (err) {
+      console.warn("Erro ao chamar sheet-action-diary:", err);
     }
 
     fireConfetti();
@@ -232,12 +253,33 @@ const RegisterAction = () => {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
-          <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
+          <Label><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Você trabalha no CEJAM?</Label>
+          <div className="flex gap-2">
+            {[
+              { v: "sim", label: "Sim" },
+              { v: "nao", label: "Não" },
+            ].map((opt) => {
+              const selected = form.works_at_cejam === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => update("works_at_cejam", opt.v)}
+                  className={`flex-1 h-10 rounded-lg text-sm font-semibold border transition-colors ${
+                    selected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-input hover:bg-muted"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="category"><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Categoria</Label>
+          <Label htmlFor="category"><Tag className="inline h-4 w-4 mr-1 text-muted-foreground" />Qual a categoria da ação?</Label>
           <Select value={form.category} onValueChange={(v) => update("category", v)} required>
             <SelectTrigger id="category">
               <SelectValue placeholder="Selecione uma categoria" />
@@ -250,29 +292,34 @@ const RegisterAction = () => {
           </Select>
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="name"><FileText className="inline h-4 w-4 mr-1 text-muted-foreground" />Nome da ação</Label>
+          <Input id="name" value={form.action_name} onChange={(e) => update("action_name", e.target.value)} placeholder="Ex: Distribuição de alimentos" required />
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="date"><Calendar className="inline h-4 w-4 mr-1 text-muted-foreground" />Data</Label>
+            <Label htmlFor="date"><Calendar className="inline h-4 w-4 mr-1 text-muted-foreground" />Data da ação</Label>
             <Input id="date" type="date" value={form.action_date} onChange={(e) => update("action_date", e.target.value)} required />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="hours"><Clock className="inline h-4 w-4 mr-1 text-muted-foreground" />Horas doadas</Label>
+            <Label htmlFor="hours"><Clock className="inline h-4 w-4 mr-1 text-muted-foreground" />Quantas horas durou?</Label>
             <Input id="hours" type="number" step="0.5" min="0.5" value={form.donated_hours} onChange={(e) => update("donated_hours", e.target.value)} placeholder="Ex: 4" required />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="location"><MapPin className="inline h-4 w-4 mr-1 text-muted-foreground" />Local</Label>
-          <Input id="location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Ex: Centro Comunitário São Paulo" required />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="impacted"><Users className="inline h-4 w-4 mr-1 text-muted-foreground" />Pessoas impactadas</Label>
+          <Label htmlFor="impacted"><Users className="inline h-4 w-4 mr-1 text-muted-foreground" />Quantas pessoas beneficiadas?</Label>
           <Input id="impacted" type="number" min="0" step="1" value={form.people_impacted} onChange={(e) => update("people_impacted", e.target.value)} placeholder="Ex: 50" required />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="desc"><Heart className="inline h-4 w-4 mr-1 text-muted-foreground" />Como foi a experiência?</Label>
+          <Label htmlFor="location"><MapPin className="inline h-4 w-4 mr-1 text-muted-foreground" />Local da ação</Label>
+          <Input id="location" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="Ex: Centro Comunitário São Paulo" required />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="desc"><Heart className="inline h-4 w-4 mr-1 text-muted-foreground" />Como foi a sua experiência?</Label>
           <Textarea
             id="desc"
             value={form.description}
@@ -282,6 +329,7 @@ const RegisterAction = () => {
             required
           />
         </div>
+
 
         {/* Satisfação */}
         {[
