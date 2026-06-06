@@ -163,7 +163,10 @@ const Admin = () => {
     toast.success("Dados exportados com sucesso!");
   };
 
-  const filteredVolunteers = volunteers.filter((v) =>
+  const rankedVolunteers = [...volunteers]
+    .sort((a, b) => b.totalHours - a.totalHours || b.totalActions - a.totalActions)
+    .map((v, i) => ({ ...v, rank: i + 1 }));
+  const filteredVolunteers = rankedVolunteers.filter((v) =>
     v.full_name.toLowerCase().includes(volunteerFilter.toLowerCase()) ||
     v.email.toLowerCase().includes(volunteerFilter.toLowerCase())
   );
