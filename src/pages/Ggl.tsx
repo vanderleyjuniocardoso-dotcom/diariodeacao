@@ -27,22 +27,46 @@ const Ggl = () => {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const gid = profile?.ggl_id;
-      if (!gid) {
+      let groupId: string | null = null;
+
+      // 1) Tenta resolver GGL pela planilha (credencial -> coluna AE)
+      const credential = profile?.volunteer_credential?.trim();
+      if (credential) {
+        try {
+          const { data: sh } = await supabase.functions.invoke("sheet-hours", { body: { credential } });
+          const sheetGgl = (sh?.gglName ?? "").toString().trim();
+          if (sheetGgl) {
+            const { data: matches } = await supabase
+              .from("ggl_groups")
+              .select("id, unit_name, cities, unit_actions")
+              .ilike("unit_name", sheetGgl);
+            if (matches && matches.length > 0) {
+              groupId = (matches[0] as any).id;
+            }
+          }
+        } catch (e) {
+          console.error("sheet-hours (ggl) failed", e);
+        }
+      }
+
+      // 2) Fallback: usa o ggl_id vinculado no perfil
+      if (!groupId) groupId = profile?.ggl_id ?? null;
+
+      if (!groupId) {
         setGroup(null);
         setMembers([]);
         setLoading(false);
         return;
       }
       const [{ data: g }, { data: ms }] = await Promise.all([
-        supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", gid).maybeSingle(),
-        supabase.from("ggl_members").select("id, name, phone").eq("ggl_id", gid).order("name"),
+        supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", groupId).maybeSingle(),
+        supabase.from("ggl_members").select("id, name, phone").eq("ggl_id", groupId).order("name"),
       ]);
       setGroup(g as Group | null);
       setMembers((ms as Member[]) ?? []);
       setLoading(false);
     })();
-  }, [profile?.ggl_id]);
+  }, [profile?.ggl_id, profile?.volunteer_credential]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
