@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Download, Share, Plus, MoreVertical } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -57,7 +58,22 @@ const InstallAppButton = () => {
       }
       if ("serviceWorker" in navigator) {
         const { subscribeToPush, isInIframe } = await import("@/lib/push");
-        if (!isInIframe) await subscribeToPush().catch(() => {});
+        if (isInIframe) return;
+        const sub = await subscribeToPush().catch(() => null);
+        if (!sub) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const json: any = sub.toJSON();
+        const { error } = await supabase.from("push_subscriptions").insert({
+          user_id: user.id,
+          endpoint: json.endpoint,
+          p256dh: json.keys.p256dh,
+          auth: json.keys.auth,
+          user_agent: navigator.userAgent,
+        });
+        if (error && !error.message.includes("duplicate")) {
+          console.error("save subscription error", error);
+        }
       }
     } catch {}
   };
