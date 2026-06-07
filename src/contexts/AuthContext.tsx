@@ -28,7 +28,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    if (data) setProfile(data);
+    if (!data) return;
+    // Backfill credential + avatar from admin_volunteers / volunteer_registrations if missing
+    try {
+      const needsCred = !data.volunteer_credential;
+      const needsAvatar = !data.avatar_url;
+      if ((needsCred || needsAvatar) && data.cpf) {
+        const patch: any = {};
+        if (needsCred) {
+          const { data: av } = await supabase
+            .from("admin_volunteers")
+            .select("credencial")
+            .eq("cpf", data.cpf)
+            .maybeSingle();
+          if (av?.credencial) patch.volunteer_credential = av.credencial;
+        }
+        if (needsAvatar) {
+          const { data: reg } = await (supabase.from as any)("volunteer_registrations")
+            .select("photo_url")
+            .eq("cpf", data.cpf)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (reg?.photo_url) patch.avatar_url = reg.photo_url;
+        }
+        if (Object.keys(patch).length > 0) {
+          const { data: updated } = await supabase
+            .from("profiles")
+            .update(patch)
+            .eq("id", userId)
+            .select("*")
+            .maybeSingle();
+          if (updated) {
+            setProfile(updated);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("profile backfill failed", e);
+    }
+    setProfile(data);
   };
 
   const checkAdmin = async (userId: string) => {
