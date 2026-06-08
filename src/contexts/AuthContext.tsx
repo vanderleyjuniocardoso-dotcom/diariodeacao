@@ -29,24 +29,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
     if (!data) return;
-    // Backfill credential + avatar from admin_volunteers / volunteer_registrations if missing
+    // Backfill cpf + credential + avatar
     try {
       const needsCred = !data.volunteer_credential;
       const needsAvatar = !data.avatar_url;
-      if ((needsCred || needsAvatar) && data.cpf) {
+      const needsCpf = !data.cpf;
+      let cpf: string | null = data.cpf ?? null;
+
+      // If we don't have CPF, try to find it from latest registration by email
+      if (!cpf && data.email) {
+        const { data: regByEmail } = await (supabase.from as any)("volunteer_registrations")
+          .select("cpf")
+          .eq("email", String(data.email).toLowerCase())
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (regByEmail?.cpf) cpf = regByEmail.cpf;
+      }
+
+      if ((needsCred || needsAvatar || needsCpf) && cpf) {
         const patch: any = {};
+        if (needsCpf) patch.cpf = cpf;
         if (needsCred) {
           const { data: av } = await supabase
             .from("admin_volunteers")
             .select("credencial")
-            .eq("cpf", data.cpf)
+            .eq("cpf", cpf)
             .maybeSingle();
           if (av?.credencial) patch.volunteer_credential = av.credencial;
         }
         if (needsAvatar) {
           const { data: reg } = await (supabase.from as any)("volunteer_registrations")
             .select("photo_url")
-            .eq("cpf", data.cpf)
+            .eq("cpf", cpf)
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
