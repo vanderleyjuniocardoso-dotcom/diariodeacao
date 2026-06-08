@@ -156,7 +156,9 @@ const Dashboard = () => {
               <p className="text-primary-foreground/80 text-sm">Olá,</p>
               <h1 className="text-xl font-bold font-heading text-primary-foreground">{firstName} 👋</h1>
               {profile?.volunteer_credential && (
-                <p className="text-xs text-primary-foreground/80 mt-0.5">Credencial: <span className="font-semibold text-primary-foreground">{profile.volunteer_credential}</span></p>
+                <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary-foreground text-primary text-xs font-bold shadow-sm">
+                  <Shield className="h-3 w-3" /> {profile.volunteer_credential}
+                </span>
               )}
             </div>
           </div>
