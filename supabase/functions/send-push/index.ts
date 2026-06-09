@@ -104,27 +104,31 @@ Deno.serve(async (req) => {
     });
 
 
-    const results = await Promise.allSettled(
-      (subs ?? []).map(async (s) => {
-        try {
-          await webpush.sendNotification(
-            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-            payload,
-          );
-          return { id: s.id, ok: true };
-        } catch (e: any) {
-          // Remove subscriptions that are gone (404/410)
-          if (e?.statusCode === 404 || e?.statusCode === 410) {
-            await admin.from("push_subscriptions").delete().eq("id", s.id);
+    const all = subs ?? [];
+    const BATCH = 50;
+    let sent = 0;
+    for (let i = 0; i < all.length; i += BATCH) {
+      const batch = all.slice(i, i + BATCH);
+      const results = await Promise.allSettled(
+        batch.map(async (s) => {
+          try {
+            await webpush.sendNotification(
+              { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+              payload,
+            );
+            return true;
+          } catch (e: any) {
+            if (e?.statusCode === 404 || e?.statusCode === 410) {
+              await admin.from("push_subscriptions").delete().eq("id", s.id);
+            }
+            return false;
           }
-          return { id: s.id, ok: false, error: e?.message };
-        }
-      }),
-    );
+        }),
+      );
+      sent += results.filter((r) => r.status === "fulfilled" && r.value).length;
+    }
 
-    const sent = results.filter((r) => r.status === "fulfilled" && (r.value as any).ok).length;
-
-    return new Response(JSON.stringify({ sent, total: subs?.length ?? 0 }), {
+    return new Response(JSON.stringify({ sent, total: all.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
