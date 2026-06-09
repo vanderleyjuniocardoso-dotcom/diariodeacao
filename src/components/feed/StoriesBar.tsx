@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import StoryViewer, { StoryGroup } from "./StoryViewer";
+import { compressImage } from "@/lib/image";
 
 interface Row {
   id: string;
