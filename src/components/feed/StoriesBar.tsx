@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import StoryViewer, { StoryGroup } from "./StoryViewer";
+import { compressImage } from "@/lib/image";
 
 interface Row {
   id: string;
@@ -73,16 +74,12 @@ export default function StoriesBar() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !user) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Imagem muito grande (máx 5MB)", variant: "destructive" });
-      return;
-    }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("stories").upload(path, file, {
-        contentType: file.type,
+      const compressed = await compressImage(file, { maxDim: 1440, quality: 0.82 });
+      const path = `${user.id}/${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("stories").upload(path, compressed, {
+        contentType: compressed.type,
         upsert: false,
       });
       if (upErr) throw upErr;

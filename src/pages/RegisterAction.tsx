@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Camera, Image, Loader2, MapPin, Clock, FileText, Calendar, Heart, CheckCircle, Tag, User, IdCard, X, Users, Star, Smile } from "lucide-react";
 import confetti from "canvas-confetti";
+import { compressImage } from "@/lib/image";
 
 const fireConfetti = () => {
   const duration = 3000;
@@ -98,9 +99,16 @@ const RegisterAction = () => {
 
     let photo_url: string | null = null;
 
-    const ext = photoFile.name.split(".").pop();
-    const path = `${user.id}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("action-photos").upload(path, photoFile);
+    let compressed: File;
+    try {
+      compressed = await compressImage(photoFile, { maxDim: 1600, quality: 0.82 });
+    } catch (err: any) {
+      toast.error(err.message || "Imagem inválida");
+      setLoading(false);
+      return;
+    }
+    const path = `${user.id}/${Date.now()}.jpg`;
+    const { error: uploadError } = await supabase.storage.from("action-photos").upload(path, compressed, { contentType: compressed.type });
     if (uploadError) { toast.error("Erro ao enviar foto"); setLoading(false); return; }
     const { data: urlData } = supabase.storage.from("action-photos").getPublicUrl(path);
     photo_url = urlData.publicUrl;

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Camera, Loader2 } from "lucide-react";
 import { formatCPF, isValidCPF, onlyDigits } from "@/lib/cpf";
 import { z } from "zod";
+import { compressImage } from "@/lib/image";
 
 const schema = z.object({
   full_name: z.string().trim().min(3).max(150),
@@ -94,10 +95,10 @@ const CadastroCompleto = () => {
 
     setLoading(true);
     try {
-      // Upload foto
-      const ext = photo.name.split(".").pop() || "jpg";
-      const path = `volunteer-registrations/${cpfDigits}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, photo, { upsert: true });
+      // Upload foto (comprimida)
+      const compressed = await compressImage(photo, { maxDim: 800, quality: 0.85 });
+      const path = `volunteer-registrations/${cpfDigits}-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, compressed, { upsert: true, contentType: compressed.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
 

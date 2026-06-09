@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_ggl_members_ggl_id ON public.ggl_members (ggl_id);

@@ -6,6 +6,7 @@ import { ImagePlus, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/lib/image";
 
 interface Props {
   open: boolean;
@@ -53,9 +54,16 @@ export default function CreatePostModal({ open, onOpenChange, onCreated }: Props
     setSubmitting(true);
     let image_url: string | null = null;
     if (file) {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("feed-posts").upload(path, file, { cacheControl: "3600" });
+      let toUpload: File;
+      try {
+        toUpload = await compressImage(file, { maxDim: 1600, quality: 0.82 });
+      } catch (err: any) {
+        setSubmitting(false);
+        toast({ title: "Imagem inválida", description: err.message, variant: "destructive" });
+        return;
+      }
+      const path = `${user.id}/${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("feed-posts").upload(path, toUpload, { cacheControl: "3600", contentType: toUpload.type });
       if (upErr) {
         setSubmitting(false);
         toast({ title: "Erro no upload", description: upErr.message, variant: "destructive" });

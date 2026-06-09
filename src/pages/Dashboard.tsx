@@ -10,6 +10,7 @@ import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut,
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/image";
 
 const quotes = [
   "Cada hora doada é um coração transformado.",
@@ -45,9 +46,9 @@ const Dashboard = () => {
     if (!file || !user) return;
     setUploadingAvatar(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      const compressed = await compressImage(file, { maxDim: 800, quality: 0.85 });
+      const path = `${user.id}/avatar-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, compressed, { upsert: true, contentType: compressed.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
       const { error: dbErr } = await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", user.id);
