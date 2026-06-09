@@ -6,6 +6,7 @@ import { ImagePlus, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage } from "@/lib/image";
 
 interface Props {
   open: boolean;
