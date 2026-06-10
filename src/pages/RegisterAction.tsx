@@ -51,7 +51,7 @@ const RegisterAction = () => {
   const [success, setSuccess] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
-  const [cooldownUntil, setCooldownUntil] = useState(() => Number(localStorage.getItem(ACTION_COOLDOWN_KEY) || 0) + 10000);
+  const [cooldownUntil, setCooldownUntil] = useState(() => Number(localStorage.getItem(ACTION_COOLDOWN_KEY) || 0) + 3000);
   const [now, setNow] = useState(Date.now());
 
   const [form, setForm] = useState({
@@ -154,7 +154,7 @@ const RegisterAction = () => {
     if (error) { toast.error("Erro ao registrar ação"); return; }
     const registeredAt = Date.now();
     localStorage.setItem(ACTION_COOLDOWN_KEY, String(registeredAt));
-    setCooldownUntil(registeredAt + 10000);
+    setCooldownUntil(registeredAt + 3000);
 
     // Sincroniza horas na planilha (coluna AG da base)
     try {
