@@ -42,40 +42,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) await fetchProfile(user.id);
   };
 
+  const hydrateSession = async (session: Session | null) => {
+    setSession(session);
+    setUser(session?.user ?? null);
+    if (session?.user) {
+      await Promise.all([fetchProfile(session.user.id), checkAdmin(session.user.id)]);
+      import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
+        if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
+          savePushSubscription(session.user.id).catch(() => {});
+        }
+      }).catch(() => {});
+    } else {
+      setProfile(null);
+      setIsAdmin(false);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoading(true);
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
         setTimeout(() => {
-          fetchProfile(session.user.id);
-          checkAdmin(session.user.id);
-          import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
-            if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
-              savePushSubscription(session.user.id).catch(() => {});
-            }
-          }).catch(() => {});
+          hydrateSession(session);
         }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        checkAdmin(session.user.id);
-        import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
-          if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
-            savePushSubscription(session.user.id).catch(() => {});
-          }
-        }).catch(() => {});
-      }
-      setLoading(false);
+      hydrateSession(session);
     });
 
     return () => subscription.unsubscribe();
