@@ -80,8 +80,15 @@ Deno.serve(async (req) => {
     await ensureHeaders();
 
     const created = new Date(r.created_at);
-    const mes = MONTHS_PT[created.getMonth()];
-    const dataCad = created.toLocaleDateString("pt-BR");
+    const TZ = "America/Sao_Paulo";
+    const parts = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric",
+    }).formatToParts(created).reduce((acc: Record<string, string>, p) => {
+      if (p.type !== "literal") acc[p.type] = p.value;
+      return acc;
+    }, {});
+    const mes = MONTHS_PT[parseInt(parts.month, 10) - 1];
+    const dataCad = `${parts.day}/${parts.month}/${parts.year}`;
     const photo = r.photo_url ? `=IMAGE("${r.photo_url}")` : "";
 
     const row = [
