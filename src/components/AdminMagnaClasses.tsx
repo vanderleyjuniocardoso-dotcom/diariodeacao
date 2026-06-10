@@ -3,13 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { PlayCircle, Loader2 } from "lucide-react";
+import { PlayCircle, Loader2, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const CLASSES = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2, "0")}26`);
 
 interface Enrollment {
   id: string; class_code: string; volunteer_name: string; volunteer_phone: string | null;
   started: boolean; progress: number; video_watched: boolean;
+  registration_id: string | null;
+  credencial?: string | null;
 }
 
 const AdminMagnaClasses = () => {
@@ -21,11 +24,60 @@ const AdminMagnaClasses = () => {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("magna_enrollments").select("*").order("created_at");
-    setList((data as Enrollment[]) || []);
+    const rows = (data as Enrollment[]) || [];
+    // Join credencial via volunteer_registrations.cpf -> admin_volunteers.credencial
+    const regIds = Array.from(new Set(rows.map((r) => r.registration_id).filter(Boolean))) as string[];
+    let credByReg: Record<string, string> = {};
+    if (regIds.length > 0) {
+      const { data: regs } = await supabase.from("volunteer_registrations").select("id, cpf").in("id", regIds);
+      const cpfs = Array.from(new Set((regs || []).map((r: any) => r.cpf).filter(Boolean)));
+      const { data: avs } = cpfs.length
+        ? await supabase.from("admin_volunteers").select("cpf, credencial").in("cpf", cpfs)
+        : { data: [] as any[] };
+      const credByCpf: Record<string, string> = {};
+      (avs || []).forEach((a: any) => { if (a.credencial) credByCpf[a.cpf] = a.credencial; });
+      (regs || []).forEach((r: any) => { if (credByCpf[r.cpf]) credByReg[r.id] = credByCpf[r.cpf]; });
+    }
+    setList(rows.map((r) => ({ ...r, credencial: r.registration_id ? credByReg[r.registration_id] ?? null : null })));
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
+  const exportClass = (code: string, members: Enrollment[]) => {
+    if (members.length === 0) { toast.error("Sem voluntários nesta turma"); return; }
+    const rows = members.map((m) => ({
+      Nome: m.volunteer_name || "",
+      Credencial: m.credencial || "",
+      "Conclusão (%)": m.progress ?? 0,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [{ wch: 36 }, { wch: 16 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, code);
+    XLSX.writeFile(wb, `capacitacao-magna-${code}.xlsx`);
+  };
+
+  const exportAll = () => {
+    const wb = XLSX.utils.book_new();
+    let total = 0;
+    CLASSES.forEach((code) => {
+      const members = list.filter((e) => e.class_code === code);
+      if (members.length === 0) return;
+      total += members.length;
+      const rows = members.map((m) => ({
+        Nome: m.volunteer_name || "",
+        Credencial: m.credencial || "",
+        "Conclusão (%)": m.progress ?? 0,
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [{ wch: 36 }, { wch: 16 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(wb, ws, code);
+    });
+    if (total === 0) { toast.error("Nenhum voluntário em nenhuma turma"); return; }
+    XLSX.writeFile(wb, `capacitacao-magna-todas-turmas.xlsx`);
+  };
+
 
   const startMagna = async (id: string) => {
     const { error } = await supabase.rpc("start_magna", { _enrollment_id: id });
@@ -46,16 +98,28 @@ const AdminMagnaClasses = () => {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">Voluntários organizados por turma. A turma é definida automaticamente pelo mês da reunião de boas vindas.</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground flex-1">Voluntários organizados por turma. A turma é definida automaticamente pelo mês da reunião de boas vindas.</p>
+        <Button size="sm" variant="outline" className="h-8 text-xs flex-shrink-0" onClick={exportAll}>
+          <Download className="h-3.5 w-3.5 mr-1" /> Exportar todas
+        </Button>
+      </div>
       {CLASSES.map((code) => {
         const members = list.filter((e) => e.class_code === code);
         const open = openClass === code;
         return (
           <div key={code} className="glass-card rounded-xl overflow-hidden">
-            <button onClick={() => setOpenClass(open ? null : code)} className="w-full p-3 text-left flex justify-between items-center">
-              <span className="font-mono font-semibold text-sm text-primary">{code}</span>
-              <span className="text-xs text-muted-foreground">{members.length} voluntários</span>
-            </button>
+            <div className="w-full p-3 flex justify-between items-center gap-2">
+              <button onClick={() => setOpenClass(open ? null : code)} className="flex-1 text-left flex justify-between items-center">
+                <span className="font-mono font-semibold text-sm text-primary">{code}</span>
+                <span className="text-xs text-muted-foreground ml-2">{members.length} voluntários</span>
+              </button>
+              {members.length > 0 && (
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={(ev) => { ev.stopPropagation(); exportClass(code, members); }} aria-label={`Exportar ${code}`}>
+                  <Download className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
             {open && (
               <div className="p-3 pt-0 space-y-2 border-t">
                 {members.length === 0 ? (
