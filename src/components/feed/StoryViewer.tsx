@@ -328,7 +328,6 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
       )}
 
 
-      </div>
     </div>
   );
 }
