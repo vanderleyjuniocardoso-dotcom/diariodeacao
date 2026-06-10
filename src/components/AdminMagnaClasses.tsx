@@ -11,6 +11,8 @@ const CLASSES = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(
 interface Enrollment {
   id: string; class_code: string; volunteer_name: string; volunteer_phone: string | null;
   started: boolean; progress: number; video_watched: boolean;
+  registration_id: string | null;
+  credencial?: string | null;
 }
 
 const AdminMagnaClasses = () => {
@@ -22,11 +24,60 @@ const AdminMagnaClasses = () => {
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from("magna_enrollments").select("*").order("created_at");
-    setList((data as Enrollment[]) || []);
+    const rows = (data as Enrollment[]) || [];
+    // Join credencial via volunteer_registrations.cpf -> admin_volunteers.credencial
+    const regIds = Array.from(new Set(rows.map((r) => r.registration_id).filter(Boolean))) as string[];
+    let credByReg: Record<string, string> = {};
+    if (regIds.length > 0) {
+      const { data: regs } = await supabase.from("volunteer_registrations").select("id, cpf").in("id", regIds);
+      const cpfs = Array.from(new Set((regs || []).map((r: any) => r.cpf).filter(Boolean)));
+      const { data: avs } = cpfs.length
+        ? await supabase.from("admin_volunteers").select("cpf, credencial").in("cpf", cpfs)
+        : { data: [] as any[] };
+      const credByCpf: Record<string, string> = {};
+      (avs || []).forEach((a: any) => { if (a.credencial) credByCpf[a.cpf] = a.credencial; });
+      (regs || []).forEach((r: any) => { if (credByCpf[r.cpf]) credByReg[r.id] = credByCpf[r.cpf]; });
+    }
+    setList(rows.map((r) => ({ ...r, credencial: r.registration_id ? credByReg[r.registration_id] ?? null : null })));
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
+  const exportClass = (code: string, members: Enrollment[]) => {
+    if (members.length === 0) { toast.error("Sem voluntários nesta turma"); return; }
+    const rows = members.map((m) => ({
+      Nome: m.volunteer_name || "",
+      Credencial: m.credencial || "",
+      "Conclusão (%)": m.progress ?? 0,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [{ wch: 36 }, { wch: 16 }, { wch: 14 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, code);
+    XLSX.writeFile(wb, `capacitacao-magna-${code}.xlsx`);
+  };
+
+  const exportAll = () => {
+    const wb = XLSX.utils.book_new();
+    let total = 0;
+    CLASSES.forEach((code) => {
+      const members = list.filter((e) => e.class_code === code);
+      if (members.length === 0) return;
+      total += members.length;
+      const rows = members.map((m) => ({
+        Nome: m.volunteer_name || "",
+        Credencial: m.credencial || "",
+        "Conclusão (%)": m.progress ?? 0,
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [{ wch: 36 }, { wch: 16 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(wb, ws, code);
+    });
+    if (total === 0) { toast.error("Nenhum voluntário em nenhuma turma"); return; }
+    XLSX.writeFile(wb, `capacitacao-magna-todas-turmas.xlsx`);
+  };
+
 
   const startMagna = async (id: string) => {
     const { error } = await supabase.rpc("start_magna", { _enrollment_id: id });
