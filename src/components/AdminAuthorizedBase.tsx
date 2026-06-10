@@ -37,8 +37,11 @@ const AdminAuthorizedBase = () => {
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
     if (!q) return rows;
+    const digits = onlyDigits(q);
     return rows.filter((r) =>
-      r.full_name.toLowerCase().includes(q) || r.cpf.includes(onlyDigits(q)) || (r.credencial || "").toLowerCase().includes(q)
+      r.full_name.toLowerCase().includes(q) ||
+      (!!digits && r.cpf.includes(digits)) ||
+      (r.credencial || "").toLowerCase().includes(q)
     );
   }, [filter, rows]);
 
