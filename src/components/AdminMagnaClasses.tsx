@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { PlayCircle, Loader2 } from "lucide-react";
+import { PlayCircle, Loader2, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const CLASSES = Array.from({ length: 12 }, (_, i) => `T${String(i + 1).padStart(2, "0")}26`);
 
