@@ -219,20 +219,45 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
             {story.caption}
           </p>
         )}
-        {/* Like button */}
-        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
-          <button
-            onClick={toggleLike}
-            disabled={likeBusy}
-            className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-sm rounded-full px-4 py-2 text-white active:scale-95 transition"
-            aria-label={liked ? "Descurtir story" : "Curtir story"}
-          >
-            <Heart
-              className={`h-6 w-6 ${liked ? "fill-rose-500 text-rose-500" : "text-white"}`}
-            />
-            <span className="text-sm font-medium">{likeCount}</span>
-          </button>
+        {/* Like button / owner stats */}
+        <div
+          className="absolute left-0 right-0 flex items-center justify-center gap-2 pointer-events-none z-20"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}
+        >
+          {isMine ? (
+            <button
+              onClick={() => { setPaused(true); setLikersOpen(true); }}
+              className="pointer-events-auto flex items-center gap-2 bg-black/55 backdrop-blur-sm rounded-full px-5 py-2.5 text-white active:scale-95 transition"
+              aria-label="Ver quem curtiu"
+            >
+              <Heart className="h-5 w-5 fill-rose-500 text-rose-500" />
+              <span className="text-sm font-semibold">{likeCount}</span>
+              <span className="text-xs text-white/80">{likeCount === 1 ? "curtida" : "curtidas"}</span>
+            </button>
+          ) : (
+            <button
+              onClick={toggleLike}
+              disabled={likeBusy}
+              className="pointer-events-auto flex items-center gap-2 bg-black/55 backdrop-blur-sm rounded-full px-5 py-2.5 text-white active:scale-95 transition shadow-lg"
+              aria-label={liked ? "Descurtir story" : "Curtir story"}
+            >
+              <Heart
+                className={`h-7 w-7 ${liked ? "fill-rose-500 text-rose-500" : "text-white"}`}
+              />
+              <span className="text-sm font-medium">{likeCount}</span>
+            </button>
+          )}
         </div>
+
+      </div>
+
+      {likersOpen && (
+        <LikersSheet
+          storyId={story.id}
+          onClose={() => { setLikersOpen(false); setTimeout(() => setPaused(false), 200); }}
+        />
+      )}
+
 
       </div>
     </div>
