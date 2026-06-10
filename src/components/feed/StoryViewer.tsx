@@ -103,6 +103,8 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [likeBusy, setLikeBusy] = useState(false);
+  const [likersOpen, setLikersOpen] = useState(false);
+
 
   const group = groups[groupIdx];
   const story = group?.stories[storyIdx];
