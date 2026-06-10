@@ -69,13 +69,28 @@ Deno.serve(async (req) => {
     if (error) throw error;
     if (!r) throw new Error("Cadastro não encontrado");
 
+    // Ensure entry in base autorizada (admin_volunteers) with nome, CPF e credencial
     const { data: av, error: avError } = await supabase
       .from("admin_volunteers")
       .select("credencial")
       .eq("cpf", r.cpf)
       .maybeSingle();
     if (avError) throw avError;
-    const credencial = av?.credencial || "";
+
+    let credencial = av?.credencial || "";
+    if (!credencial) {
+      const { data: nc, error: ncErr } = await supabase.rpc("next_credential");
+      if (ncErr) throw ncErr;
+      credencial = (nc as string) || "";
+    }
+
+    const { error: upErr } = await supabase
+      .from("admin_volunteers")
+      .upsert(
+        { cpf: r.cpf, full_name: r.full_name, credencial, source: "auto" },
+        { onConflict: "cpf" }
+      );
+    if (upErr) throw upErr;
 
     await ensureHeaders();
 
