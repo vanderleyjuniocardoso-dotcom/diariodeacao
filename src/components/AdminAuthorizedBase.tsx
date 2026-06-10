@@ -108,9 +108,10 @@ const AdminAuthorizedBase = () => {
   };
 
   const remove = async (cpf: string) => {
-    if (!confirm("Remover esse voluntário da base autorizada?")) return;
-    const { error } = await supabase.from("admin_volunteers").delete().eq("cpf", cpf);
+    if (!confirm("Remover esse voluntário e apagar todo o cadastro, login e histórico dele no app?")) return;
+    const { error } = await supabase.rpc("delete_authorized_volunteer" as any, { _cpf: cpf });
     if (error) { toast.error(error.message); return; }
+    toast.success("Voluntário excluído completamente");
     setRows((p) => p.filter((r) => r.cpf !== cpf));
   };
 
@@ -120,8 +121,10 @@ const AdminAuthorizedBase = () => {
     if (!confirm(msg)) return;
     const confirmText = prompt('Digite "EXCLUIR TUDO" para confirmar:');
     if (confirmText !== "EXCLUIR TUDO") { toast.error("Confirmação inválida"); return; }
-    const { error } = await supabase.from("admin_volunteers").delete().neq("cpf", "");
-    if (error) { toast.error(error.message); return; }
+    for (const row of rows) {
+      const { error } = await supabase.rpc("delete_authorized_volunteer" as any, { _cpf: row.cpf });
+      if (error) { toast.error(`Erro ao excluir ${row.full_name}: ${error.message}`); return; }
+    }
     toast.success("Base autorizada esvaziada");
     setRows([]);
   };

@@ -3,7 +3,8 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, Loader2, Download, Trophy, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, Loader2, Download } from "lucide-react";
+import AdminVoluntagramRequests from "./AdminVoluntagramRequests";
 
 interface Reg {
   id: string;
@@ -34,23 +35,10 @@ interface Reg {
 }
 
 
-interface CompletedVolunteer {
-  name: string;
-  cpf: string;
-  completedAt: string; // ISO
-}
-
-const MONTHS = [
-  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
-];
-
 const AdminPendingRegistrations = () => {
   const [list, setList] = useState<Reg[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<string | null>(null);
-  const [completed, setCompleted] = useState<CompletedVolunteer[]>([]);
-  const [openMonth, setOpenMonth] = useState<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -87,30 +75,6 @@ const AdminPendingRegistrations = () => {
     }
     setList(withBooking);
 
-
-    // Completed = voluntagram access approved (final step before going to Base)
-    const { data: reqs } = await supabase
-      .from("voluntagram_access_requests")
-      .select("registration_id, reviewed_at, status")
-      .eq("status", "approved")
-      .not("reviewed_at", "is", null);
-    const regIds = Array.from(new Set((reqs || []).map((r: any) => r.registration_id).filter(Boolean)));
-    let nameMap = new Map<string, { full_name: string; cpf: string }>();
-    if (regIds.length) {
-      const { data: regs } = await supabase
-        .from("volunteer_registrations")
-        .select("id, full_name, cpf")
-        .in("id", regIds);
-      nameMap = new Map((regs || []).map((r: any) => [r.id, { full_name: r.full_name, cpf: r.cpf }]));
-    }
-    const completedList: CompletedVolunteer[] = (reqs || [])
-      .map((r: any) => {
-        const reg = nameMap.get(r.registration_id);
-        if (!reg) return null;
-        return { name: reg.full_name, cpf: reg.cpf, completedAt: r.reviewed_at } as CompletedVolunteer;
-      })
-      .filter(Boolean) as CompletedVolunteer[];
-    setCompleted(completedList);
 
     setLoading(false);
   };
@@ -172,13 +136,6 @@ const AdminPendingRegistrations = () => {
     toast.success("Planilha exportada");
   };
 
-  const currentYear = new Date().getFullYear();
-  const byMonth = (m: number) =>
-    completed.filter((c) => {
-      const d = new Date(c.completedAt);
-      return d.getFullYear() === currentYear && d.getMonth() + 1 === m;
-    });
-
   return (
     <div className="space-y-5">
       <Button variant="outline" size="sm" className="w-full" onClick={exportXlsx}>
@@ -239,49 +196,11 @@ const AdminPendingRegistrations = () => {
         ))}
       </section>
 
-      <section className="space-y-2">
-        <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-primary" />
-          Novos voluntários que completaram capacitação
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          Voluntários do ano {currentYear} agrupados pelo mês em que concluíram reunião de boas vindas, capacitação magna e vídeo de integração.
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {MONTHS.map((name, idx) => {
-            const month = idx + 1;
-            const items = byMonth(month);
-            const isOpen = openMonth === month;
-            return (
-              <button
-                key={month}
-                onClick={() => setOpenMonth(isOpen ? null : month)}
-                className={`glass-card rounded-xl p-3 text-left transition ${isOpen ? "col-span-2 border-primary/40 border" : ""}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm text-foreground">{name}</span>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    {items.length}
-                    {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                  </span>
-                </div>
-                {isOpen && (
-                  <div className="mt-2 space-y-1">
-                    {items.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">Nenhum voluntário concluiu neste mês.</p>
-                    ) : items.map((c, i) => (
-                      <div key={i} className="text-xs border-t pt-1">
-                        <p className="font-medium text-foreground">{c.name}</p>
-                        <p className="text-muted-foreground font-mono">{c.cpf}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      <section className="space-y-3">
+        <h2 className="text-base font-bold text-foreground">Pedidos de acesso ao VOLUNTAGRAM</h2>
+        <AdminVoluntagramRequests />
       </section>
+
     </div>
   );
 };

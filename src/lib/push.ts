@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 // Public VAPID key for Web Push subscriptions (safe to expose).
 export const VAPID_PUBLIC_KEY =
   "BD94_LTYgiwVqLkpBgIl2CbAYCQORjeEAnO_nC1VAvroScgq8GhDEMXHkuAAvuHxD0P9UW0kVLpjktGUy0kXWDo";
@@ -67,5 +69,22 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
       applicationServerKey: appServerKey,
     });
   }
+  return sub;
+}
+
+export async function savePushSubscription(userId: string): Promise<PushSubscription | null> {
+  const sub = await subscribeToPush();
+  if (!sub) return null;
+  const json: any = sub.toJSON();
+  await supabase.from("push_subscriptions").upsert(
+    {
+      user_id: userId,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth,
+      user_agent: navigator.userAgent,
+    },
+    { onConflict: "endpoint" },
+  );
   return sub;
 }

@@ -10,7 +10,7 @@ const SHEET_NAME = "NOVOS VOLUNTÁRIOS";
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
 const HEADERS = [
-  "Mês do Cadastro","Data do Cadastro","Nome completo","Nome social","WhatsApp","E-mail",
+  "Mês do Cadastro","Data do Cadastro","Credencial","Nome completo","Nome social","WhatsApp","E-mail",
   "Gênero","Data de nascimento","RG","CPF","Estado civil","Município","Bairro",
   "Rua, número ou complemento","Escolaridade","Área de atuação","Profissão",
   "Trabalha no CEJAM","Unidade do CEJAM","Como conheceu o programa","Tamanho da camiseta",
@@ -38,10 +38,10 @@ async function gw(path: string, init: RequestInit = {}) {
 }
 
 async function ensureHeaders() {
-  const range = `${SHEET_NAME}!A1:Z1`;
+  const range = `${SHEET_NAME}!A1:AA1`;
   const data = await gw(`/spreadsheets/${SPREADSHEET_ID}/values/${range}`);
   const row = data.values?.[0] || [];
-  if (row.length === 0) {
+  if (row.length === 0 || !row.includes("Credencial")) {
     await gw(
       `/spreadsheets/${SPREADSHEET_ID}/values/${range}?valueInputOption=USER_ENTERED`,
       { method: "PUT", body: JSON.stringify({ range, majorDimension: "ROWS", values: [HEADERS] }) }
@@ -69,6 +69,14 @@ Deno.serve(async (req) => {
     if (error) throw error;
     if (!r) throw new Error("Cadastro não encontrado");
 
+    const { data: av, error: avError } = await supabase
+      .from("admin_volunteers")
+      .select("credencial")
+      .eq("cpf", r.cpf)
+      .maybeSingle();
+    if (avError) throw avError;
+    const credencial = av?.credencial || "";
+
     await ensureHeaders();
 
     const created = new Date(r.created_at);
@@ -77,7 +85,7 @@ Deno.serve(async (req) => {
     const photo = r.photo_url ? `=IMAGE("${r.photo_url}")` : "";
 
     const row = [
-      mes, dataCad, r.full_name || "", r.social_name || "", r.whatsapp || "", r.email || "",
+      mes, dataCad, credencial, r.full_name || "", r.social_name || "", r.whatsapp || "", r.email || "",
       r.gender || "", r.birth_date || "", r.rg || "", r.cpf || "", r.marital_status || "",
       r.city || "", r.neighborhood || "", r.address || "", r.education || "",
       r.area_of_work || "", r.profession || "", r.works_at_cejam ? "Sim" : "Não",

@@ -27,62 +27,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
 
   const fetchProfile = async (userId: string) => {
+    await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
     if (!data) return;
-    // Backfill cpf + credential + avatar
-    try {
-      const needsCred = !data.volunteer_credential;
-      const needsAvatar = !data.avatar_url;
-      const needsCpf = !data.cpf;
-      let cpf: string | null = data.cpf ?? null;
-
-      // If we don't have CPF, try to find it from latest registration by email
-      if (!cpf && data.email) {
-        const { data: regByEmail } = await (supabase.from as any)("volunteer_registrations")
-          .select("cpf")
-          .eq("email", String(data.email).toLowerCase())
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (regByEmail?.cpf) cpf = regByEmail.cpf;
-      }
-
-      if ((needsCred || needsAvatar || needsCpf) && cpf) {
-        const patch: any = {};
-        if (needsCpf) patch.cpf = cpf;
-        if (needsCred) {
-          const { data: av } = await supabase
-            .from("admin_volunteers")
-            .select("credencial")
-            .eq("cpf", cpf)
-            .maybeSingle();
-          if (av?.credencial) patch.volunteer_credential = av.credencial;
-        }
-        if (needsAvatar) {
-          const { data: reg } = await (supabase.from as any)("volunteer_registrations")
-            .select("photo_url")
-            .eq("cpf", cpf)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (reg?.photo_url) patch.avatar_url = reg.photo_url;
-        }
-        if (Object.keys(patch).length > 0) {
-          const { data: updated } = await supabase
-            .from("profiles")
-            .update(patch)
-            .eq("id", userId)
-            .select("*")
-            .maybeSingle();
-          if (updated) {
-            setProfile(updated);
-            return;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("profile backfill failed", e);
-    }
     setProfile(data);
   };
 
@@ -103,6 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(() => {
           fetchProfile(session.user.id);
           checkAdmin(session.user.id);
+          import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
+            if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
+              savePushSubscription(session.user.id).catch(() => {});
+            }
+          }).catch(() => {});
         }, 0);
       } else {
         setProfile(null);
@@ -117,6 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         fetchProfile(session.user.id);
         checkAdmin(session.user.id);
+        import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
+          if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
+            savePushSubscription(session.user.id).catch(() => {});
+          }
+        }).catch(() => {});
       }
       setLoading(false);
     });

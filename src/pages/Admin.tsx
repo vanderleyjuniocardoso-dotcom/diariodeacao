@@ -14,7 +14,6 @@ import AdminPendingRegistrations from "@/components/AdminPendingRegistrations";
 import AdminWelcomeMeetings from "@/components/AdminWelcomeMeetings";
 import AdminMagnaClasses from "@/components/AdminMagnaClasses";
 import AdminIntegrationVideo from "@/components/AdminIntegrationVideo";
-import AdminVoluntagramRequests from "@/components/AdminVoluntagramRequests";
 
 interface VolunteerSummary {
   id: string;
@@ -38,19 +37,6 @@ interface ActionDetail {
   user_id: string;
   profiles: { full_name: string; email: string } | null;
 }
-
-const CredentialEditor = ({ initial, onSave }: { initial: string; onSave: (v: string) => Promise<void> | void }) => {
-  const [value, setValue] = useState(initial);
-  useEffect(() => { setValue(initial); }, [initial]);
-  const dirty = value.trim() !== initial.trim();
-  return (
-    <div className="flex items-center gap-2 mt-3">
-      <span className="text-xs font-medium text-foreground whitespace-nowrap">Credencial:</span>
-      <Input value={value} onChange={(e) => setValue(e.target.value)} placeholder="—" className="h-7 text-xs" />
-      <Button size="sm" variant="outline" disabled={!dirty} onClick={() => onSave(value)} className="h-7 px-3 text-xs">Salvar</Button>
-    </div>
-  );
-};
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -133,14 +119,6 @@ const Admin = () => {
     if (error) { toast.error("Erro ao atualizar nível"); return; }
     setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_level: level } : v)));
     toast.success(`Nível atualizado para ${level}`);
-  };
-
-  const updateCredential = async (userId: string, credential: string) => {
-    const value = credential.trim() || null;
-    const { error } = await supabase.from("profiles").update({ volunteer_credential: value }).eq("id", userId);
-    if (error) { toast.error("Erro ao salvar credencial"); return; }
-    setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_credential: value } : v)));
-    toast.success("Credencial salva");
   };
 
   const exportToExcel = () => {
@@ -227,10 +205,6 @@ const Admin = () => {
             <section>
               <h3 className="font-semibold text-sm mb-2">Capacitação Magna</h3>
               <AdminMagnaClasses />
-            </section>
-            <section>
-              <h3 className="font-semibold text-sm mb-2">Pedidos de acesso ao VOLUNTAGRAM</h3>
-              <AdminVoluntagramRequests />
             </section>
             <section>
               <AdminIntegrationVideo />

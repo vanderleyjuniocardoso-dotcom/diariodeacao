@@ -34,21 +34,13 @@ const Signup = () => {
 
     setLoading(true);
 
-    // Lookup credential and registration data by CPF
-    const [{ data: adminVol }, { data: registration }] = await Promise.all([
-      supabase.from("admin_volunteers").select("credencial, full_name").eq("cpf", cpf).maybeSingle(),
-      (supabase.from as any)("volunteer_registrations").select("*").eq("cpf", cpf).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    ]);
-
-    const fullName = prefill.fullName || adminVol?.full_name || registration?.full_name || "";
-    const phone = registration?.whatsapp || "";
-    const unit = registration?.kit_unit || "";
+    const fullName = prefill.fullName || "";
 
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
-        data: { full_name: fullName, phone, unit },
+        data: { full_name: fullName, cpf },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -56,13 +48,7 @@ const Signup = () => {
 
     const userId = data.user?.id;
     if (userId) {
-      const update: any = { cpf };
-      if (adminVol?.credencial) update.volunteer_credential = adminVol.credencial;
-      if (fullName) update.full_name = fullName;
-      if (phone) update.phone = phone;
-      if (unit) update.unit = unit;
-      if (registration?.photo_url) update.avatar_url = registration.photo_url;
-      await supabase.from("profiles").update(update).eq("id", userId);
+      await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
     }
     setLoading(false);
     toast.success("Conta criada! Verifique seu e-mail para confirmar.");

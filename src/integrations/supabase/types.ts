@@ -412,6 +412,45 @@ export type Database = {
           },
         ]
       }
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          ggl_id: string | null
+          id: string
+          social_name: string | null
+          unit: string | null
+          volunteer_credential: string | null
+          volunteer_level: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          ggl_id?: string | null
+          id: string
+          social_name?: string | null
+          unit?: string | null
+          volunteer_credential?: string | null
+          volunteer_level?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          ggl_id?: string | null
+          id?: string
+          social_name?: string | null
+          unit?: string | null
+          volunteer_credential?: string | null
+          volunteer_level?: number | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -804,53 +843,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          full_name: string | null
-          ggl_id: string | null
-          id: string | null
-          social_name: string | null
-          unit: string | null
-          volunteer_credential: string | null
-          volunteer_level: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          ggl_id?: string | null
-          id?: string | null
-          social_name?: string | null
-          unit?: string | null
-          volunteer_credential?: string | null
-          volunteer_level?: number | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          ggl_id?: string | null
-          id?: string | null
-          social_name?: string | null
-          unit?: string | null
-          volunteer_credential?: string | null
-          volunteer_level?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_ggl_id_fkey"
-            columns: ["ggl_id"]
-            isOneToOne: false
-            referencedRelation: "ggl_groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       approve_registration: { Args: { _id: string }; Returns: undefined }
@@ -881,6 +874,10 @@ export type Database = {
           registration_id: string
           slot_id: string
         }[]
+      }
+      delete_authorized_volunteer: {
+        Args: { _cpf: string }
+        Returns: undefined
       }
       get_my_access_request: {
         Args: { _enrollment_id: string }
@@ -1016,6 +1013,10 @@ export type Database = {
           _works_at_cejam: boolean
         }
         Returns: string
+      }
+      sync_profile_from_registration: {
+        Args: { _user_id?: string }
+        Returns: undefined
       }
     }
     Enums: {
