@@ -31,9 +31,11 @@ const AdminMagnaClasses = () => {
     if (regIds.length > 0) {
       const { data: regs } = await supabase.from("volunteer_registrations").select("id, cpf").in("id", regIds);
       const cpfs = Array.from(new Set((regs || []).map((r: any) => r.cpf).filter(Boolean)));
-      const { data: avs } = cpfs.length
-        ? await supabase.from("admin_volunteers").select("cpf, credencial").in("cpf", cpfs)
-        : { data: [] as any[] };
+      let avs: any[] = [];
+      if (cpfs.length) {
+        const { data } = await supabase.from("admin_volunteers").select("cpf, credencial").in("cpf", cpfs);
+        avs = data || [];
+      }
       const credByCpf: Record<string, string> = {};
       (avs || []).forEach((a: any) => { if (a.credencial) credByCpf[a.cpf] = a.credencial; });
       (regs || []).forEach((r: any) => { if (credByCpf[r.cpf]) credByReg[r.id] = credByCpf[r.cpf]; });
