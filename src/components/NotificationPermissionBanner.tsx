@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Bell, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,22 +30,11 @@ export default function NotificationPermissionBanner() {
   const enable = async () => {
     setLoading(true);
     try {
-      const { subscribeToPush } = await import("@/lib/push");
-      const sub = await subscribeToPush();
+      const { savePushSubscription } = await import("@/lib/push");
+      const sub = await savePushSubscription(user!.id);
       if (!sub) {
         toast({ title: "Não foi possível ativar", description: "Verifique as permissões do navegador.", variant: "destructive" });
         return;
-      }
-      const json: any = sub.toJSON();
-      const { error } = await supabase.from("push_subscriptions").insert({
-        user_id: user!.id,
-        endpoint: json.endpoint,
-        p256dh: json.keys.p256dh,
-        auth: json.keys.auth,
-        user_agent: navigator.userAgent,
-      });
-      if (error && !error.message.includes("duplicate")) {
-        console.error(error);
       }
       toast({ title: "Notificações ativadas!" });
       setShow(false);

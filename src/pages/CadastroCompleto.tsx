@@ -67,7 +67,7 @@ const CadastroCompleto = () => {
   const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error("Foto até 5MB"); return; }
+    if (file.size > 20 * 1024 * 1024) { toast.error("Foto até 20MB"); return; }
     setPhoto(file);
     setPhotoPreview(URL.createObjectURL(file));
   };

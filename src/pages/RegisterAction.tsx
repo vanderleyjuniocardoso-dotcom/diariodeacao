@@ -39,6 +39,8 @@ const CATEGORIES = [
   "Voluntariado Corporativo",
 ];
 
+const ACTION_COOLDOWN_KEY = "last_action_registered_at";
+
 const RegisterAction = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -49,6 +51,8 @@ const RegisterAction = () => {
   const [success, setSuccess] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [cooldownUntil, setCooldownUntil] = useState(() => Number(localStorage.getItem(ACTION_COOLDOWN_KEY) || 0) + 10000);
+  const [now, setNow] = useState(Date.now());
 
   const [form, setForm] = useState({
     volunteer_name: "",
@@ -67,6 +71,19 @@ const RegisterAction = () => {
 
   const update = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }));
 
+  useEffect(() => {
+    setForm((p) => ({
+      ...p,
+      volunteer_name: p.volunteer_name || profile?.full_name || "",
+      volunteer_credential: profile?.volunteer_credential || p.volunteer_credential,
+    }));
+  }, [profile?.full_name, profile?.volunteer_credential]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, []);
+
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -79,6 +96,10 @@ const RegisterAction = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (Date.now() < cooldownUntil) {
+      toast.error("Aguarde alguns segundos antes de registrar outra ação");
+      return;
+    }
 
     // Validação: todos os campos são obrigatórios
     if (!form.volunteer_name.trim()) { toast.error("Informe seu nome"); return; }
@@ -131,6 +152,9 @@ const RegisterAction = () => {
 
     setLoading(false);
     if (error) { toast.error("Erro ao registrar ação"); return; }
+    const registeredAt = Date.now();
+    localStorage.setItem(ACTION_COOLDOWN_KEY, String(registeredAt));
+    setCooldownUntil(registeredAt + 10000);
 
     // Sincroniza horas na planilha (coluna AG da base)
     try {
@@ -257,7 +281,7 @@ const RegisterAction = () => {
 
         <div className="space-y-1.5">
           <Label htmlFor="vcred"><IdCard className="inline h-4 w-4 mr-1 text-muted-foreground" />Credencial</Label>
-          <Input id="vcred" value={form.volunteer_credential} onChange={(e) => update("volunteer_credential", e.target.value)} placeholder="Sua credencial" required />
+          <Input id="vcred" value={form.volunteer_credential} readOnly placeholder="Credencial automática" className="bg-muted" required />
         </div>
 
         <div className="space-y-1.5">
@@ -402,8 +426,8 @@ const RegisterAction = () => {
           )}
         </div>
 
-        <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Registrar Ação"}
+        <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading || now < cooldownUntil}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : now < cooldownUntil ? `Aguarde ${Math.ceil((cooldownUntil - now) / 1000)}s` : "Registrar Ação"}
         </Button>
       </form>
 

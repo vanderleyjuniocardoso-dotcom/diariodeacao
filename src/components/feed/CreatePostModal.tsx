@@ -25,8 +25,8 @@ export default function CreatePostModal({ open, onOpenChange, onCreated }: Props
 
   const handleFile = (f: File | null) => {
     if (!f) return;
-    if (f.size > 5 * 1024 * 1024) {
-      toast({ title: "Imagem muito grande", description: "Máx 5MB", variant: "destructive" });
+    if (f.size > 20 * 1024 * 1024) {
+      toast({ title: "Imagem muito grande", description: "Máx 20MB", variant: "destructive" });
       return;
     }
     setFile(f);
