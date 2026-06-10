@@ -98,16 +98,28 @@ const AdminMagnaClasses = () => {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">Voluntários organizados por turma. A turma é definida automaticamente pelo mês da reunião de boas vindas.</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground flex-1">Voluntários organizados por turma. A turma é definida automaticamente pelo mês da reunião de boas vindas.</p>
+        <Button size="sm" variant="outline" className="h-8 text-xs flex-shrink-0" onClick={exportAll}>
+          <Download className="h-3.5 w-3.5 mr-1" /> Exportar todas
+        </Button>
+      </div>
       {CLASSES.map((code) => {
         const members = list.filter((e) => e.class_code === code);
         const open = openClass === code;
         return (
           <div key={code} className="glass-card rounded-xl overflow-hidden">
-            <button onClick={() => setOpenClass(open ? null : code)} className="w-full p-3 text-left flex justify-between items-center">
-              <span className="font-mono font-semibold text-sm text-primary">{code}</span>
-              <span className="text-xs text-muted-foreground">{members.length} voluntários</span>
-            </button>
+            <div className="w-full p-3 flex justify-between items-center gap-2">
+              <button onClick={() => setOpenClass(open ? null : code)} className="flex-1 text-left flex justify-between items-center">
+                <span className="font-mono font-semibold text-sm text-primary">{code}</span>
+                <span className="text-xs text-muted-foreground ml-2">{members.length} voluntários</span>
+              </button>
+              {members.length > 0 && (
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={(ev) => { ev.stopPropagation(); exportClass(code, members); }} aria-label={`Exportar ${code}`}>
+                  <Download className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
             {open && (
               <div className="p-3 pt-0 space-y-2 border-t">
                 {members.length === 0 ? (
