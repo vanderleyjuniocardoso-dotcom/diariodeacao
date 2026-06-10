@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
     const photo = r.photo_url ? `=IMAGE("${r.photo_url}")` : "";
 
     const row = [
-      mes, dataCad, credencial, r.full_name || "", r.social_name || "", r.whatsapp || "", r.email || "",
+      `'${mes}`, `'${dataCad}`, `'${credencial}`, r.full_name || "", r.social_name || "", `'${r.whatsapp || ""}`, r.email || "",
       r.gender || "", r.birth_date || "", r.rg || "", r.cpf || "", r.marital_status || "",
       r.city || "", r.neighborhood || "", r.address || "", r.education || "",
       r.area_of_work || "", r.profession || "", r.works_at_cejam ? "Sim" : "Não",

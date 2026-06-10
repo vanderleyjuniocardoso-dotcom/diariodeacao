@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Trash2 } from "lucide-react";
+import { X, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -33,9 +33,65 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
   const [storyIdx, setStoryIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [likeBusy, setLikeBusy] = useState(false);
 
   const group = groups[groupIdx];
   const story = group?.stories[storyIdx];
+
+  // Load like state per story
+  useEffect(() => {
+    if (!story) return;
+    let cancelled = false;
+    (async () => {
+      const [{ count }, { data: mine }] = await Promise.all([
+        supabase.from("story_likes").select("user_id", { count: "exact", head: true }).eq("story_id", story.id),
+        user
+          ? supabase.from("story_likes").select("user_id").eq("story_id", story.id).eq("user_id", user.id).maybeSingle()
+          : Promise.resolve({ data: null } as any),
+      ]);
+      if (cancelled) return;
+      setLikeCount(count ?? 0);
+      setLiked(!!mine);
+    })();
+    return () => { cancelled = true; };
+  }, [story?.id, user?.id]);
+
+  const toggleLike = async () => {
+    if (!story || !user || likeBusy) return;
+    setLikeBusy(true);
+    setPaused(true);
+    try {
+      if (liked) {
+        await supabase.from("story_likes").delete().eq("story_id", story.id).eq("user_id", user.id);
+        setLiked(false);
+        setLikeCount((c) => Math.max(0, c - 1));
+      } else {
+        const { error } = await supabase.from("story_likes").insert({ story_id: story.id, user_id: user.id });
+        if (!error) {
+          setLiked(true);
+          setLikeCount((c) => c + 1);
+          // Notify story owner (mobile push even with app closed)
+          if (story.user_id !== user.id) {
+            const senderName = (user.user_metadata?.full_name as string | undefined)?.split(" ")[0] ?? "Alguém";
+            supabase.functions.invoke("send-push", {
+              body: {
+                recipient_id: story.user_id,
+                title: "Curtiram seu story ❤️",
+                message: `${senderName} curtiu seu story`,
+                url: "/volunteers",
+              },
+            }).catch(() => {});
+          }
+        }
+      }
+    } finally {
+      setLikeBusy(false);
+      setTimeout(() => setPaused(false), 300);
+    }
+  };
+
 
   useEffect(() => {
     setStoryIdx(0);
@@ -159,10 +215,25 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
           aria-label="Próximo"
         />
         {story.caption && (
-          <p className="absolute bottom-6 left-4 right-4 text-center text-sm text-white bg-black/40 rounded-lg px-3 py-2">
+          <p className="absolute bottom-20 left-4 right-4 text-center text-sm text-white bg-black/40 rounded-lg px-3 py-2">
             {story.caption}
           </p>
         )}
+        {/* Like button */}
+        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
+          <button
+            onClick={toggleLike}
+            disabled={likeBusy}
+            className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-sm rounded-full px-4 py-2 text-white active:scale-95 transition"
+            aria-label={liked ? "Descurtir story" : "Curtir story"}
+          >
+            <Heart
+              className={`h-6 w-6 ${liked ? "fill-rose-500 text-rose-500" : "text-white"}`}
+            />
+            <span className="text-sm font-medium">{likeCount}</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );
