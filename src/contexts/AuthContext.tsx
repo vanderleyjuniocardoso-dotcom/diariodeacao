@@ -27,29 +27,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
 
   const fetchProfile = async (userId: string) => {
-    await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
-    const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-    if (!data) return;
-    setProfile(data);
+    try {
+      await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId });
+    } catch {}
+    const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    if (data) setProfile(data as any);
   };
 
   const checkAdmin = async (userId: string) => {
-    const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    setIsAdmin(!!data);
+    try {
+      const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      setIsAdmin(!!data);
+    } catch {
+      setIsAdmin(false);
+    }
   };
 
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id);
   };
 
-  const hydrateSession = async (session: Session | null) => {
+  const hydrateSession = (session: Session | null) => {
     setSession(session);
     setUser(session?.user ?? null);
     if (session?.user) {
-      await Promise.all([fetchProfile(session.user.id), checkAdmin(session.user.id)]);
+      const uid = session.user.id;
+      // Fire-and-forget: don't block UI on profile sync
+      fetchProfile(uid).catch(() => {});
+      checkAdmin(uid).catch(() => {});
       import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
         if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
-          savePushSubscription(session.user.id).catch(() => {});
+          savePushSubscription(uid).catch(() => {});
         }
       }).catch(() => {});
     } else {
@@ -61,18 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setLoading(true);
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => {
-          hydrateSession(session);
-        }, 0);
-      } else {
-        setProfile(null);
-        setIsAdmin(false);
-        setLoading(false);
-      }
+      hydrateSession(session);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
