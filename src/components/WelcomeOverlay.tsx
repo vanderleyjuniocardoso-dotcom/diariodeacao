@@ -8,7 +8,7 @@ import mascote from "@/assets/mascote-voluntario.png";
 const SESSION_KEY = "welcome_shown";
 
 const fireConfetti = () => {
-  const duration = 8500;
+  const duration = 3500;
   const end = Date.now() + duration;
   const colors = ["#22d3ee", "#f43f5e", "#facc15", "#34d399", "#a78bfa", "#fb923c"];
 
@@ -57,12 +57,12 @@ const WelcomeOverlay = () => {
     const t1 = setTimeout(() => fireConfetti(), 150);
 
     // start closing animation
-    const t2 = setTimeout(() => setClosing(true), 9400);
+    const t2 = setTimeout(() => setClosing(true), 3600);
     // unmount + navigate directly to Voluntagram
     const t3 = setTimeout(() => {
       setShow(false);
       navigate("/volunteers", { state: { fromWelcome: true } });
-    }, 10000);
+    }, 4000);
 
     return () => {
       clearTimeout(t1);
@@ -100,16 +100,10 @@ const WelcomeOverlay = () => {
           className="w-64 h-64 sm:w-80 sm:h-80 object-contain drop-shadow-2xl animate-scale-in"
           style={{ animationDuration: "0.6s" }}
         />
-        <div className="animate-fade-in" style={{ animationDelay: "0.3s", animationFillMode: "both" }}>
-          <p className="text-sm uppercase tracking-widest text-primary font-semibold">
-            Bem-vindo(a) de volta
-          </p>
+        <div className="animate-fade-in" style={{ animationDelay: "0.2s", animationFillMode: "both" }}>
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mt-1">
-            Olá, {firstName}!
+            Bem-vindo(a), {firstName}!
           </h2>
-          <p className="text-muted-foreground mt-2 text-sm sm:text-base max-w-xs">
-            Que bom ter você aqui de novo. Vamos transformar vidas hoje? 💛
-          </p>
         </div>
       </div>
     </div>

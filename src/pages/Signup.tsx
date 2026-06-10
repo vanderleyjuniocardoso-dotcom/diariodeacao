@@ -51,7 +51,7 @@ const Signup = () => {
       await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
     }
     setLoading(false);
-    toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+    toast.success("Verifique seu e-mail para validar a conta.");
     navigate("/login");
   };
 

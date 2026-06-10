@@ -88,13 +88,6 @@ const Ggl = () => {
       </div>
 
       <div className="px-5 -mt-2 mt-5 space-y-4 animate-fade-up">
-        <div className="glass-card rounded-2xl p-4 flex items-start gap-3 border-l-4 border-primary/60">
-          <Construction className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Em construção: em breve seu GGL será identificado automaticamente pela planilha de voluntários.
-          </p>
-        </div>
-
         {loading ? (
           <p className="text-sm text-muted-foreground text-center py-10">Carregando...</p>
         ) : !group ? (
