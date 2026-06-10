@@ -1,7 +1,74 @@
 import { useEffect, useState } from "react";
-import { X, Trash2, Heart } from "lucide-react";
+import { X, Trash2, Heart, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+
+function LikersSheet({ storyId, onClose }: { storyId: string; onClose: () => void }) {
+  const [loading, setLoading] = useState(true);
+  const [likers, setLikers] = useState<Array<{ id: string; full_name: string; avatar_url: string | null }>>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: likes } = await supabase
+        .from("story_likes")
+        .select("user_id, created_at")
+        .eq("story_id", storyId)
+        .order("created_at", { ascending: false });
+      const ids = (likes ?? []).map((l: any) => l.user_id);
+      if (ids.length === 0) {
+        if (!cancelled) { setLikers([]); setLoading(false); }
+        return;
+      }
+      const { data: profs } = await supabase
+        .from("profiles_public" as any)
+        .select("id, full_name, avatar_url")
+        .in("id", ids);
+      const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      const ordered = ids
+        .map((id) => pMap.get(id))
+        .filter(Boolean)
+        .map((p: any) => ({ id: p.id, full_name: p.full_name ?? "Voluntário", avatar_url: p.avatar_url }));
+      if (!cancelled) { setLikers(ordered as any); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [storyId]);
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/60 flex items-end" onClick={onClose}>
+      <div
+        className="w-full bg-background rounded-t-2xl p-4 pb-8 max-h-[70vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-base">Curtidas</h3>
+          <button onClick={onClose} className="p-1"><X className="h-5 w-5" /></button>
+        </div>
+        {loading ? (
+          <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : likers.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">Ninguém curtiu ainda.</p>
+        ) : (
+          <ul className="space-y-2">
+            {likers.map((u) => {
+              const initials = u.full_name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+              return (
+                <li key={u.id} className="flex items-center gap-3 py-1.5">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center text-primary font-semibold text-xs">
+                    {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> : initials}
+                  </div>
+                  <span className="text-sm font-medium">{u.full_name}</span>
+                  <Heart className="h-4 w-4 fill-rose-500 text-rose-500 ml-auto" />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 export interface StoryItem {
   id: string;
@@ -36,6 +103,8 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [likeBusy, setLikeBusy] = useState(false);
+  const [likersOpen, setLikersOpen] = useState(false);
+
 
   const group = groups[groupIdx];
   const story = group?.stories[storyIdx];
@@ -219,22 +288,46 @@ export default function StoryViewer({ groups, startIndex, onClose, onDeleted }: 
             {story.caption}
           </p>
         )}
-        {/* Like button */}
-        <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
-          <button
-            onClick={toggleLike}
-            disabled={likeBusy}
-            className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-sm rounded-full px-4 py-2 text-white active:scale-95 transition"
-            aria-label={liked ? "Descurtir story" : "Curtir story"}
-          >
-            <Heart
-              className={`h-6 w-6 ${liked ? "fill-rose-500 text-rose-500" : "text-white"}`}
-            />
-            <span className="text-sm font-medium">{likeCount}</span>
-          </button>
+        {/* Like button / owner stats */}
+        <div
+          className="absolute left-0 right-0 flex items-center justify-center gap-2 pointer-events-none z-20"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}
+        >
+          {isMine ? (
+            <button
+              onClick={() => { setPaused(true); setLikersOpen(true); }}
+              className="pointer-events-auto flex items-center gap-2 bg-black/55 backdrop-blur-sm rounded-full px-5 py-2.5 text-white active:scale-95 transition"
+              aria-label="Ver quem curtiu"
+            >
+              <Heart className="h-5 w-5 fill-rose-500 text-rose-500" />
+              <span className="text-sm font-semibold">{likeCount}</span>
+              <span className="text-xs text-white/80">{likeCount === 1 ? "curtida" : "curtidas"}</span>
+            </button>
+          ) : (
+            <button
+              onClick={toggleLike}
+              disabled={likeBusy}
+              className="pointer-events-auto flex items-center gap-2 bg-black/55 backdrop-blur-sm rounded-full px-5 py-2.5 text-white active:scale-95 transition shadow-lg"
+              aria-label={liked ? "Descurtir story" : "Curtir story"}
+            >
+              <Heart
+                className={`h-7 w-7 ${liked ? "fill-rose-500 text-rose-500" : "text-white"}`}
+              />
+              <span className="text-sm font-medium">{likeCount}</span>
+            </button>
+          )}
         </div>
 
       </div>
+
+      {likersOpen && (
+        <LikersSheet
+          storyId={story.id}
+          onClose={() => { setLikersOpen(false); setTimeout(() => setPaused(false), 200); }}
+        />
+      )}
+
+
     </div>
   );
 }
