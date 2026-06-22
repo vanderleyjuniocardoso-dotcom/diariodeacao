@@ -12,12 +12,17 @@ interface Row {
   cpf: string;
   full_name: string;
   credencial: string | null;
+  phone: string | null;
+  profession: string | null;
+  ggl_id: string | null;
 }
+interface GglOpt { id: string; unit_name: string; }
 
-type ImportRow = { cpf: string; full_name: string; credencial: string | null };
+type ImportRow = { cpf: string; full_name: string; credencial: string | null; phone: string | null; profession: string | null; ggl_id: string | null };
 
 const AdminAuthorizedBase = () => {
   const [rows, setRows] = useState<Row[]>([]);
+  const [ggls, setGgls] = useState<GglOpt[]>([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
