@@ -306,55 +306,60 @@ const Admin = () => {
             <AdminGglManager />
           </TabsContent>
 
-          {/* DADOS */}
+          {/* INDICADORES */}
           <TabsContent value="data" className="space-y-4 mt-4">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="glass-card rounded-xl p-3 text-center">
-                <Users className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xl font-bold text-foreground">{volunteers.length}</p>
-                <p className="text-[10px] text-muted-foreground">Voluntários cadastrados</p>
-              </div>
-              <div className="glass-card rounded-xl p-3 text-center">
-                <Clock className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xl font-bold text-foreground">{totalHours}</p>
-                <p className="text-[10px] text-muted-foreground">Horas registradas</p>
-              </div>
-              <div className="glass-card rounded-xl p-3 text-center">
-                <Heart className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xl font-bold text-foreground">{actions.length}</p>
-                <p className="text-[10px] text-muted-foreground">Ações totais</p>
-              </div>
+            <div className="grid grid-cols-1 gap-3">
+              {INDICATORS.map((ind) => {
+                const value =
+                  ind.key === "ativos" ? authorizedCount :
+                  ind.key === "horas" ? totalHours :
+                  "—";
+                return <IndicatorCard key={ind.key} label={ind.label} value={value} color={ind.color} />;
+              })}
             </div>
 
-            <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
-              <Download className="h-4 w-4 mr-2" /> EXPORTAR PLANILHA
+            <Button
+              variant="warm"
+              size="lg"
+              className="w-full"
+              onClick={() => setShowReport((s) => !s)}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              {showReport ? "Fechar Relatório de Ações" : "Relatório de Ações"}
             </Button>
 
-            <div className="glass-card rounded-xl p-4 space-y-3">
-              <div>
-                <h3 className="font-semibold text-foreground">Fotos das ações</h3>
-                <p className="text-xs text-muted-foreground">Toque em uma foto para ver detalhes e baixar.</p>
-              </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar por voluntário, ação ou local..." value={photoFilter} onChange={(e) => setPhotoFilter(e.target.value)} className="pl-10 h-9 text-sm" />
-              </div>
-              {filteredPhotos.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-6">Nenhuma foto encontrada.</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  {filteredPhotos.map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name, location: a.location })}
-                      className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
-                    >
-                      <img src={a.photo_url!} alt={a.action_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    </button>
-                  ))}
+            {showReport && (
+              <div className="glass-card rounded-xl p-4 space-y-3 animate-fade-in">
+                <div>
+                  <h3 className="font-semibold text-foreground">Relatório de Ações</h3>
+                  <p className="text-xs text-muted-foreground">Fotos das ações e exportação da planilha.</p>
                 </div>
-              )}
-            </div>
+
+                <Button variant="default" size="lg" className="w-full" onClick={exportToExcel}>
+                  <Download className="h-4 w-4 mr-2" /> EXPORTAR PLANILHA
+                </Button>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar por voluntário, ação ou local..." value={photoFilter} onChange={(e) => setPhotoFilter(e.target.value)} className="pl-10 h-9 text-sm" />
+                </div>
+                {filteredPhotos.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-6">Nenhuma foto encontrada.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {filteredPhotos.map((a) => (
+                      <button
+                        key={a.id}
+                        onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name, location: a.location })}
+                        className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
+                      >
+                        <img src={a.photo_url!} alt={a.action_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
