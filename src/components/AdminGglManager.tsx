@@ -96,9 +96,47 @@ export default function AdminGglManager() {
       ggl_id: gglId,
       name: m.name.trim(),
       phone: m.phone?.trim() || null,
+      role: m.role?.trim() || null,
+    } as any);
+    if (error) return toast.error(error.message);
+    setNewMember((p) => ({ ...p, [gglId]: { name: "", phone: "", role: "" } }));
+    load();
+  };
+
+  const addEmail = async (gglId: string) => {
+    const e = newEmail[gglId]?.trim();
+    if (!e) return;
+    const count = emails.filter((x) => x.ggl_id === gglId).length;
+    if (count >= 2) return toast.error("Máximo de 2 e-mails por GGL");
+    const { error } = await supabase.from("ggl_admin_emails").insert({ ggl_id: gglId, email: e });
+    if (error) return toast.error(error.message);
+    setNewEmail((p) => ({ ...p, [gglId]: "" }));
+    toast.success("E-mail autorizado");
+    load();
+  };
+  const removeEmail = async (id: string) => {
+    const { error } = await supabase.from("ggl_admin_emails").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    load();
+  };
+
+  const addEvent = async (gglId: string) => {
+    const ev = newEvent[gglId];
+    if (!ev?.date || !ev?.title?.trim()) return toast.error("Data e título obrigatórios");
+    const { error } = await supabase.from("ggl_calendar_events").insert({
+      ggl_id: gglId,
+      event_date: ev.date,
+      unit_name: ev.unit?.trim() || null,
+      title: ev.title.trim(),
+      description: ev.description?.trim() || null,
     });
     if (error) return toast.error(error.message);
-    setNewMember((p) => ({ ...p, [gglId]: { name: "", phone: "" } }));
+    setNewEvent((p) => ({ ...p, [gglId]: { date: "", unit: "", title: "", description: "" } }));
+    load();
+  };
+  const removeEvent = async (id: string) => {
+    const { error } = await supabase.from("ggl_calendar_events").delete().eq("id", id);
+    if (error) return toast.error(error.message);
     load();
   };
 
