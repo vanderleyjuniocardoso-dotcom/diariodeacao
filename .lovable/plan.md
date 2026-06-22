@@ -1,86 +1,61 @@
-# Plano de implementação
 
-Funcionalidade grande dividida em 6 blocos. Vou executar todos em sequência se aprovar.
+## 1. Reorganização das abas do ADM
 
-## 1. Liberar seu acesso ADM
-- Inserir na `admin_volunteers` seu CPF `04950942182` com nome e credencial inicial.
-- Garantir role `admin` no `user_roles` para o usuário com e-mail `vanderley.oliveira@cejam.org.br` (se ainda não tiver).
-- Vincular CPF ao seu `profiles` para o gate passar.
+- Aba **Engajamento** do espaço ADM passa a se chamar **GGL**.
+- O bloco "Mensagem do ADM para todos os voluntários" (AdminBroadcastComposer) sai da aba GGL e vai para a aba **Base**, dentro do espaço ADM.
 
-## 2. Exportar voluntários (Aba Voluntários do ADM)
-- Botão "Exportar Excel" em `AdminPendingRegistrations` e nova seção "Cadastros aprovados".
-- Gera `.xlsx` via `xlsx` (já no projeto) com colunas **na mesma ordem do formulário longo**: Nome completo, Nome social, CPF, RG, Data nasc., Gênero, E-mail, WhatsApp, Estado civil, Município, Bairro, Endereço, Escolaridade, Área de atuação, Profissão, Trabalha CEJAM, Unidade CEJAM, Como conheceu, Foto (URL), Tamanho camiseta, Unidade kit, Aceitou termos, Status, Criado em.
+## 2. Base autorizada — novas colunas e importação
 
-## 3. Reunião de Boas-Vindas
+Acrescentar na tabela `admin_volunteers`:
+- `phone` (telefone)
+- `profession` (profissão)
+- `ggl_group_id` (vínculo opcional ao GGL)
 
-### Banco
-- `welcome_meeting_slots(id, month 1-12, slot_date, slot_time, capacity, notes, created_at)` — admin gerencia.
-- `welcome_meeting_bookings(id, slot_id, registration_id (ou profile_id), volunteer_name, volunteer_phone, attended bool, checked_at, created_at)`.
-- Trigger/coluna em `volunteer_registrations`: `welcome_meeting_booking_id`.
+A importação por planilha (`AdminAuthorizedBase`) passa a aceitar 5 colunas: **Nome, CPF, Credencial, Telefone, Profissão, GGL** (as duas últimas opcionais). O nome do GGL na planilha bate com o nome do grupo cadastrado; se não existir, fica em branco.
 
-### Fluxo voluntário (logo após enviar cadastro longo)
-- Nova página `/boas-vindas/agendar?reg=<id>`: título "Escolha a data da sua reunião de Boas Vindas" + texto explicativo + 12 blocos de meses.
-- Clicar no mês → lista de horários disponíveis daquele mês. Selecionar grava booking com nome/whatsapp já do registration.
-- Tela final: "Sua reunião de boas vindas será: [data, mês, hora]" + "Sua chegada é motivo de grande alegria para nós."
-- Em vez de ir direto para `/aguardando-aprovacao`, vai para essa página primeiro.
+## 3. Cadastro de Grupos de Gestão Local (GGL)
 
-### Notificação 08h do dia
-- Função agendada (pg_cron + edge function `send-welcome-meeting-reminders`) que roda diariamente 08h e envia push para quem tem booking no dia: "Sua reunião de boas vindas é hoje às HH:MM".
+Nova tabela `ggl_local_groups` com: nome do grupo, descrição, cor/ícone do bloco.
 
-## 4. Aba Gestão (ADM)
-Nova aba "Gestão" na página `/admin`. Conteúdo:
+Tabelas relacionadas:
+- `ggl_units` — unidades sob gestão do grupo (nome da unidade).
+- `ggl_local_members` — integrantes do GGL (nome, função, whatsapp).
+- `ggl_calendar_events` — ações planejadas (data, unidade, título, descrição).
+- `ggl_admin_emails` — até 2 e-mails autorizados como sub-admin daquele GGL.
 
-### 4.1 Reunião de Boas Vindas
-- 12 blocos de mês. Dentro de cada: lista de slots (data + hora + capacidade), botões adicionar/remover.
-- Para cada slot, abaixo: "Os voluntários que participarão nesse dia serão:" + lista (nome + whatsapp) com **checkbox** para marcar presença.
-- Ao marcar check → roda RPC `confirm_attendance(booking_id)` que:
-  - marca `attended=true`
-  - calcula turma destino: mês do slot N → turma `T(N+1)26` (jan→T0226, ..., nov→T1226). Dez (12) não tem destino, deixa pendente ou ignora.
-  - cria/atribui voluntário ao `magna_class` correspondente.
+Na aba **GGL** do espaço ADM, o ADM master vê os blocos de cada grupo. Botão "Novo GGL" abre formulário. Clicar num bloco abre tela do grupo com 4 sub-abas:
 
-### 4.2 Capacitação Magna
-- 12 blocos de turmas: T0126…T1226.
-- Cada bloco lista voluntários (nome + whatsapp) com:
-  - Botão **Iniciar Capacitação** (libera a barra de progresso).
-  - Slider/barra 0–100% (só editável após iniciar).
-  - Salva em `magna_enrollments(id, class_code, registration_id, volunteer_name, volunteer_phone, started bool, progress int, completed_at, created_at)`.
+1. **Informações** — unidades sob gestão + integrantes (nome, função, whatsapp clicável).
+2. **Calendário** — eventos por mês do ano (visualização mensal navegável). ADM cadastra/edita ações planejadas.
+3. **Voluntários** — lista puxada de `admin_volunteers` com `ggl_group_id = grupo`, mostrando nome, profissão, telefone e credencial. Se o voluntário já se cadastrou no app (`profiles`), usa telefone/profissão de lá; senão, o que está em `admin_volunteers`. Botão para vincular/desvincular voluntários manualmente.
+4. **Acesso ADM GGL** — campos para até 2 e-mails autorizados.
 
-### 4.3 Vídeo de Integração
-- Upload de vídeo para bucket `integration-video` (público), guarda URL em `app_settings(key, value)`.
-- Substituível a qualquer momento.
+## 4. Novo papel "ggl_admin" e cadastro simplificado
 
-## 5. Tela do voluntário (pós cadastro/check)
+- Adicionar valor `ggl_admin` ao enum `app_role`.
+- Função `is_ggl_admin_email(email)` que verifica se o e-mail está em `ggl_admin_emails` e retorna o `ggl_group_id`.
+- Novo fluxo de signup simplificado em `/cadastro-ggl` com: e-mail, unidade, senha, confirmar senha. Só funciona se o e-mail estiver previamente autorizado pelo ADM. Cria o usuário, grava papel `ggl_admin` e vincula ao `ggl_group_id`.
+- No `CpfGate`/`Login`: link "Sou admin de GGL → cadastrar/entrar" para esse fluxo curto.
+- `ProtectedRoute` ganha modo `gglAdminOnly`. Após login, se o usuário é `ggl_admin`, ele é redirecionado para `/ggl-admin/:groupId` e **não vê** Dashboard, Voluntagram, Trilha etc. — apenas a tela com os blocos/funcionalidades do GGL dele (mesmas 3 primeiras sub-abas do ADM master, sem a aba de cadastrar e-mails).
 
-Nova página `/minha-jornada` (ou dashboard do voluntário pendente) com estados:
+## 5. Visibilidade no app do voluntário comum
 
-1. **Booking feito, sem check**: "Sua reunião de boas vindas será: …"
-2. **Recebeu check (attended=true) mas sem `started`**: "Parabéns! Você passou pela primeira etapa, aguarde o contato do ADM para iniciar a capacitação Magna."
-3. **`started=true` e progress<100**: "Você começou a Capacitação Magna, veja sua progressão:" + barra espelho (read-only, realtime).
-4. **progress=100 e vídeo não assistido**: "PARABÉNS, VOCÊ CONCLUIU A CAPACITAÇÃO MAGNA. VEJA AGORA O VIDEO DE INTEGRAÇÃO DO PROGRAMA." + botão "Iniciar vídeo de integração".
-5. **Vídeo terminou**: botão "Pedir autorização para o VOLUNTAGRAM" → cria pendência tipo `voluntagram_access_requests`.
-6. **ADM aprovou liberação** (novo card na aba Voluntários): aprovar → executa fluxo atual `approve_registration` que cria `admin_volunteers` com credencial **auto-gerada**.
+- Na aba **Impacto** (Dashboard) do voluntário, mostrar de qual GGL ele faz parte (a partir do vínculo em `admin_volunteers` cruzado com o CPF do `profiles`).
+- Nova aba/visão **GGL** acessível ao voluntário: mostra o nome do grupo, unidades, integrantes (com whatsapp) e a lista de outros voluntários do mesmo grupo (nome, profissão).
+- No espaço ADM master (aba GGL), cada voluntário também já aparece marcado com o GGL dele.
 
-Realtime via Supabase channels nas tabelas `magna_enrollments` e `welcome_meeting_bookings`.
+## 6. Segurança (RLS)
 
-## 6. Credencial automática
-- Função `next_credential()` em SQL: pega a maior credencial existente em `admin_volunteers` no formato `VOLUNT<digits>`, incrementa preservando o nº de dígitos do maior (ex: VOLUNT01→VOLUNT02; VOLUNT1201→VOLUNT1202).
-- `approve_registration` passa a chamar `next_credential()` se não houver credencial manual.
-- Coluna nova `admin_volunteers.source` (`'manual' | 'auto'`) para identificar quem entrou via fluxo automático. Marcador visual na lista da Base autorizada.
+- `ggl_local_groups`, `ggl_units`, `ggl_local_members`, `ggl_calendar_events`: SELECT liberado para `authenticated` (qualquer voluntário pode ver seu próprio GGL); INSERT/UPDATE/DELETE só para `admin` ou `ggl_admin` daquele grupo (via função SECURITY DEFINER `is_ggl_admin_of(group_id)`).
+- `ggl_admin_emails`: apenas `admin` (master) lê/escreve.
+- `admin_volunteers`: continua restrito a admin para escrita; leitura segue como hoje.
+- View pública `ggl_volunteers_view` que o voluntário usa para ver os colegas do mesmo grupo (sem expor CPF; mostra nome, profissão, telefone, credencial).
 
-## Resumo técnico de migrações
-1. `admin_volunteers`: + coluna `source text default 'manual'`.
-2. `welcome_meeting_slots` + RLS (admin CRUD, authenticated read).
-3. `welcome_meeting_bookings` + RLS (anon insert se vier de registration; admin tudo; voluntário lê o próprio via RPC).
-4. `magna_enrollments` + RLS.
-5. `voluntagram_access_requests` + RLS.
-6. `app_settings(key text pk, value jsonb)` + RLS (admin write, authenticated read).
-7. Funções: `next_credential`, `confirm_attendance`, `start_magna`, `set_magna_progress`, `request_voluntagram_access`, atualização do `approve_registration`.
-8. Storage bucket `integration-video` (público).
-9. Cron + edge function `send-welcome-meeting-reminders` (08h).
+## Detalhes técnicos
 
-## Notas
-- Push notifications já existe estrutura (`push_subscriptions`, `send-push`); reaproveito.
-- Vídeo: usa `<video>` HTML simples; detecto `onEnded` para liberar botão.
-- Não vou tocar nas abas/animações já existentes.
+- Migration única adicionando: colunas em `admin_volunteers`, enum `ggl_admin`, novas tabelas com GRANTs + RLS, funções `is_ggl_admin_of`, `is_ggl_admin_email`, `register_ggl_admin`.
+- Componentes novos: `AdminGglLocalManager.tsx` (lista/CRUD de GGLs), `AdminGglLocalDetail.tsx` (sub-abas), `GglCalendar.tsx`, `GglAdminSignup.tsx`, `GglAdminHome.tsx`, e atualização de `AdminAuthorizedBase.tsx` para as novas colunas e `Volunteers`/`Dashboard` para mostrar o GGL do voluntário.
+- Roteamento: novas rotas `/cadastro-ggl`, `/ggl-admin`, `/ggl-admin/:groupId`; redirecionamento pós-login conforme papel.
+- Reaproveitar `AdminBroadcastComposer` na aba Base sem alterações de comportamento.
 
-Confirma para eu prosseguir?
+Posso seguir com a implementação?
