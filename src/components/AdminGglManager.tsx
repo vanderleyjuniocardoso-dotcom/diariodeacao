@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin, ChevronDown, ChevronUp, UserPlus } from "lucide-react";
+import { Plus, Trash2, MapPin, ChevronDown, ChevronUp, UserPlus, Mail, Calendar as CalendarIcon } from "lucide-react";
 
 interface Group {
   id: string;
@@ -16,20 +17,27 @@ interface Member {
   ggl_id: string;
   name: string;
   phone: string | null;
+  role: string | null;
 }
 interface Profile {
   id: string;
   full_name: string;
   ggl_id: string | null;
 }
+interface AdminEmail { id: string; ggl_id: string; email: string; }
+interface CalEvent { id: string; ggl_id: string; event_date: string; unit_name: string | null; title: string; description: string | null; }
 
 export default function AdminGglManager() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [emails, setEmails] = useState<AdminEmail[]>([]);
+  const [events, setEvents] = useState<CalEvent[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newGroup, setNewGroup] = useState({ unit: "", cities: "", actions: "" });
-  const [newMember, setNewMember] = useState<Record<string, { name: string; phone: string }>>({});
+  const [newMember, setNewMember] = useState<Record<string, { name: string; phone: string; role: string }>>({});
+  const [newEmail, setNewEmail] = useState<Record<string, string>>({});
+  const [newEvent, setNewEvent] = useState<Record<string, { date: string; unit: string; title: string; description: string }>>({});
   const [assignSearch, setAssignSearch] = useState<Record<string, string>>({});
   const [actionsDraft, setActionsDraft] = useState<Record<string, string>>({});
 
