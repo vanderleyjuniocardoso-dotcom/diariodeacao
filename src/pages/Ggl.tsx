@@ -152,6 +152,7 @@ const Ggl = () => {
                     <li key={m.id} className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="font-medium text-sm text-foreground truncate">{m.name}</p>
+                        {m.role && <p className="text-[11px] text-primary">{m.role}</p>}
                         {m.phone && (
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Phone className="h-3 w-3" /> {m.phone}
@@ -160,14 +161,93 @@ const Ggl = () => {
                       </div>
                       {m.phone && (
                         <a
-                          href={`tel:${m.phone.replace(/\D/g, "")}`}
+                          href={`https://wa.me/${m.phone.replace(/\D/g, "")}`}
+                          target="_blank" rel="noreferrer"
                           className="text-xs font-semibold text-primary px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition"
                         >
-                          Ligar
+                          WhatsApp
                         </a>
                       )}
                     </li>
                   ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Calendário de ações planejadas */}
+            <div className="glass-card rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Calendário de ações</h2>
+              </div>
+              {events.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma ação planejada ainda.</p>
+              ) : (
+                <div className="space-y-3">
+                  {Object.keys(eventsByMonth).sort().map((monthKey) => {
+                    const [y, m] = monthKey.split("-");
+                    const monthName = new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+                    return (
+                      <div key={monthKey}>
+                        <p className="text-xs font-bold uppercase text-muted-foreground mb-1.5">{monthName}</p>
+                        <ul className="space-y-1.5">
+                          {eventsByMonth[monthKey].map((ev) => (
+                            <li key={ev.id} className="flex gap-2 p-2 bg-muted/30 rounded-md">
+                              <div className="text-center min-w-[36px]">
+                                <p className="text-base font-bold text-primary leading-none">{new Date(ev.event_date + "T00:00:00").getDate()}</p>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">{ev.title}</p>
+                                {ev.unit_name && <p className="text-[11px] text-muted-foreground">{ev.unit_name}</p>}
+                                {ev.description && <p className="text-xs text-muted-foreground mt-0.5">{ev.description}</p>}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Outros voluntários do mesmo GGL */}
+            <div className="glass-card rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Voluntários do seu GGL</h2>
+              </div>
+              {fellows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Você é o primeiro voluntário deste GGL.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {fellows.map((f) => {
+                    const ph = f.effective_phone || f.phone;
+                    return (
+                      <li key={f.cpf} className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm text-foreground truncate">{f.effective_name || f.full_name}</p>
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            <Briefcase className="h-3 w-3" />{f.profession || "Profissão não informada"}
+                          </p>
+                          {ph && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                              <Phone className="h-3 w-3" /> {ph}
+                            </p>
+                          )}
+                        </div>
+                        {ph && (
+                          <a
+                            href={`https://wa.me/${ph.replace(/\D/g, "")}`}
+                            target="_blank" rel="noreferrer"
+                            className="text-xs font-semibold text-primary px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition"
+                          >
+                            WhatsApp
+                          </a>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
