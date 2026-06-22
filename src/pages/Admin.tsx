@@ -212,6 +212,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="base" className="space-y-4 mt-4">
+            <AdminBroadcastComposer />
             <AdminAuthorizedBase />
           </TabsContent>
 
