@@ -204,7 +204,14 @@ const AdminAuthorizedBase = () => {
           <div className="max-h-48 overflow-auto text-xs border rounded">
             <table className="w-full">
               <thead className="bg-muted/50 sticky top-0">
-                <tr><th className="text-left p-2">Nome</th><th className="text-left p-2">CPF</th><th className="text-left p-2">Cred.</th></tr>
+                <tr>
+                  <th className="text-left p-2">Nome</th>
+                  <th className="text-left p-2">CPF</th>
+                  <th className="text-left p-2">Cred.</th>
+                  <th className="text-left p-2">Tel.</th>
+                  <th className="text-left p-2">Profissão</th>
+                  <th className="text-left p-2">GGL</th>
+                </tr>
               </thead>
               <tbody>
                 {preview.valid.slice(0, 50).map((r) => (
@@ -212,6 +219,9 @@ const AdminAuthorizedBase = () => {
                     <td className="p-2">{r.full_name}</td>
                     <td className="p-2 font-mono">{r.cpf}</td>
                     <td className="p-2">{r.credencial || "—"}</td>
+                    <td className="p-2">{r.phone || "—"}</td>
+                    <td className="p-2">{r.profession || "—"}</td>
+                    <td className="p-2">{r.ggl_id ? (ggls.find(g => g.id === r.ggl_id)?.unit_name || "✓") : "—"}</td>
                   </tr>
                 ))}
               </tbody>
