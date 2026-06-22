@@ -38,7 +38,7 @@ const GglAdminHome = () => {
     ]);
     setGroup(g as Group);
     setMembers((m as Member[]) ?? []);
-    setVolunteers((v as Volunteer[]) ?? []);
+    setVolunteers((v as unknown as Volunteer[]) ?? []);
     setEvents((ev as CalEvent[]) ?? []);
   };
 
