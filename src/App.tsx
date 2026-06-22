@@ -61,6 +61,8 @@ const App = () => (
             <Route path="/trilha" element={<ProtectedRoute><Trilha /></ProtectedRoute>} />
             <Route path="/ggl" element={<ProtectedRoute><Ggl /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
+            <Route path="/cadastro-ggl" element={<GglAdminSignup />} />
+            <Route path="/ggl-admin" element={<ProtectedRoute gglAdminOnly><GglAdminHome /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
