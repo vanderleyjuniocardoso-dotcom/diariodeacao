@@ -25,6 +25,8 @@ import CadastroCompleto from "./pages/CadastroCompleto";
 import AguardandoAprovacao from "./pages/AguardandoAprovacao";
 import AgendarBoasVindas from "./pages/AgendarBoasVindas";
 import MinhaJornada from "./pages/MinhaJornada";
+import GglAdminSignup from "./pages/GglAdminSignup";
+import GglAdminHome from "./pages/GglAdminHome";
 import NotFound from "./pages/NotFound";
 import WelcomeOverlay from "./components/WelcomeOverlay";
 
