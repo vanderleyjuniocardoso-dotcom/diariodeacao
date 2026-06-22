@@ -38,6 +38,41 @@ interface ActionDetail {
   profiles: { full_name: string; email: string } | null;
 }
 
+const INDICATORS: { key: string; label: string; color: string }[] = [
+  { key: "ativos", label: "Voluntários Ativos", color: "#3B82F6" },
+  { key: "horas", label: "Horas de Voluntariado", color: "#10B981" },
+  { key: "capacitados", label: "Voluntários Capacitados", color: "#8B5CF6" },
+  { key: "saude", label: "Voluntários da Saúde", color: "#EF4444" },
+  { key: "unidSaude", label: "Unidades dos Voluntários da Saúde", color: "#F59E0B" },
+  { key: "unidDemais", label: "Unidades dos Demais Serviços", color: "#EC4899" },
+  { key: "trilha", label: "Engajamento na Trilha", color: "#14B8A6" },
+  { key: "colab", label: "Colaboradores Engajados", color: "#6366F1" },
+  { key: "mutiroes", label: "Mutirões Realizados", color: "#F97316" },
+];
+
+const IndicatorCard = ({ label, value, color }: { label: string; value: number | string; color: string }) => (
+  <div className="glass-card rounded-2xl p-4 flex items-center gap-4">
+    <div className="relative h-16 w-16 flex-shrink-0">
+      <div
+        className="absolute inset-0 rounded-full animate-spin"
+        style={{
+          animationDuration: "3s",
+          background: `conic-gradient(${color} 0deg, ${color} 270deg, ${color}33 270deg, ${color}33 360deg)`,
+          WebkitMask: "radial-gradient(circle, transparent 55%, #000 56%)",
+          mask: "radial-gradient(circle, transparent 55%, #000 56%)",
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-sm font-bold" style={{ color }}>{value}</span>
+      </div>
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs text-muted-foreground leading-tight">{label}</p>
+      <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+    </div>
+  </div>
+);
+
 const Admin = () => {
   const navigate = useNavigate();
   const [volunteers, setVolunteers] = useState<VolunteerSummary[]>([]);
@@ -46,6 +81,8 @@ const Admin = () => {
   const [photoFilter, setPhotoFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [photoModal, setPhotoModal] = useState<{ url: string; volunteer: string; action: string; location: string } | null>(null);
+  const [authorizedCount, setAuthorizedCount] = useState(0);
+  const [showReport, setShowReport] = useState(false);
 
   const downloadPhoto = async () => {
     if (!photoModal) return;
@@ -109,6 +146,11 @@ const Admin = () => {
         }
         setVolunteers(Array.from(map.values()));
       }
+      const { count: baseCount } = await supabase
+        .from("admin_volunteers")
+        .select("*", { count: "exact", head: true });
+      setAuthorizedCount(baseCount || 0);
+
       setLoading(false);
     };
     load();
@@ -194,7 +236,7 @@ const Admin = () => {
             <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
             <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
             <TabsTrigger value="engagement" className="text-[9px] px-0.5"><MapPin className="h-3 w-3 mr-0.5" />GGL</TabsTrigger>
-            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
+            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Indic.</TabsTrigger>
           </TabsList>
 
           <TabsContent value="gestao" className="space-y-5 mt-4">
@@ -264,55 +306,60 @@ const Admin = () => {
             <AdminGglManager />
           </TabsContent>
 
-          {/* DADOS */}
+          {/* INDICADORES */}
           <TabsContent value="data" className="space-y-4 mt-4">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="glass-card rounded-xl p-3 text-center">
-                <Users className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xl font-bold text-foreground">{volunteers.length}</p>
-                <p className="text-[10px] text-muted-foreground">Voluntários cadastrados</p>
-              </div>
-              <div className="glass-card rounded-xl p-3 text-center">
-                <Clock className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xl font-bold text-foreground">{totalHours}</p>
-                <p className="text-[10px] text-muted-foreground">Horas registradas</p>
-              </div>
-              <div className="glass-card rounded-xl p-3 text-center">
-                <Heart className="h-5 w-5 text-primary mx-auto mb-1" />
-                <p className="text-xl font-bold text-foreground">{actions.length}</p>
-                <p className="text-[10px] text-muted-foreground">Ações totais</p>
-              </div>
+            <div className="grid grid-cols-1 gap-3">
+              {INDICATORS.map((ind) => {
+                const value =
+                  ind.key === "ativos" ? authorizedCount :
+                  ind.key === "horas" ? totalHours :
+                  "—";
+                return <IndicatorCard key={ind.key} label={ind.label} value={value} color={ind.color} />;
+              })}
             </div>
 
-            <Button variant="warm" size="lg" className="w-full" onClick={exportToExcel}>
-              <Download className="h-4 w-4 mr-2" /> EXPORTAR PLANILHA
+            <Button
+              variant="warm"
+              size="lg"
+              className="w-full"
+              onClick={() => setShowReport((s) => !s)}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              {showReport ? "Fechar Relatório de Ações" : "Relatório de Ações"}
             </Button>
 
-            <div className="glass-card rounded-xl p-4 space-y-3">
-              <div>
-                <h3 className="font-semibold text-foreground">Fotos das ações</h3>
-                <p className="text-xs text-muted-foreground">Toque em uma foto para ver detalhes e baixar.</p>
-              </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Buscar por voluntário, ação ou local..." value={photoFilter} onChange={(e) => setPhotoFilter(e.target.value)} className="pl-10 h-9 text-sm" />
-              </div>
-              {filteredPhotos.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-6">Nenhuma foto encontrada.</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  {filteredPhotos.map((a) => (
-                    <button
-                      key={a.id}
-                      onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name, location: a.location })}
-                      className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
-                    >
-                      <img src={a.photo_url!} alt={a.action_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                    </button>
-                  ))}
+            {showReport && (
+              <div className="glass-card rounded-xl p-4 space-y-3 animate-fade-in">
+                <div>
+                  <h3 className="font-semibold text-foreground">Relatório de Ações</h3>
+                  <p className="text-xs text-muted-foreground">Fotos das ações e exportação da planilha.</p>
                 </div>
-              )}
-            </div>
+
+                <Button variant="default" size="lg" className="w-full" onClick={exportToExcel}>
+                  <Download className="h-4 w-4 mr-2" /> EXPORTAR PLANILHA
+                </Button>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar por voluntário, ação ou local..." value={photoFilter} onChange={(e) => setPhotoFilter(e.target.value)} className="pl-10 h-9 text-sm" />
+                </div>
+                {filteredPhotos.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-6">Nenhuma foto encontrada.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {filteredPhotos.map((a) => (
+                      <button
+                        key={a.id}
+                        onClick={() => setPhotoModal({ url: a.photo_url!, volunteer: a.profiles?.full_name || "—", action: a.action_name, location: a.location })}
+                        className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
+                      >
+                        <img src={a.photo_url!} alt={a.action_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
