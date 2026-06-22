@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import GglIntro from "@/components/GglIntro";
-import { MapPin, Building2, Phone, Users, Heart } from "lucide-react";
+import { MapPin, Building2, Phone, Users, Heart, Calendar as CalendarIcon, Briefcase } from "lucide-react";
 
 interface Group {
   id: string;
@@ -15,7 +15,10 @@ interface Member {
   id: string;
   name: string;
   phone: string | null;
+  role: string | null;
 }
+interface CalEvent { id: string; event_date: string; unit_name: string | null; title: string; description: string | null; }
+interface Fellow { cpf: string; effective_name: string | null; full_name: string; profession: string | null; effective_phone: string | null; phone: string | null; credencial: string | null; }
 
 const Ggl = () => {
   const { profile } = useAuth() as any;
