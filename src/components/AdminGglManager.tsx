@@ -42,14 +42,18 @@ export default function AdminGglManager() {
   const [actionsDraft, setActionsDraft] = useState<Record<string, string>>({});
 
   const load = async () => {
-    const [{ data: g }, { data: m }, { data: p }] = await Promise.all([
+    const [{ data: g }, { data: m }, { data: p }, { data: em }, { data: ev }] = await Promise.all([
       supabase.from("ggl_groups").select("*").order("unit_name"),
       supabase.from("ggl_members").select("*").order("name"),
       supabase.from("profiles").select("id, full_name, ggl_id").order("full_name"),
+      supabase.from("ggl_admin_emails").select("*"),
+      supabase.from("ggl_calendar_events").select("*").order("event_date"),
     ]);
     setGroups((g as Group[]) ?? []);
     setMembers((m as Member[]) ?? []);
     setProfiles((p as Profile[]) ?? []);
+    setEmails((em as AdminEmail[]) ?? []);
+    setEvents((ev as CalEvent[]) ?? []);
   };
 
   useEffect(() => {
