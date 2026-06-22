@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings, Trophy } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings, Trophy, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
@@ -193,7 +193,7 @@ const Admin = () => {
             <TabsTrigger value="base" className="text-[9px] px-0.5"><IdCard className="h-3 w-3 mr-0.5" />Base</TabsTrigger>
             <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
             <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
-            <TabsTrigger value="engagement" className="text-[9px] px-0.5"><Megaphone className="h-3 w-3 mr-0.5" />Engaj.</TabsTrigger>
+            <TabsTrigger value="engagement" className="text-[9px] px-0.5"><MapPin className="h-3 w-3 mr-0.5" />GGL</TabsTrigger>
             <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
           </TabsList>
 
@@ -212,6 +212,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="base" className="space-y-4 mt-4">
+            <AdminBroadcastComposer />
             <AdminAuthorizedBase />
           </TabsContent>
 
@@ -258,9 +259,8 @@ const Admin = () => {
             )}
           </TabsContent>
 
-          {/* ENGAJAMENTO */}
+          {/* GGL */}
           <TabsContent value="engagement" className="space-y-4 mt-4">
-            <AdminBroadcastComposer />
             <AdminGglManager />
           </TabsContent>
 

@@ -45,6 +45,9 @@ export type Database = {
           created_by: string | null
           credencial: string | null
           full_name: string
+          ggl_id: string | null
+          phone: string | null
+          profession: string | null
           source: string
           updated_at: string
         }
@@ -54,6 +57,9 @@ export type Database = {
           created_by?: string | null
           credencial?: string | null
           full_name: string
+          ggl_id?: string | null
+          phone?: string | null
+          profession?: string | null
           source?: string
           updated_at?: string
         }
@@ -63,10 +69,21 @@ export type Database = {
           created_by?: string | null
           credencial?: string | null
           full_name?: string
+          ggl_id?: string | null
+          phone?: string | null
+          profession?: string | null
           source?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_volunteers_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       app_settings: {
         Row: {
@@ -116,6 +133,82 @@ export type Database = {
         }
         Relationships: []
       }
+      ggl_admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+          ggl_id: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          ggl_id: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          ggl_id?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ggl_admin_emails_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ggl_calendar_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string
+          ggl_id: string
+          id: string
+          title: string
+          unit_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date: string
+          ggl_id: string
+          id?: string
+          title: string
+          unit_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string
+          ggl_id?: string
+          id?: string
+          title?: string
+          unit_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ggl_calendar_events_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ggl_groups: {
         Row: {
           cities: string[]
@@ -150,6 +243,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          role: string | null
         }
         Insert: {
           created_at?: string
@@ -157,6 +251,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          role?: string | null
         }
         Update: {
           created_at?: string
@@ -164,6 +259,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          role?: string | null
         }
         Relationships: [
           {
@@ -869,7 +965,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      ggl_volunteers_view: {
+        Row: {
+          cpf: string | null
+          credencial: string | null
+          effective_name: string | null
+          effective_phone: string | null
+          full_name: string | null
+          ggl_id: string | null
+          phone: string | null
+          profession: string | null
+          profile_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_volunteers_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       approve_registration: { Args: { _id: string }; Returns: undefined }
@@ -931,6 +1048,7 @@ export type Database = {
           video_watched: boolean
         }[]
       }
+      get_my_ggl_admin_group: { Args: never; Returns: string }
       get_own_profile: {
         Args: never
         Returns: {
@@ -995,6 +1113,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_ggl_admin_email: { Args: { _email: string }; Returns: string }
+      is_ggl_admin_of: {
+        Args: { _ggl_id: string; _user_id: string }
+        Returns: boolean
+      }
       mark_video_watched: {
         Args: { _enrollment_id: string }
         Returns: undefined
@@ -1046,7 +1169,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "ggl_admin"
       registration_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -1175,7 +1298,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "ggl_admin"],
       registration_status: ["pending", "approved", "rejected"],
     },
   },

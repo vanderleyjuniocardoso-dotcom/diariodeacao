@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin, ChevronDown, ChevronUp, UserPlus } from "lucide-react";
+import { Plus, Trash2, MapPin, ChevronDown, ChevronUp, UserPlus, Mail, Calendar as CalendarIcon } from "lucide-react";
 
 interface Group {
   id: string;
@@ -16,32 +17,43 @@ interface Member {
   ggl_id: string;
   name: string;
   phone: string | null;
+  role: string | null;
 }
 interface Profile {
   id: string;
   full_name: string;
   ggl_id: string | null;
 }
+interface AdminEmail { id: string; ggl_id: string; email: string; }
+interface CalEvent { id: string; ggl_id: string; event_date: string; unit_name: string | null; title: string; description: string | null; }
 
 export default function AdminGglManager() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [emails, setEmails] = useState<AdminEmail[]>([]);
+  const [events, setEvents] = useState<CalEvent[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newGroup, setNewGroup] = useState({ unit: "", cities: "", actions: "" });
-  const [newMember, setNewMember] = useState<Record<string, { name: string; phone: string }>>({});
+  const [newMember, setNewMember] = useState<Record<string, { name: string; phone: string; role: string }>>({});
+  const [newEmail, setNewEmail] = useState<Record<string, string>>({});
+  const [newEvent, setNewEvent] = useState<Record<string, { date: string; unit: string; title: string; description: string }>>({});
   const [assignSearch, setAssignSearch] = useState<Record<string, string>>({});
   const [actionsDraft, setActionsDraft] = useState<Record<string, string>>({});
 
   const load = async () => {
-    const [{ data: g }, { data: m }, { data: p }] = await Promise.all([
+    const [{ data: g }, { data: m }, { data: p }, { data: em }, { data: ev }] = await Promise.all([
       supabase.from("ggl_groups").select("*").order("unit_name"),
       supabase.from("ggl_members").select("*").order("name"),
       supabase.from("profiles").select("id, full_name, ggl_id").order("full_name"),
+      supabase.from("ggl_admin_emails").select("*"),
+      supabase.from("ggl_calendar_events").select("*").order("event_date"),
     ]);
     setGroups((g as Group[]) ?? []);
     setMembers((m as Member[]) ?? []);
     setProfiles((p as Profile[]) ?? []);
+    setEmails((em as AdminEmail[]) ?? []);
+    setEvents((ev as CalEvent[]) ?? []);
   };
 
   useEffect(() => {
@@ -84,9 +96,47 @@ export default function AdminGglManager() {
       ggl_id: gglId,
       name: m.name.trim(),
       phone: m.phone?.trim() || null,
+      role: m.role?.trim() || null,
+    } as any);
+    if (error) return toast.error(error.message);
+    setNewMember((p) => ({ ...p, [gglId]: { name: "", phone: "", role: "" } }));
+    load();
+  };
+
+  const addEmail = async (gglId: string) => {
+    const e = newEmail[gglId]?.trim();
+    if (!e) return;
+    const count = emails.filter((x) => x.ggl_id === gglId).length;
+    if (count >= 2) return toast.error("Máximo de 2 e-mails por GGL");
+    const { error } = await supabase.from("ggl_admin_emails").insert({ ggl_id: gglId, email: e });
+    if (error) return toast.error(error.message);
+    setNewEmail((p) => ({ ...p, [gglId]: "" }));
+    toast.success("E-mail autorizado");
+    load();
+  };
+  const removeEmail = async (id: string) => {
+    const { error } = await supabase.from("ggl_admin_emails").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    load();
+  };
+
+  const addEvent = async (gglId: string) => {
+    const ev = newEvent[gglId];
+    if (!ev?.date || !ev?.title?.trim()) return toast.error("Data e título obrigatórios");
+    const { error } = await supabase.from("ggl_calendar_events").insert({
+      ggl_id: gglId,
+      event_date: ev.date,
+      unit_name: ev.unit?.trim() || null,
+      title: ev.title.trim(),
+      description: ev.description?.trim() || null,
     });
     if (error) return toast.error(error.message);
-    setNewMember((p) => ({ ...p, [gglId]: { name: "", phone: "" } }));
+    setNewEvent((p) => ({ ...p, [gglId]: { date: "", unit: "", title: "", description: "" } }));
+    load();
+  };
+  const removeEvent = async (id: string) => {
+    const { error } = await supabase.from("ggl_calendar_events").delete().eq("id", id);
+    if (error) return toast.error(error.message);
     load();
   };
 
@@ -180,25 +230,34 @@ export default function AdminGglManager() {
                           <li key={m.id} className="flex items-center justify-between gap-2 text-xs">
                             <div className="min-w-0">
                               <span className="font-medium">{m.name}</span>
+                              {m.role && <span className="text-primary"> · {m.role}</span>}
                               {m.phone && <span className="text-muted-foreground"> · {m.phone}</span>}
                             </div>
-                            <button
-                              onClick={() => removeMember(m.id)}
-                              className="text-destructive p-1"
-                            >
+                            <button onClick={() => removeMember(m.id)} className="text-destructive p-1">
                               <Trash2 className="h-3 w-3" />
                             </button>
                           </li>
                         ))}
                       </ul>
-                      <div className="flex gap-1.5">
+                      <div className="grid grid-cols-2 gap-1.5">
                         <Input
                           placeholder="Nome"
                           value={newMember[g.id]?.name ?? ""}
                           onChange={(e) =>
                             setNewMember((p) => ({
                               ...p,
-                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "" }), name: e.target.value },
+                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), name: e.target.value },
+                            }))
+                          }
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Função (cargo)"
+                          value={newMember[g.id]?.role ?? ""}
+                          onChange={(e) =>
+                            setNewMember((p) => ({
+                              ...p,
+                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), role: e.target.value },
                             }))
                           }
                           className="h-7 text-xs"
@@ -209,16 +268,100 @@ export default function AdminGglManager() {
                           onChange={(e) =>
                             setNewMember((p) => ({
                               ...p,
-                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "" }), phone: e.target.value },
+                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), phone: e.target.value },
                             }))
                           }
                           className="h-7 text-xs"
                         />
-                        <Button size="sm" onClick={() => addMember(g.id)} className="h-7 px-2">
+                        <Button size="sm" onClick={() => addMember(g.id)} className="h-7 px-2 text-xs">
+                          <Plus className="h-3 w-3 mr-1" /> Adicionar
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* E-mails ADM do GGL */}
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> E-mails administradores deste GGL (máx. 2)
+                      </p>
+                      <ul className="space-y-1 mb-2">
+                        {emails.filter((e) => e.ggl_id === g.id).map((e) => (
+                          <li key={e.id} className="flex items-center justify-between text-xs bg-muted/40 rounded px-2 py-1">
+                            <span className="truncate">{e.email}</span>
+                            <button onClick={() => removeEmail(e.id)} className="text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="flex gap-1.5">
+                        <Input
+                          type="email"
+                          placeholder="email@exemplo.com"
+                          value={newEmail[g.id] ?? ""}
+                          onChange={(e) => setNewEmail((p) => ({ ...p, [g.id]: e.target.value }))}
+                          className="h-7 text-xs"
+                          disabled={emails.filter((e) => e.ggl_id === g.id).length >= 2}
+                        />
+                        <Button
+                          size="sm" onClick={() => addEmail(g.id)} className="h-7 px-2"
+                          disabled={emails.filter((e) => e.ggl_id === g.id).length >= 2}
+                        >
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
+
+                    {/* Calendário de ações planejadas */}
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" /> Calendário de ações
+                      </p>
+                      <ul className="space-y-1 mb-2 max-h-40 overflow-auto">
+                        {events.filter((e) => e.ggl_id === g.id).map((e) => (
+                          <li key={e.id} className="flex items-center justify-between text-xs border-l-2 border-primary pl-2 py-1">
+                            <div className="min-w-0">
+                              <p className="font-medium">{new Date(e.event_date + "T00:00:00").toLocaleDateString("pt-BR")} · {e.title}</p>
+                              {e.unit_name && <p className="text-[10px] text-muted-foreground">{e.unit_name}</p>}
+                            </div>
+                            <button onClick={() => removeEvent(e.id)} className="text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <Input
+                          type="date"
+                          value={newEvent[g.id]?.date ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), date: e.target.value } }))}
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Unidade"
+                          value={newEvent[g.id]?.unit ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), unit: e.target.value } }))}
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Título da ação"
+                          value={newEvent[g.id]?.title ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), title: e.target.value } }))}
+                          className="h-7 text-xs col-span-2"
+                        />
+                        <Textarea
+                          rows={2}
+                          placeholder="Descrição"
+                          value={newEvent[g.id]?.description ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), description: e.target.value } }))}
+                          className="text-xs col-span-2"
+                        />
+                        <Button size="sm" onClick={() => addEvent(g.id)} className="h-7 px-2 text-xs col-span-2">
+                          <Plus className="h-3 w-3 mr-1" /> Adicionar ação
+                        </Button>
+                      </div>
+                    </div>
+
 
                     <div>
                       <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">

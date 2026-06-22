@@ -12,12 +12,17 @@ interface Row {
   cpf: string;
   full_name: string;
   credencial: string | null;
+  phone: string | null;
+  profession: string | null;
+  ggl_id: string | null;
 }
+interface GglOpt { id: string; unit_name: string; }
 
-type ImportRow = { cpf: string; full_name: string; credencial: string | null };
+type ImportRow = { cpf: string; full_name: string; credencial: string | null; phone: string | null; profession: string | null; ggl_id: string | null };
 
 const AdminAuthorizedBase = () => {
   const [rows, setRows] = useState<Row[]>([]);
+  const [ggls, setGgls] = useState<GglOpt[]>([]);
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -27,8 +32,12 @@ const AdminAuthorizedBase = () => {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("admin_volunteers").select("*").order("full_name");
+    const [{ data }, { data: g }] = await Promise.all([
+      supabase.from("admin_volunteers").select("*").order("full_name"),
+      supabase.from("ggl_groups").select("id, unit_name").order("unit_name"),
+    ]);
     setRows((data as Row[]) || []);
+    setGgls((g as GglOpt[]) || []);
     setLoading(false);
   };
 
@@ -41,23 +50,32 @@ const AdminAuthorizedBase = () => {
     return rows.filter((r) =>
       r.full_name.toLowerCase().includes(q) ||
       (!!digits && r.cpf.includes(digits)) ||
-      (r.credencial || "").toLowerCase().includes(q)
+      (r.credencial || "").toLowerCase().includes(q) ||
+      (r.profession || "").toLowerCase().includes(q)
     );
   }, [filter, rows]);
+
+  const gglByName = useMemo(() => {
+    const m = new Map<string, string>();
+    ggls.forEach((g) => m.set(g.unit_name.toLowerCase().trim(), g.id));
+    return m;
+  }, [ggls]);
 
   const parseRows = (raw: string[][]): { valid: ImportRow[]; invalid: string[] } => {
     const valid: ImportRow[] = [];
     const invalid: string[] = [];
     const seen = new Set<string>();
-    // Detect header
     const first = raw[0]?.map((s) => String(s).toLowerCase()) || [];
-    const hasHeader = first.some((c) => c.includes("cpf") || c.includes("nome") || c.includes("credencial"));
-    let nameIdx = 0, cpfIdx = 1, credIdx = 2;
+    const hasHeader = first.some((c) => c.includes("cpf") || c.includes("nome") || c.includes("credencial") || c.includes("telefone") || c.includes("profiss") || c.includes("ggl"));
+    let nameIdx = 0, cpfIdx = 1, credIdx = 2, phoneIdx = 3, profIdx = 4, gglIdx = 5;
     if (hasHeader) {
       first.forEach((h, i) => {
         if (h.includes("cpf")) cpfIdx = i;
         else if (h.includes("nome")) nameIdx = i;
         else if (h.includes("credencial")) credIdx = i;
+        else if (h.includes("telefone") || h.includes("whats") || h.includes("celular")) phoneIdx = i;
+        else if (h.includes("profiss")) profIdx = i;
+        else if (h.includes("ggl") || h.includes("grupo")) gglIdx = i;
       });
     }
     const data = hasHeader ? raw.slice(1) : raw;
@@ -65,11 +83,15 @@ const AdminAuthorizedBase = () => {
       const name = String(row[nameIdx] ?? "").trim();
       const cpf = onlyDigits(String(row[cpfIdx] ?? ""));
       const cred = (row[credIdx] != null ? String(row[credIdx]).trim() : "") || null;
+      const phone = (row[phoneIdx] != null ? String(row[phoneIdx]).trim() : "") || null;
+      const profession = (row[profIdx] != null ? String(row[profIdx]).trim() : "") || null;
+      const gglRaw = (row[gglIdx] != null ? String(row[gglIdx]).trim() : "");
+      const ggl_id = gglRaw ? (gglByName.get(gglRaw.toLowerCase()) ?? null) : null;
       if (!name || !cpf) return;
       if (!isValidCPF(cpf)) { invalid.push(`Linha ${idx + 1}: CPF inválido (${cpf})`); return; }
       if (seen.has(cpf)) return;
       seen.add(cpf);
-      valid.push({ cpf, full_name: name, credencial: cred });
+      valid.push({ cpf, full_name: name, credencial: cred, phone, profession, ggl_id });
     });
     return { valid, invalid };
   };
@@ -153,7 +175,7 @@ const AdminAuthorizedBase = () => {
         {showPaste && (
           <div className="space-y-2">
             <Textarea
-              placeholder="Cole as linhas aqui (Nome[TAB]CPF[TAB]Credencial)..."
+              placeholder="Cole as linhas aqui (Nome[TAB]CPF[TAB]Credencial[TAB]Telefone[TAB]Profissão[TAB]GGL)..."
               rows={5}
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
@@ -161,6 +183,9 @@ const AdminAuthorizedBase = () => {
             <Button size="sm" onClick={onPaste} disabled={!pasteText.trim()}>Pré-visualizar</Button>
           </div>
         )}
+        <p className="text-[10px] text-muted-foreground">
+          Colunas aceitas: <b>Nome, CPF, Credencial, Telefone, Profissão, GGL</b>. As 3 últimas são opcionais. O GGL deve bater com o nome de um grupo já cadastrado.
+        </p>
       </div>
 
       {preview && (
@@ -179,7 +204,14 @@ const AdminAuthorizedBase = () => {
           <div className="max-h-48 overflow-auto text-xs border rounded">
             <table className="w-full">
               <thead className="bg-muted/50 sticky top-0">
-                <tr><th className="text-left p-2">Nome</th><th className="text-left p-2">CPF</th><th className="text-left p-2">Cred.</th></tr>
+                <tr>
+                  <th className="text-left p-2">Nome</th>
+                  <th className="text-left p-2">CPF</th>
+                  <th className="text-left p-2">Cred.</th>
+                  <th className="text-left p-2">Tel.</th>
+                  <th className="text-left p-2">Profissão</th>
+                  <th className="text-left p-2">GGL</th>
+                </tr>
               </thead>
               <tbody>
                 {preview.valid.slice(0, 50).map((r) => (
@@ -187,6 +219,9 @@ const AdminAuthorizedBase = () => {
                     <td className="p-2">{r.full_name}</td>
                     <td className="p-2 font-mono">{r.cpf}</td>
                     <td className="p-2">{r.credencial || "—"}</td>
+                    <td className="p-2">{r.phone || "—"}</td>
+                    <td className="p-2">{r.profession || "—"}</td>
+                    <td className="p-2">{r.ggl_id ? (ggls.find(g => g.id === r.ggl_id)?.unit_name || "✓") : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -223,7 +258,10 @@ const AdminAuthorizedBase = () => {
                 <tr>
                   <th className="text-left p-2">Nome</th>
                   <th className="text-left p-2">CPF</th>
-                  <th className="text-left p-2">Credencial</th>
+                  <th className="text-left p-2">Cred.</th>
+                  <th className="text-left p-2">Tel.</th>
+                  <th className="text-left p-2">Profissão</th>
+                  <th className="text-left p-2">GGL</th>
                   <th className="w-10"></th>
                 </tr>
               </thead>
@@ -233,6 +271,23 @@ const AdminAuthorizedBase = () => {
                     <td className="p-2">{r.full_name}</td>
                     <td className="p-2 font-mono text-xs">{r.cpf}</td>
                     <td className="p-2">{r.credencial || "—"}</td>
+                    <td className="p-2 text-xs">{r.phone || "—"}</td>
+                    <td className="p-2 text-xs">{r.profession || "—"}</td>
+                    <td className="p-2">
+                      <select
+                        value={r.ggl_id || ""}
+                        onChange={async (e) => {
+                          const newGgl = e.target.value || null;
+                          const { error } = await supabase.from("admin_volunteers").update({ ggl_id: newGgl } as any).eq("cpf", r.cpf);
+                          if (error) return toast.error(error.message);
+                          setRows((prev) => prev.map((x) => x.cpf === r.cpf ? { ...x, ggl_id: newGgl } : x));
+                        }}
+                        className="text-xs bg-transparent border rounded px-1 py-0.5 max-w-[100px]"
+                      >
+                        <option value="">—</option>
+                        {ggls.map((g) => <option key={g.id} value={g.id}>{g.unit_name}</option>)}
+                      </select>
+                    </td>
                     <td className="p-2"><button onClick={() => remove(r.cpf)} className="text-destructive hover:opacity-70"><Trash2 className="h-3.5 w-3.5" /></button></td>
                   </tr>
                 ))}

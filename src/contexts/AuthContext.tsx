@@ -7,13 +7,14 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  profile: { full_name: string; email: string; phone: string | null; unit: string | null; avatar_url: string | null; volunteer_level?: number | null; volunteer_credential?: string | null } | null;
+  gglAdminGroupId: string | null;
+  profile: { full_name: string; email: string; phone: string | null; unit: string | null; avatar_url: string | null; volunteer_level?: number | null; volunteer_credential?: string | null; ggl_id?: string | null } | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: null, session: null, loading: true, isAdmin: false, profile: null,
+  user: null, session: null, loading: true, isAdmin: false, gglAdminGroupId: null, profile: null,
   signOut: async () => {}, refreshProfile: async () => {},
 });
 
@@ -24,6 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [gglAdminGroupId, setGglAdminGroupId] = useState<string | null>(null);
   const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
 
   const fetchProfile = async (userId: string) => {
@@ -43,6 +45,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const checkGglAdmin = async () => {
+    try {
+      const { data } = await (supabase.rpc as any)("get_my_ggl_admin_group");
+      setGglAdminGroupId((data as string) || null);
+    } catch {
+      setGglAdminGroupId(null);
+    }
+  };
+
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id);
   };
@@ -52,9 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(session?.user ?? null);
     if (session?.user) {
       const uid = session.user.id;
-      // Fire-and-forget: don't block UI on profile sync
       fetchProfile(uid).catch(() => {});
       checkAdmin(uid).catch(() => {});
+      checkGglAdmin().catch(() => {});
       import("@/lib/push").then(({ savePushSubscription, isInIframe }) => {
         if (!isInIframe && "Notification" in window && Notification.permission === "granted") {
           savePushSubscription(uid).catch(() => {});
@@ -63,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else {
       setProfile(null);
       setIsAdmin(false);
+      setGglAdminGroupId(null);
     }
     setLoading(false);
   };
@@ -79,7 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  // Realtime: refresh profile when admin updates it (e.g. credencial)
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -102,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, profile, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, gglAdminGroupId, profile, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

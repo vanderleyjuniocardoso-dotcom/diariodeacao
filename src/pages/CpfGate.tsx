@@ -119,6 +119,11 @@ const CpfGate = () => {
         <div className="mt-4">
           <InstallAppButton />
         </div>
+
+        <p className="text-center mt-4 text-xs text-primary-foreground/80">
+          Sou administrador de GGL,{" "}
+          <a href="/cadastro-ggl" className="underline font-medium">acessar aqui</a>
+        </p>
       </div>
     </div>
   );

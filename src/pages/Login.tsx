@@ -21,9 +21,15 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error(error.message);
+      return;
+    }
+    const { data: gglId } = await (supabase.rpc as any)("is_ggl_admin_email", { _email: email });
+    setLoading(false);
+    if (gglId) {
+      navigate("/ggl-admin", { replace: true });
     } else {
       navigate("/volunteers", { state: { fromWelcome: true } });
     }
