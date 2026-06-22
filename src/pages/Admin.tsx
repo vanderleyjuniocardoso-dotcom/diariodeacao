@@ -259,9 +259,8 @@ const Admin = () => {
             )}
           </TabsContent>
 
-          {/* ENGAJAMENTO */}
+          {/* GGL */}
           <TabsContent value="engagement" className="space-y-4 mt-4">
-            <AdminBroadcastComposer />
             <AdminGglManager />
           </TabsContent>
 
