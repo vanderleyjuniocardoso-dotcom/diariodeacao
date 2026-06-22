@@ -175,7 +175,7 @@ const AdminAuthorizedBase = () => {
         {showPaste && (
           <div className="space-y-2">
             <Textarea
-              placeholder="Cole as linhas aqui (Nome[TAB]CPF[TAB]Credencial)..."
+              placeholder="Cole as linhas aqui (Nome[TAB]CPF[TAB]Credencial[TAB]Telefone[TAB]Profissão[TAB]GGL)..."
               rows={5}
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
@@ -183,6 +183,9 @@ const AdminAuthorizedBase = () => {
             <Button size="sm" onClick={onPaste} disabled={!pasteText.trim()}>Pré-visualizar</Button>
           </div>
         )}
+        <p className="text-[10px] text-muted-foreground">
+          Colunas aceitas: <b>Nome, CPF, Credencial, Telefone, Profissão, GGL</b>. As 3 últimas são opcionais. O GGL deve bater com o nome de um grupo já cadastrado.
+        </p>
       </div>
 
       {preview && (
