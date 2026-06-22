@@ -236,7 +236,7 @@ const Admin = () => {
             <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
             <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
             <TabsTrigger value="engagement" className="text-[9px] px-0.5"><MapPin className="h-3 w-3 mr-0.5" />GGL</TabsTrigger>
-            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
+            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Indic.</TabsTrigger>
           </TabsList>
 
           <TabsContent value="gestao" className="space-y-5 mt-4">
