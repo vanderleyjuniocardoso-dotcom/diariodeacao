@@ -258,7 +258,10 @@ const AdminAuthorizedBase = () => {
                 <tr>
                   <th className="text-left p-2">Nome</th>
                   <th className="text-left p-2">CPF</th>
-                  <th className="text-left p-2">Credencial</th>
+                  <th className="text-left p-2">Cred.</th>
+                  <th className="text-left p-2">Tel.</th>
+                  <th className="text-left p-2">Profissão</th>
+                  <th className="text-left p-2">GGL</th>
                   <th className="w-10"></th>
                 </tr>
               </thead>
@@ -268,6 +271,23 @@ const AdminAuthorizedBase = () => {
                     <td className="p-2">{r.full_name}</td>
                     <td className="p-2 font-mono text-xs">{r.cpf}</td>
                     <td className="p-2">{r.credencial || "—"}</td>
+                    <td className="p-2 text-xs">{r.phone || "—"}</td>
+                    <td className="p-2 text-xs">{r.profession || "—"}</td>
+                    <td className="p-2">
+                      <select
+                        value={r.ggl_id || ""}
+                        onChange={async (e) => {
+                          const newGgl = e.target.value || null;
+                          const { error } = await supabase.from("admin_volunteers").update({ ggl_id: newGgl } as any).eq("cpf", r.cpf);
+                          if (error) return toast.error(error.message);
+                          setRows((prev) => prev.map((x) => x.cpf === r.cpf ? { ...x, ggl_id: newGgl } : x));
+                        }}
+                        className="text-xs bg-transparent border rounded px-1 py-0.5 max-w-[100px]"
+                      >
+                        <option value="">—</option>
+                        {ggls.map((g) => <option key={g.id} value={g.id}>{g.unit_name}</option>)}
+                      </select>
+                    </td>
                     <td className="p-2"><button onClick={() => remove(r.cpf)} className="text-destructive hover:opacity-70"><Trash2 className="h-3.5 w-3.5" /></button></td>
                   </tr>
                 ))}
