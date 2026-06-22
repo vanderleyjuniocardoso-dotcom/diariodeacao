@@ -230,25 +230,34 @@ export default function AdminGglManager() {
                           <li key={m.id} className="flex items-center justify-between gap-2 text-xs">
                             <div className="min-w-0">
                               <span className="font-medium">{m.name}</span>
+                              {m.role && <span className="text-primary"> · {m.role}</span>}
                               {m.phone && <span className="text-muted-foreground"> · {m.phone}</span>}
                             </div>
-                            <button
-                              onClick={() => removeMember(m.id)}
-                              className="text-destructive p-1"
-                            >
+                            <button onClick={() => removeMember(m.id)} className="text-destructive p-1">
                               <Trash2 className="h-3 w-3" />
                             </button>
                           </li>
                         ))}
                       </ul>
-                      <div className="flex gap-1.5">
+                      <div className="grid grid-cols-2 gap-1.5">
                         <Input
                           placeholder="Nome"
                           value={newMember[g.id]?.name ?? ""}
                           onChange={(e) =>
                             setNewMember((p) => ({
                               ...p,
-                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "" }), name: e.target.value },
+                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), name: e.target.value },
+                            }))
+                          }
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Função (cargo)"
+                          value={newMember[g.id]?.role ?? ""}
+                          onChange={(e) =>
+                            setNewMember((p) => ({
+                              ...p,
+                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), role: e.target.value },
                             }))
                           }
                           className="h-7 text-xs"
@@ -259,16 +268,100 @@ export default function AdminGglManager() {
                           onChange={(e) =>
                             setNewMember((p) => ({
                               ...p,
-                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "" }), phone: e.target.value },
+                              [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), phone: e.target.value },
                             }))
                           }
                           className="h-7 text-xs"
                         />
-                        <Button size="sm" onClick={() => addMember(g.id)} className="h-7 px-2">
+                        <Button size="sm" onClick={() => addMember(g.id)} className="h-7 px-2 text-xs">
+                          <Plus className="h-3 w-3 mr-1" /> Adicionar
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* E-mails ADM do GGL */}
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> E-mails administradores deste GGL (máx. 2)
+                      </p>
+                      <ul className="space-y-1 mb-2">
+                        {emails.filter((e) => e.ggl_id === g.id).map((e) => (
+                          <li key={e.id} className="flex items-center justify-between text-xs bg-muted/40 rounded px-2 py-1">
+                            <span className="truncate">{e.email}</span>
+                            <button onClick={() => removeEmail(e.id)} className="text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="flex gap-1.5">
+                        <Input
+                          type="email"
+                          placeholder="email@exemplo.com"
+                          value={newEmail[g.id] ?? ""}
+                          onChange={(e) => setNewEmail((p) => ({ ...p, [g.id]: e.target.value }))}
+                          className="h-7 text-xs"
+                          disabled={emails.filter((e) => e.ggl_id === g.id).length >= 2}
+                        />
+                        <Button
+                          size="sm" onClick={() => addEmail(g.id)} className="h-7 px-2"
+                          disabled={emails.filter((e) => e.ggl_id === g.id).length >= 2}
+                        >
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
+
+                    {/* Calendário de ações planejadas */}
+                    <div>
+                      <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" /> Calendário de ações
+                      </p>
+                      <ul className="space-y-1 mb-2 max-h-40 overflow-auto">
+                        {events.filter((e) => e.ggl_id === g.id).map((e) => (
+                          <li key={e.id} className="flex items-center justify-between text-xs border-l-2 border-primary pl-2 py-1">
+                            <div className="min-w-0">
+                              <p className="font-medium">{new Date(e.event_date + "T00:00:00").toLocaleDateString("pt-BR")} · {e.title}</p>
+                              {e.unit_name && <p className="text-[10px] text-muted-foreground">{e.unit_name}</p>}
+                            </div>
+                            <button onClick={() => removeEvent(e.id)} className="text-destructive">
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <Input
+                          type="date"
+                          value={newEvent[g.id]?.date ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), date: e.target.value } }))}
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Unidade"
+                          value={newEvent[g.id]?.unit ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), unit: e.target.value } }))}
+                          className="h-7 text-xs"
+                        />
+                        <Input
+                          placeholder="Título da ação"
+                          value={newEvent[g.id]?.title ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), title: e.target.value } }))}
+                          className="h-7 text-xs col-span-2"
+                        />
+                        <Textarea
+                          rows={2}
+                          placeholder="Descrição"
+                          value={newEvent[g.id]?.description ?? ""}
+                          onChange={(e) => setNewEvent((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { date: "", unit: "", title: "", description: "" }), description: e.target.value } }))}
+                          className="text-xs col-span-2"
+                        />
+                        <Button size="sm" onClick={() => addEvent(g.id)} className="h-7 px-2 text-xs col-span-2">
+                          <Plus className="h-3 w-3 mr-1" /> Adicionar ação
+                        </Button>
+                      </div>
+                    </div>
+
 
                     <div>
                       <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
