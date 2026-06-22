@@ -7,18 +7,22 @@ import InstallAppButton from "@/components/InstallAppButton";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, gglAdminGroupId, isAdmin } = useAuth();
 
   useEffect(() => {
     if (loading) return;
     if (user) {
-      navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
+      if (gglAdminGroupId && !isAdmin) {
+        navigate("/ggl-admin", { replace: true });
+      } else {
+        navigate("/volunteers", { replace: true, state: { fromWelcome: true } });
+      }
       return;
     }
     const knownCpf = typeof window !== "undefined" ? localStorage.getItem("known_user_cpf") : null;
     if (knownCpf) navigate("/login", { replace: true });
     else navigate("/cpf-gate", { replace: true });
-  }, [user, loading, navigate]);
+  }, [user, loading, gglAdminGroupId, isAdmin, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 gradient-hero relative overflow-hidden">
