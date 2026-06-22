@@ -24,6 +24,8 @@ const Ggl = () => {
   const { profile } = useAuth() as any;
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
+  const [events, setEvents] = useState<CalEvent[]>([]);
+  const [fellows, setFellows] = useState<Fellow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
 
@@ -32,7 +34,6 @@ const Ggl = () => {
       setLoading(true);
       let groupId: string | null = null;
 
-      // 1) Tenta resolver GGL pela planilha (credencial -> coluna AE)
       const credential = profile?.volunteer_credential?.trim();
       if (credential) {
         try {
@@ -52,24 +53,36 @@ const Ggl = () => {
         }
       }
 
-      // 2) Fallback: usa o ggl_id vinculado no perfil
       if (!groupId) groupId = profile?.ggl_id ?? null;
 
       if (!groupId) {
         setGroup(null);
         setMembers([]);
+        setEvents([]);
+        setFellows([]);
         setLoading(false);
         return;
       }
-      const [{ data: g }, { data: ms }] = await Promise.all([
+      const [{ data: g }, { data: ms }, { data: ev }, { data: fl }] = await Promise.all([
         supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", groupId).maybeSingle(),
-        supabase.from("ggl_members").select("id, name, phone").eq("ggl_id", groupId).order("name"),
+        supabase.from("ggl_members").select("id, name, phone, role").eq("ggl_id", groupId).order("name"),
+        supabase.from("ggl_calendar_events").select("*").eq("ggl_id", groupId).order("event_date"),
+        supabase.from("ggl_volunteers_view" as any).select("*").eq("ggl_id", groupId).order("effective_name"),
       ]);
       setGroup(g as Group | null);
       setMembers((ms as Member[]) ?? []);
+      setEvents((ev as CalEvent[]) ?? []);
+      setFellows((fl as unknown as Fellow[]) ?? []);
       setLoading(false);
     })();
   }, [profile?.ggl_id, profile?.volunteer_credential]);
+
+  const eventsByMonth = events.reduce<Record<string, CalEvent[]>>((acc, ev) => {
+    const key = ev.event_date.slice(0, 7);
+    (acc[key] ||= []).push(ev);
+    return acc;
+  }, {});
+
 
   return (
     <div className="min-h-screen bg-background pb-24">
