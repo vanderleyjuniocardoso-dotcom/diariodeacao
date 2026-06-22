@@ -38,6 +38,41 @@ interface ActionDetail {
   profiles: { full_name: string; email: string } | null;
 }
 
+const INDICATORS: { key: string; label: string; color: string }[] = [
+  { key: "ativos", label: "Voluntários Ativos", color: "#3B82F6" },
+  { key: "horas", label: "Horas de Voluntariado", color: "#10B981" },
+  { key: "capacitados", label: "Voluntários Capacitados", color: "#8B5CF6" },
+  { key: "saude", label: "Voluntários da Saúde", color: "#EF4444" },
+  { key: "unidSaude", label: "Unidades dos Voluntários da Saúde", color: "#F59E0B" },
+  { key: "unidDemais", label: "Unidades dos Demais Serviços", color: "#EC4899" },
+  { key: "trilha", label: "Engajamento na Trilha", color: "#14B8A6" },
+  { key: "colab", label: "Colaboradores Engajados", color: "#6366F1" },
+  { key: "mutiroes", label: "Mutirões Realizados", color: "#F97316" },
+];
+
+const IndicatorCard = ({ label, value, color }: { label: string; value: number | string; color: string }) => (
+  <div className="glass-card rounded-2xl p-4 flex items-center gap-4">
+    <div className="relative h-16 w-16 flex-shrink-0">
+      <div
+        className="absolute inset-0 rounded-full animate-spin"
+        style={{
+          animationDuration: "3s",
+          background: `conic-gradient(${color} 0deg, ${color} 270deg, ${color}33 270deg, ${color}33 360deg)`,
+          WebkitMask: "radial-gradient(circle, transparent 55%, #000 56%)",
+          mask: "radial-gradient(circle, transparent 55%, #000 56%)",
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-sm font-bold" style={{ color }}>{value}</span>
+      </div>
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs text-muted-foreground leading-tight">{label}</p>
+      <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+    </div>
+  </div>
+);
+
 const Admin = () => {
   const navigate = useNavigate();
   const [volunteers, setVolunteers] = useState<VolunteerSummary[]>([]);
@@ -46,6 +81,8 @@ const Admin = () => {
   const [photoFilter, setPhotoFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [photoModal, setPhotoModal] = useState<{ url: string; volunteer: string; action: string; location: string } | null>(null);
+  const [authorizedCount, setAuthorizedCount] = useState(0);
+  const [showReport, setShowReport] = useState(false);
 
   const downloadPhoto = async () => {
     if (!photoModal) return;
