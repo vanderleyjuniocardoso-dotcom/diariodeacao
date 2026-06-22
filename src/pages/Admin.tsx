@@ -308,8 +308,17 @@ const Admin = () => {
 
           {/* INDICADORES */}
           <TabsContent value="data" className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 gap-3">
-              {INDICATORS.map((ind) => {
+            <div className="grid grid-cols-5 gap-3">
+              {INDICATORS.slice(0, 5).map((ind) => {
+                const value =
+                  ind.key === "ativos" ? authorizedCount :
+                  ind.key === "horas" ? totalHours :
+                  "—";
+                return <IndicatorCard key={ind.key} label={ind.label} value={value} color={ind.color} />;
+              })}
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {INDICATORS.slice(5).map((ind) => {
                 const value =
                   ind.key === "ativos" ? authorizedCount :
                   ind.key === "horas" ? totalHours :
