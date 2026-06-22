@@ -146,6 +146,11 @@ const Admin = () => {
         }
         setVolunteers(Array.from(map.values()));
       }
+      const { count: baseCount } = await supabase
+        .from("admin_volunteers")
+        .select("*", { count: "exact", head: true });
+      setAuthorizedCount(baseCount || 0);
+
       setLoading(false);
     };
     load();
