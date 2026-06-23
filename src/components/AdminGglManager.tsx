@@ -489,6 +489,124 @@ export default function AdminGglManager() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Reporte de Ações modal */}
+      <Dialog open={!!reportsFor} onOpenChange={(o) => { if (!o) { setReportsFor(null); setReportsMonth(null); } }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              Reporte das Ações · {reportsFor?.unit_name}
+            </DialogTitle>
+          </DialogHeader>
+
+          {(() => {
+            if (!reportsFor) return null;
+            const groupReports = reports.filter((r) => r.ggl_id === reportsFor.id);
+
+            const exportAll = (monthIdx: number | null) => {
+              const rows = (monthIdx == null ? groupReports : groupReports.filter((r) => new Date(r.action_date + "T00:00:00").getMonth() === monthIdx))
+                .map((r) => {
+                  const d = new Date(r.action_date + "T00:00:00");
+                  return {
+                    "Mês": MONTHS[d.getMonth()],
+                    "Data": d.toLocaleDateString("pt-BR"),
+                    "Nome do Voluntário": r.volunteer_name,
+                    "CPF": r.volunteer_cpf || "",
+                    "Credencial": r.volunteer_credential || "",
+                    "Colaborador CEJAM": r.is_cejam_collaborator ? "Sim" : "Não",
+                    "N° de Beneficiários": r.beneficiaries_count,
+                    "Horas": r.hours,
+                    "Tipo de Ação": r.action_type,
+                    "Nome da Ação": r.action_name,
+                  };
+                });
+              if (rows.length === 0) return toast.error("Sem reportes para exportar");
+              const ws = XLSX.utils.json_to_sheet(rows);
+              const wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+              const suffix = monthIdx == null ? "todos" : MONTHS[monthIdx];
+              XLSX.writeFile(wb, `reporte_${reportsFor.unit_name}_${suffix}.xlsx`);
+            };
+
+            if (reportsMonth == null) {
+              return (
+                <>
+                  <div className="flex justify-end">
+                    <Button size="sm" variant="default" onClick={() => exportAll(null)}>
+                      <Download className="h-3.5 w-3.5 mr-1" /> Exportar tudo
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {MONTHS.map((name, idx) => {
+                      const count = groupReports.filter((r) => new Date(r.action_date + "T00:00:00").getMonth() === idx).length;
+                      return (
+                        <button key={name} onClick={() => setReportsMonth(idx)}
+                          className="border border-border rounded-lg p-3 text-left hover:bg-muted/40 transition-colors">
+                          <p className="text-sm font-bold text-primary">{name}</p>
+                          <p className="text-[11px] text-muted-foreground">{count} reporte(s)</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            }
+
+            const monthReports = groupReports
+              .filter((r) => new Date(r.action_date + "T00:00:00").getMonth() === reportsMonth)
+              .sort((a, b) => a.action_date.localeCompare(b.action_date));
+
+            return (
+              <>
+                <div className="flex items-center justify-between">
+                  <Button size="sm" variant="ghost" onClick={() => setReportsMonth(null)}>
+                    ← Voltar aos meses
+                  </Button>
+                  <Button size="sm" variant="default" onClick={() => exportAll(reportsMonth)}>
+                    <Download className="h-3.5 w-3.5 mr-1" /> Exportar {MONTHS[reportsMonth]}
+                  </Button>
+                </div>
+                <h4 className="font-semibold text-sm">{MONTHS[reportsMonth]} · {monthReports.length} reporte(s)</h4>
+                <div className="overflow-x-auto rounded border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[10px]">Data</TableHead>
+                        <TableHead className="text-[10px]">Voluntário</TableHead>
+                        <TableHead className="text-[10px]">CPF</TableHead>
+                        <TableHead className="text-[10px]">Credencial</TableHead>
+                        <TableHead className="text-[10px]">CEJAM</TableHead>
+                        <TableHead className="text-[10px]">Benef.</TableHead>
+                        <TableHead className="text-[10px]">Horas</TableHead>
+                        <TableHead className="text-[10px]">Tipo</TableHead>
+                        <TableHead className="text-[10px]">Ação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {monthReports.length === 0 ? (
+                        <TableRow><TableCell colSpan={9} className="text-center text-xs text-muted-foreground py-4">Nenhum reporte neste mês.</TableCell></TableRow>
+                      ) : monthReports.map((r) => (
+                        <TableRow key={r.id}>
+                          <TableCell className="text-[10px] py-1.5">{new Date(r.action_date + "T00:00:00").toLocaleDateString("pt-BR")}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.volunteer_name}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.volunteer_cpf || "—"}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.volunteer_credential || "—"}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.is_cejam_collaborator ? "Sim" : "Não"}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.beneficiaries_count}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.hours}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.action_type}</TableCell>
+                          <TableCell className="text-[10px] py-1.5">{r.action_name}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
