@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,17 +6,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { toast } from "sonner";
 import {
-  MapPin, Users, Phone, Calendar as CalendarIcon, LogOut, Plus, Trash2, ChevronLeft, ChevronRight, Building2, Shield,
+  MapPin, Users, Phone, Calendar as CalendarIcon, LogOut, Plus, Trash2,
+  ChevronLeft, ChevronRight, Building2, Shield, ClipboardList,
 } from "lucide-react";
 
 interface Group { id: string; unit_name: string; cities: string[]; unit_actions: string[]; }
 interface Member { id: string; name: string; phone: string | null; role: string | null; }
 interface Volunteer { cpf: string; full_name: string; phone: string | null; profession: string | null; credencial: string | null; effective_name: string | null; effective_phone: string | null; }
 interface CalEvent { id: string; event_date: string; unit_name: string | null; title: string; description: string | null; }
+interface Report {
+  id: string; action_date: string; volunteer_name: string; volunteer_cpf: string | null;
+  volunteer_credential: string | null; is_cejam_collaborator: boolean; beneficiaries_count: number;
+  hours: number; action_type: string; action_name: string;
+}
 
 const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+const ACTION_TYPES = ["Capelania", "Palhaçaria", "Apoio"];
+
+const emptyReport = {
+  action_date: "",
+  volunteer_name: "",
+  volunteer_cpf: "",
+  volunteer_credential: "",
+  is_cejam_collaborator: false,
+  beneficiaries_count: 0,
+  hours: 0,
+  action_type: "",
+  action_name: "",
+};
 
 const GglAdminHome = () => {
   const { gglAdminGroupId, signOut, user } = useAuth();
@@ -25,21 +46,26 @@ const GglAdminHome = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [events, setEvents] = useState<CalEvent[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [calMonth, setCalMonth] = useState(new Date().getMonth());
   const [calYear] = useState(new Date().getFullYear());
   const [newEvent, setNewEvent] = useState({ date: "", unit: "", title: "", description: "" });
+  const [newReport, setNewReport] = useState({ ...emptyReport });
+  const [volSearch, setVolSearch] = useState("");
 
   const load = async (gid: string) => {
-    const [{ data: g }, { data: m }, { data: v }, { data: ev }] = await Promise.all([
+    const [{ data: g }, { data: m }, { data: v }, { data: ev }, { data: rp }] = await Promise.all([
       supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", gid).maybeSingle(),
       supabase.from("ggl_members").select("id, name, phone, role").eq("ggl_id", gid).order("name"),
       supabase.from("ggl_volunteers_view" as any).select("*").eq("ggl_id", gid).order("effective_name"),
       supabase.from("ggl_calendar_events").select("*").eq("ggl_id", gid).order("event_date"),
+      supabase.from("ggl_action_reports" as any).select("*").eq("ggl_id", gid).order("action_date", { ascending: false }),
     ]);
     setGroup(g as Group);
     setMembers((m as Member[]) ?? []);
     setVolunteers((v as unknown as Volunteer[]) ?? []);
     setEvents((ev as CalEvent[]) ?? []);
+    setReports((rp as unknown as Report[]) ?? []);
   };
 
   useEffect(() => {
@@ -78,6 +104,58 @@ const GglAdminHome = () => {
     return d.getMonth() === calMonth && d.getFullYear() === calYear;
   });
 
+  // ===== Reporte =====
+  const volSuggestions = useMemo(() => {
+    const q = volSearch.trim().toLowerCase();
+    if (!q) return [];
+    return volunteers.filter((v) => {
+      const name = (v.effective_name || v.full_name || "").toLowerCase();
+      return name.includes(q);
+    }).slice(0, 6);
+  }, [volSearch, volunteers]);
+
+  const pickVolunteer = (v: Volunteer) => {
+    setNewReport((p) => ({
+      ...p,
+      volunteer_name: v.effective_name || v.full_name || "",
+      volunteer_cpf: v.cpf || "",
+      volunteer_credential: v.credencial || "",
+    }));
+    setVolSearch(v.effective_name || v.full_name || "");
+  };
+
+  const submitReport = async () => {
+    if (!gglAdminGroupId) return;
+    if (!newReport.action_date || !newReport.volunteer_name.trim() || !newReport.action_type || !newReport.action_name.trim()) {
+      return toast.error("Data, voluntário, tipo e nome da ação são obrigatórios");
+    }
+    const { error } = await supabase.from("ggl_action_reports" as any).insert({
+      ggl_id: gglAdminGroupId,
+      action_date: newReport.action_date,
+      volunteer_name: newReport.volunteer_name.trim(),
+      volunteer_cpf: newReport.volunteer_cpf.trim() || null,
+      volunteer_credential: newReport.volunteer_credential.trim() || null,
+      is_cejam_collaborator: newReport.is_cejam_collaborator,
+      beneficiaries_count: Number(newReport.beneficiaries_count) || 0,
+      hours: Number(newReport.hours) || 0,
+      action_type: newReport.action_type,
+      action_name: newReport.action_name.trim(),
+      created_by: user?.id,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Reporte salvo");
+    setNewReport({ ...emptyReport });
+    setVolSearch("");
+    load(gglAdminGroupId);
+  };
+
+  const deleteReport = async (id: string) => {
+    if (!confirm("Excluir este reporte?")) return;
+    const { error } = await supabase.from("ggl_action_reports" as any).delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    if (gglAdminGroupId) load(gglAdminGroupId);
+  };
+
   if (!gglAdminGroupId) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Sem GGL vinculado.</div>;
   }
@@ -102,10 +180,11 @@ const GglAdminHome = () => {
 
       <div className="px-5 mt-4">
         <Tabs defaultValue="info">
-          <TabsList className="w-full grid grid-cols-3 h-11">
-            <TabsTrigger value="info" className="text-xs"><Building2 className="h-3.5 w-3.5 mr-1" />Informações</TabsTrigger>
-            <TabsTrigger value="cal" className="text-xs"><CalendarIcon className="h-3.5 w-3.5 mr-1" />Calendário</TabsTrigger>
-            <TabsTrigger value="vols" className="text-xs"><Users className="h-3.5 w-3.5 mr-1" />Voluntários</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-4 h-11">
+            <TabsTrigger value="info" className="text-[10px] px-1"><Building2 className="h-3 w-3 mr-0.5" />Info</TabsTrigger>
+            <TabsTrigger value="cal" className="text-[10px] px-1"><CalendarIcon className="h-3 w-3 mr-0.5" />Calend.</TabsTrigger>
+            <TabsTrigger value="vols" className="text-[10px] px-1"><Users className="h-3 w-3 mr-0.5" />Volunt.</TabsTrigger>
+            <TabsTrigger value="rep" className="text-[10px] px-1"><ClipboardList className="h-3 w-3 mr-0.5" />Reporte</TabsTrigger>
           </TabsList>
 
           {/* INFO */}
@@ -187,30 +266,181 @@ const GglAdminHome = () => {
             </div>
           </TabsContent>
 
-          {/* VOLUNTÁRIOS */}
-          <TabsContent value="vols" className="mt-4 space-y-2">
+          {/* VOLUNTÁRIOS — tabela estilo Excel */}
+          <TabsContent value="vols" className="mt-4">
             {volunteers.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-8">Nenhum voluntário vinculado a este GGL ainda.</p>
             ) : (
-              volunteers.map((v) => (
-                <div key={v.cpf} className="glass-card rounded-xl p-3">
-                  <p className="text-sm font-medium">{v.effective_name || v.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {v.profession || "Profissão não informada"}
-                    {v.credencial && <span className="ml-2 text-primary">· {v.credencial}</span>}
-                  </p>
-                  {(v.effective_phone || v.phone) && (
-                    <a
-                      href={`https://wa.me/${(v.effective_phone || v.phone || "").replace(/\D/g, "")}`}
-                      target="_blank" rel="noreferrer"
-                      className="text-xs text-primary font-semibold flex items-center gap-1 mt-1"
-                    >
-                      <Phone className="h-3 w-3" />{v.effective_phone || v.phone}
-                    </a>
+              <div className="glass-card rounded-xl overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Nome do Voluntário</TableHead>
+                      <TableHead className="text-xs">Telefone</TableHead>
+                      <TableHead className="text-xs">Profissão</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {volunteers.map((v) => {
+                      const phone = v.effective_phone || v.phone || "";
+                      return (
+                        <TableRow key={v.cpf}>
+                          <TableCell className="text-xs font-medium py-2">{v.effective_name || v.full_name}</TableCell>
+                          <TableCell className="text-xs py-2">
+                            {phone ? (
+                              <a href={`https://wa.me/${phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-1">
+                                <Phone className="h-3 w-3" />{phone}
+                              </a>
+                            ) : "—"}
+                          </TableCell>
+                          <TableCell className="text-xs py-2">{v.profession || "—"}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* REPORTE */}
+          <TabsContent value="rep" className="mt-4 space-y-3">
+            <div className="glass-card rounded-xl p-4 space-y-2 border-2 border-primary/20">
+              <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                <Plus className="h-4 w-4 text-primary" /> Novo reporte de ação
+              </h3>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="col-span-2">
+                  <label className="text-[10px] text-muted-foreground">Mês</label>
+                  <Input value={newReport.action_date ? MONTHS[new Date(newReport.action_date + "T00:00:00").getMonth()] : ""} disabled className="h-8 text-xs" placeholder="Selecione a data" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Data</label>
+                  <Input type="date" value={newReport.action_date} onChange={(e) => setNewReport((p) => ({ ...p, action_date: e.target.value }))} className="h-8 text-xs" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Horas</label>
+                  <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: Number(e.target.value) }))} className="h-8 text-xs" />
+                </div>
+
+                <div className="col-span-2 relative">
+                  <label className="text-[10px] text-muted-foreground">Nome do voluntário (vinculados ao GGL)</label>
+                  <Input
+                    value={volSearch}
+                    onChange={(e) => {
+                      setVolSearch(e.target.value);
+                      setNewReport((p) => ({ ...p, volunteer_name: e.target.value }));
+                    }}
+                    placeholder="Comece a digitar o primeiro nome..."
+                    className="h-8 text-xs"
+                  />
+                  {volSuggestions.length > 0 && (
+                    <ul className="absolute z-10 left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {volSuggestions.map((v) => (
+                        <li key={v.cpf}>
+                          <button onClick={() => pickVolunteer(v)} className="w-full text-left px-2 py-1.5 text-xs hover:bg-muted">
+                            <span className="font-medium">{v.effective_name || v.full_name}</span>
+                            {v.credencial && <span className="text-primary ml-1">· {v.credencial}</span>}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
-              ))
-            )}
+
+                <div>
+                  <label className="text-[10px] text-muted-foreground">CPF</label>
+                  <Input value={newReport.volunteer_cpf} onChange={(e) => setNewReport((p) => ({ ...p, volunteer_cpf: e.target.value }))} className="h-8 text-xs" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Credencial</label>
+                  <Input value={newReport.volunteer_credential} readOnly className="h-8 text-xs bg-muted/40" placeholder="Automático" />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Colaborador CEJAM?</label>
+                  <Select
+                    value={newReport.is_cejam_collaborator ? "sim" : "nao"}
+                    onValueChange={(v) => setNewReport((p) => ({ ...p, is_cejam_collaborator: v === "sim" }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">N° de beneficiários</label>
+                  <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: Number(e.target.value) }))} className="h-8 text-xs" />
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Tipo de ação</label>
+                  <Select value={newReport.action_type} onValueChange={(v) => setNewReport((p) => ({ ...p, action_type: v }))}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      {ACTION_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Nome da ação</label>
+                  <Input value={newReport.action_name} onChange={(e) => setNewReport((p) => ({ ...p, action_name: e.target.value }))} className="h-8 text-xs" />
+                </div>
+              </div>
+
+              <Button onClick={submitReport} size="sm" className="w-full mt-2">
+                <Plus className="h-3 w-3 mr-1" /> Salvar reporte
+              </Button>
+            </div>
+
+            <div className="glass-card rounded-xl overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-[10px]">Mês</TableHead>
+                    <TableHead className="text-[10px]">Data</TableHead>
+                    <TableHead className="text-[10px]">Voluntário</TableHead>
+                    <TableHead className="text-[10px]">CPF</TableHead>
+                    <TableHead className="text-[10px]">Credencial</TableHead>
+                    <TableHead className="text-[10px]">CEJAM</TableHead>
+                    <TableHead className="text-[10px]">Benef.</TableHead>
+                    <TableHead className="text-[10px]">Horas</TableHead>
+                    <TableHead className="text-[10px]">Tipo</TableHead>
+                    <TableHead className="text-[10px]">Ação</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reports.length === 0 ? (
+                    <TableRow><TableCell colSpan={11} className="text-center text-xs text-muted-foreground py-4">Nenhum reporte ainda.</TableCell></TableRow>
+                  ) : reports.map((r) => {
+                    const d = new Date(r.action_date + "T00:00:00");
+                    return (
+                      <TableRow key={r.id}>
+                        <TableCell className="text-[10px] py-1.5">{MONTHS[d.getMonth()]}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{d.toLocaleDateString("pt-BR")}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.volunteer_name}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.volunteer_cpf || "—"}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.volunteer_credential || "—"}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.is_cejam_collaborator ? "Sim" : "Não"}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.beneficiaries_count}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.hours}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.action_type}</TableCell>
+                        <TableCell className="text-[10px] py-1.5">{r.action_name}</TableCell>
+                        <TableCell className="py-1.5">
+                          <button onClick={() => deleteReport(r.id)} className="text-destructive">
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
