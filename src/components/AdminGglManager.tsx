@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { toast } from "sonner";
 import {
   Plus, Trash2, MapPin, ChevronDown, ChevronUp, UserPlus, Mail,
-  Calendar as CalendarIcon, Upload, Phone,
+  Calendar as CalendarIcon, Upload, Phone, ClipboardList, Download,
 } from "lucide-react";
 
 interface Group { id: string; unit_name: string; cities: string[]; unit_actions: string[]; }
@@ -17,6 +18,11 @@ interface Profile { id: string; full_name: string; ggl_id: string | null; phone:
 interface AdminVol { cpf: string; phone: string | null; profession: string | null; }
 interface AdminEmail { id: string; ggl_id: string; email: string; }
 interface CalEvent { id: string; ggl_id: string; event_date: string; unit_name: string | null; title: string; description: string | null; }
+interface Report {
+  id: string; ggl_id: string; action_date: string; volunteer_name: string; volunteer_cpf: string | null;
+  volunteer_credential: string | null; is_cejam_collaborator: boolean; beneficiaries_count: number;
+  hours: number; action_type: string; action_name: string;
+}
 
 const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
