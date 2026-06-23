@@ -1100,6 +1100,20 @@ export type Database = {
         }[]
       }
       get_my_ggl_admin_group: { Args: never; Returns: string }
+      get_my_ggl_volunteers: {
+        Args: never
+        Returns: {
+          cpf: string
+          credencial: string
+          effective_name: string
+          effective_phone: string
+          full_name: string
+          ggl_id: string
+          phone: string
+          profession: string
+          profile_id: string
+        }[]
+      }
       get_own_profile: {
         Args: never
         Returns: {
