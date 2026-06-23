@@ -325,46 +325,66 @@ export default function AdminGglManager() {
                       </div>
                     </div>
 
-                    {/* Botão Calendário */}
-                    <Button size="sm" variant="secondary" onClick={() => { setCalendarFor(g); setCalYear(new Date().getFullYear()); }}
-                      className="w-full h-8 text-xs">
-                      <CalendarIcon className="h-3.5 w-3.5 mr-1" /> Calendário de Ações
-                      <span className="ml-auto text-[10px] text-muted-foreground">
-                        {events.filter((e) => e.ggl_id === g.id).length} ações
-                      </span>
-                    </Button>
+                    {/* Botões Calendário + Reporte */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => { setCalendarFor(g); setCalYear(new Date().getFullYear()); }}
+                        className="h-8 text-xs">
+                        <CalendarIcon className="h-3.5 w-3.5 mr-1" /> Calendário
+                        <span className="ml-1 text-[10px] text-muted-foreground">({events.filter((e) => e.ggl_id === g.id).length})</span>
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => { setReportsFor(g); setReportsMonth(null); }}
+                        className="h-8 text-xs">
+                        <ClipboardList className="h-3.5 w-3.5 mr-1" /> Reporte das Ações
+                        <span className="ml-1 text-[10px] text-muted-foreground">({reports.filter((r) => r.ggl_id === g.id).length})</span>
+                      </Button>
+                    </div>
 
                     <div>
                       <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
                         <UserPlus className="h-3 w-3" /> Voluntários vinculados
                       </p>
-                      {gVolunteers.length === 0 && <p className="text-[11px] text-muted-foreground mb-1">Nenhum voluntário vinculado.</p>}
-                      <ul className="space-y-1.5 mb-2">
-                        {gVolunteers.map((v) => {
-                          const av = v.cpf ? avByCpf.get(v.cpf) : undefined;
-                          const phone = v.phone || av?.phone || "";
-                          const profession = av?.profession || "";
-                          return (
-                            <li key={v.id} className="flex items-start justify-between gap-2 text-xs bg-muted/30 rounded px-2 py-1.5">
-                              <div className="min-w-0">
-                                <p className="font-medium truncate">{v.full_name}</p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  {profession || "Profissão não informada"}
-                                </p>
-                                {phone && (
-                                  <a href={`https://wa.me/${phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-                                    className="text-[10px] text-primary flex items-center gap-1 mt-0.5">
-                                    <Phone className="h-2.5 w-2.5" />{phone}
-                                  </a>
-                                )}
-                              </div>
-                              <button onClick={() => assignVolunteer(v.id, null)} className="text-destructive text-[10px] underline shrink-0">
-                                remover
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
+                      {gVolunteers.length === 0 ? (
+                        <p className="text-[11px] text-muted-foreground mb-1">Nenhum voluntário vinculado.</p>
+                      ) : (
+                        <div className="overflow-x-auto rounded border border-border mb-2">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-[10px] h-8">Nome</TableHead>
+                                <TableHead className="text-[10px] h-8">Telefone</TableHead>
+                                <TableHead className="text-[10px] h-8">Profissão</TableHead>
+                                <TableHead className="text-[10px] h-8 w-10"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {gVolunteers.map((v) => {
+                                const av = v.cpf ? avByCpf.get(v.cpf) : undefined;
+                                const phone = v.phone || av?.phone || "";
+                                const profession = av?.profession || "—";
+                                return (
+                                  <TableRow key={v.id}>
+                                    <TableCell className="text-[11px] py-1.5 font-medium">{v.full_name}</TableCell>
+                                    <TableCell className="text-[11px] py-1.5">
+                                      {phone ? (
+                                        <a href={`https://wa.me/${phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                                          className="text-primary flex items-center gap-1">
+                                          <Phone className="h-2.5 w-2.5" />{phone}
+                                        </a>
+                                      ) : "—"}
+                                    </TableCell>
+                                    <TableCell className="text-[11px] py-1.5">{profession}</TableCell>
+                                    <TableCell className="py-1.5">
+                                      <button onClick={() => assignVolunteer(v.id, null)} className="text-destructive text-[10px] underline">
+                                        x
+                                      </button>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
                       <Input placeholder="Buscar voluntário para vincular..." value={assignSearch[g.id] ?? ""}
                         onChange={(e) => setAssignSearch((p) => ({ ...p, [g.id]: e.target.value }))} className="h-7 text-xs" />
                       {candidates.length > 0 && (
