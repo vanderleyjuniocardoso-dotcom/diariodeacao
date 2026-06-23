@@ -33,9 +33,12 @@ export default function AdminGglManager() {
   const [adminVols, setAdminVols] = useState<AdminVol[]>([]);
   const [emails, setEmails] = useState<AdminEmail[]>([]);
   const [events, setEvents] = useState<CalEvent[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [calendarFor, setCalendarFor] = useState<Group | null>(null);
+  const [reportsFor, setReportsFor] = useState<Group | null>(null);
   const [calYear, setCalYear] = useState<number>(new Date().getFullYear());
+  const [reportsMonth, setReportsMonth] = useState<number | null>(null);
   const [newGroup, setNewGroup] = useState({ unit: "", cities: "" });
   const [newMember, setNewMember] = useState<Record<string, { name: string; phone: string; role: string }>>({});
   const [newEmail, setNewEmail] = useState<Record<string, string>>({});
@@ -44,13 +47,14 @@ export default function AdminGglManager() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
-    const [{ data: g }, { data: m }, { data: p }, { data: av }, { data: em }, { data: ev }] = await Promise.all([
+    const [{ data: g }, { data: m }, { data: p }, { data: av }, { data: em }, { data: ev }, { data: rp }] = await Promise.all([
       supabase.from("ggl_groups").select("*").order("unit_name"),
       supabase.from("ggl_members").select("*").order("name"),
       supabase.from("profiles").select("id, full_name, ggl_id, phone, cpf").order("full_name"),
       supabase.from("admin_volunteers").select("cpf, phone, profession"),
       supabase.from("ggl_admin_emails").select("*"),
       supabase.from("ggl_calendar_events").select("*").order("event_date"),
+      supabase.from("ggl_action_reports" as any).select("*").order("action_date", { ascending: false }),
     ]);
     setGroups((g as Group[]) ?? []);
     setMembers((m as Member[]) ?? []);
@@ -58,6 +62,7 @@ export default function AdminGglManager() {
     setAdminVols((av as AdminVol[]) ?? []);
     setEmails((em as AdminEmail[]) ?? []);
     setEvents((ev as CalEvent[]) ?? []);
+    setReports((rp as unknown as Report[]) ?? []);
   };
 
   useEffect(() => { load(); }, []);
