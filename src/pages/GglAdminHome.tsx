@@ -281,7 +281,7 @@ const GglAdminHome = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {volunteers.map((v) => {
+                    {volunteers.map((v, idx) => {
                       const phone = v.effective_phone || v.phone || "";
                       return (
                         <TableRow key={v.cpf || v.profile_id || `${v.effective_name}-${idx}`}>
