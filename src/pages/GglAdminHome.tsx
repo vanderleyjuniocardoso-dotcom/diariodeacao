@@ -275,9 +275,9 @@ const GglAdminHome = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Nome do Voluntário</TableHead>
-                      <TableHead className="text-xs">Telefone</TableHead>
-                      <TableHead className="text-xs">Profissão</TableHead>
+                      <TableHead className="text-xs uppercase font-bold text-foreground">NOME</TableHead>
+                      <TableHead className="text-xs uppercase font-bold text-foreground">TELEFONE</TableHead>
+                      <TableHead className="text-xs uppercase font-bold text-foreground">PROFISSÃO</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
