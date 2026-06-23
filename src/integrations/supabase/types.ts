@@ -133,6 +133,65 @@ export type Database = {
         }
         Relationships: []
       }
+      ggl_action_reports: {
+        Row: {
+          action_date: string
+          action_name: string
+          action_type: string
+          beneficiaries_count: number
+          created_at: string
+          created_by: string | null
+          ggl_id: string
+          hours: number
+          id: string
+          is_cejam_collaborator: boolean
+          updated_at: string
+          volunteer_cpf: string | null
+          volunteer_credential: string | null
+          volunteer_name: string
+        }
+        Insert: {
+          action_date: string
+          action_name: string
+          action_type: string
+          beneficiaries_count?: number
+          created_at?: string
+          created_by?: string | null
+          ggl_id: string
+          hours?: number
+          id?: string
+          is_cejam_collaborator?: boolean
+          updated_at?: string
+          volunteer_cpf?: string | null
+          volunteer_credential?: string | null
+          volunteer_name: string
+        }
+        Update: {
+          action_date?: string
+          action_name?: string
+          action_type?: string
+          beneficiaries_count?: number
+          created_at?: string
+          created_by?: string | null
+          ggl_id?: string
+          hours?: number
+          id?: string
+          is_cejam_collaborator?: boolean
+          updated_at?: string
+          volunteer_cpf?: string | null
+          volunteer_credential?: string | null
+          volunteer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ggl_action_reports_ggl_id_fkey"
+            columns: ["ggl_id"]
+            isOneToOne: false
+            referencedRelation: "ggl_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ggl_admin_emails: {
         Row: {
           created_at: string
