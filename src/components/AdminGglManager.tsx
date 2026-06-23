@@ -327,15 +327,15 @@ export default function AdminGglManager() {
 
                     {/* Botões Calendário + Reporte */}
                     <div className="grid grid-cols-2 gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => { setCalendarFor(g); setCalYear(new Date().getFullYear()); }}
-                        className="h-8 text-xs">
-                        <CalendarIcon className="h-3.5 w-3.5 mr-1" /> Calendário
-                        <span className="ml-1 text-[10px] text-muted-foreground">({events.filter((e) => e.ggl_id === g.id).length})</span>
+                      <Button size="sm" onClick={() => { setCalendarFor(g); setCalYear(new Date().getFullYear()); }}
+                        className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
+                        <CalendarIcon className="h-3.5 w-3.5 mr-1" /> CALENDÁRIO
+                        <span className="ml-1 text-[10px] text-primary-foreground/80">({events.filter((e) => e.ggl_id === g.id).length})</span>
                       </Button>
-                      <Button size="sm" variant="secondary" onClick={() => { setReportsFor(g); setReportsMonth(null); }}
-                        className="h-8 text-xs">
-                        <ClipboardList className="h-3.5 w-3.5 mr-1" /> Reporte das Ações
-                        <span className="ml-1 text-[10px] text-muted-foreground">({reports.filter((r) => r.ggl_id === g.id).length})</span>
+                      <Button size="sm" onClick={() => { setReportsFor(g); setReportsMonth(null); }}
+                        className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
+                        <ClipboardList className="h-3.5 w-3.5 mr-1" /> REPORTE DAS AÇÕES
+                        <span className="ml-1 text-[10px] text-primary-foreground/80">({reports.filter((r) => r.ggl_id === g.id).length})</span>
                       </Button>
                     </div>
 
@@ -350,9 +350,9 @@ export default function AdminGglManager() {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead className="text-[10px] h-8">Nome</TableHead>
-                                <TableHead className="text-[10px] h-8">Telefone</TableHead>
-                                <TableHead className="text-[10px] h-8">Profissão</TableHead>
+                                <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">NOME</TableHead>
+                                <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">TELEFONE</TableHead>
+                                <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">PROFISSÃO</TableHead>
                                 <TableHead className="text-[10px] h-8 w-10"></TableHead>
                               </TableRow>
                             </TableHeader>

@@ -1036,15 +1036,7 @@ export type Database = {
           profession: string | null
           profile_id: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "admin_volunteers_ggl_id_fkey"
-            columns: ["ggl_id"]
-            isOneToOne: false
-            referencedRelation: "ggl_groups"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
