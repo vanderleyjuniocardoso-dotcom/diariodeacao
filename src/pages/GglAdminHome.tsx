@@ -16,7 +16,7 @@ import {
 
 interface Group { id: string; unit_name: string; cities: string[]; unit_actions: string[]; }
 interface Member { id: string; name: string; phone: string | null; role: string | null; }
-interface Volunteer { cpf: string; full_name: string; phone: string | null; profession: string | null; credencial: string | null; effective_name: string | null; effective_phone: string | null; }
+interface Volunteer { cpf: string | null; full_name: string | null; phone: string | null; profession: string | null; credencial: string | null; ggl_id?: string | null; profile_id?: string | null; effective_name: string | null; effective_phone: string | null; }
 interface CalEvent { id: string; event_date: string; unit_name: string | null; title: string; description: string | null; }
 interface Report {
   id: string; action_date: string; volunteer_name: string; volunteer_cpf: string | null;
@@ -57,7 +57,7 @@ const GglAdminHome = () => {
     const [{ data: g }, { data: m }, { data: v }, { data: ev }, { data: rp }] = await Promise.all([
       supabase.from("ggl_groups").select("id, unit_name, cities, unit_actions").eq("id", gid).maybeSingle(),
       supabase.from("ggl_members").select("id, name, phone, role").eq("ggl_id", gid).order("name"),
-      supabase.from("ggl_volunteers_view" as any).select("*").eq("ggl_id", gid).order("effective_name"),
+      (supabase.rpc as any)("get_my_ggl_volunteers"),
       supabase.from("ggl_calendar_events").select("*").eq("ggl_id", gid).order("event_date"),
       supabase.from("ggl_action_reports" as any).select("*").eq("ggl_id", gid).order("action_date", { ascending: false }),
     ]);
@@ -284,7 +284,7 @@ const GglAdminHome = () => {
                     {volunteers.map((v) => {
                       const phone = v.effective_phone || v.phone || "";
                       return (
-                        <TableRow key={v.cpf}>
+                        <TableRow key={v.cpf || v.profile_id || `${v.effective_name}-${idx}`}>
                           <TableCell className="text-xs font-medium py-2">{v.effective_name || v.full_name}</TableCell>
                           <TableCell className="text-xs py-2">
                             {phone ? (
