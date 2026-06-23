@@ -190,7 +190,7 @@ const GglAdminHome = () => {
           {/* INFO */}
           <TabsContent value="info" className="mt-4 space-y-3">
             <div className="glass-card rounded-xl p-4">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" />Unidades sob gestão</h3>
+              <h3 className="font-bold uppercase text-sm mb-2 flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" />UNIDADES SOB GESTÃO</h3>
               {(group?.cities ?? []).length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhuma unidade cadastrada.</p>
               ) : (
@@ -201,7 +201,7 @@ const GglAdminHome = () => {
             </div>
 
             <div className="glass-card rounded-xl p-4">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-1.5"><Users className="h-4 w-4 text-primary" />Integrantes</h3>
+              <h3 className="font-bold uppercase text-sm mb-2 flex items-center gap-1.5"><Users className="h-4 w-4 text-primary" />INTEGRANTES</h3>
               {members.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum integrante cadastrado.</p>
               ) : (
@@ -257,7 +257,7 @@ const GglAdminHome = () => {
             </div>
 
             <div className="glass-card rounded-xl p-4 space-y-2 border-2 border-primary/20">
-              <h3 className="text-sm font-semibold flex items-center gap-1.5"><Plus className="h-4 w-4 text-primary" />Nova ação planejada</h3>
+              <h3 className="text-sm font-bold uppercase flex items-center gap-1.5"><Plus className="h-4 w-4 text-primary" />NOVA AÇÃO PLANEJADA</h3>
               <Input type="date" value={newEvent.date} onChange={(e) => setNewEvent((p) => ({ ...p, date: e.target.value }))} className="h-9 text-sm" />
               <Input placeholder="Unidade (opcional)" value={newEvent.unit} onChange={(e) => setNewEvent((p) => ({ ...p, unit: e.target.value }))} className="h-9 text-sm" />
               <Input placeholder="Título da ação" value={newEvent.title} onChange={(e) => setNewEvent((p) => ({ ...p, title: e.target.value }))} className="h-9 text-sm" />
@@ -306,8 +306,8 @@ const GglAdminHome = () => {
           {/* REPORTE */}
           <TabsContent value="rep" className="mt-4 space-y-3">
             <div className="glass-card rounded-xl p-4 space-y-2 border-2 border-primary/20">
-              <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                <Plus className="h-4 w-4 text-primary" /> Novo reporte de ação
+              <h3 className="text-sm font-bold uppercase flex items-center gap-1.5">
+                <Plus className="h-4 w-4 text-primary" /> NOVO REPORTE DE AÇÃO
               </h3>
 
               <div className="grid grid-cols-2 gap-2">
