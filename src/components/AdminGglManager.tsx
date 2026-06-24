@@ -101,6 +101,7 @@ export default function AdminGglManager() {
     } as any);
     if (error) return toast.error(error.message);
     setNewMember((p) => ({ ...p, [gglId]: { name: "", phone: "", role: "" } }));
+    setShowMemberForm((p) => ({ ...p, [gglId]: false }));
     load();
   };
 
