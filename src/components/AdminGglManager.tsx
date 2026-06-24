@@ -415,10 +415,25 @@ export default function AdminGglManager() {
                       )}
                     </div>
 
+                    {/* Botões Calendário + Reporte (após voluntários) */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button size="sm" onClick={() => { setCalendarFor(g); setCalYear(new Date().getFullYear()); }}
+                        className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
+                        <CalendarIcon className="h-3.5 w-3.5 mr-1" /> CALENDÁRIO DE AÇÕES
+                        <span className="ml-1 text-[10px] text-primary-foreground/80">({events.filter((e) => e.ggl_id === g.id).length})</span>
+                      </Button>
+                      <Button size="sm" onClick={() => { setReportsFor(g); setReportsMonth(null); }}
+                        className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
+                        <ClipboardList className="h-3.5 w-3.5 mr-1" /> REPORTE DAS AÇÕES
+                        <span className="ml-1 text-[10px] text-primary-foreground/80">({reports.filter((r) => r.ggl_id === g.id).length})</span>
+                      </Button>
+                    </div>
+
                     <Button variant="outline" size="sm" onClick={() => deleteGroup(g.id)}
                       className="w-full h-7 text-xs text-destructive">
                       <Trash2 className="h-3 w-3 mr-1" /> Excluir GGL
                     </Button>
+
                   </div>
                 )}
               </div>
