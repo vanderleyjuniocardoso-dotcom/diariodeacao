@@ -52,6 +52,7 @@ const GglAdminHome = () => {
   const [newEvent, setNewEvent] = useState({ date: "", unit: "", title: "", description: "" });
   const [newReport, setNewReport] = useState({ ...emptyReport });
   const [volSearch, setVolSearch] = useState("");
+  const [reportMonth, setReportMonth] = useState<number | null>(null);
 
   const load = async (gid: string) => {
     const [{ data: g }, { data: m }, { data: v }, { data: ev }, { data: rp }] = await Promise.all([
