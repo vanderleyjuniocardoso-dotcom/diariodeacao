@@ -44,6 +44,7 @@ export default function AdminGglManager() {
   const [newEmail, setNewEmail] = useState<Record<string, string>>({});
   const [newEvent, setNewEvent] = useState({ date: "", unit: "", title: "", description: "" });
   const [assignSearch, setAssignSearch] = useState<Record<string, string>>({});
+  const [showMemberForm, setShowMemberForm] = useState<Record<string, boolean>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
