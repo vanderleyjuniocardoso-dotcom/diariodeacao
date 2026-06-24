@@ -184,7 +184,7 @@ const GglAdminHome = () => {
             <TabsTrigger value="info" className="text-[10px] px-1"><Building2 className="h-3 w-3 mr-0.5" />Info</TabsTrigger>
             <TabsTrigger value="cal" className="text-[10px] px-1"><CalendarIcon className="h-3 w-3 mr-0.5" />Calend.</TabsTrigger>
             <TabsTrigger value="vols" className="text-[10px] px-1"><Users className="h-3 w-3 mr-0.5" />Volunt.</TabsTrigger>
-            <TabsTrigger value="rep" className="text-[10px] px-1"><ClipboardList className="h-3 w-3 mr-0.5" />Reporte</TabsTrigger>
+            <TabsTrigger value="rep" className="text-[10px] px-1"><ClipboardList className="h-3 w-3 mr-0.5" />Reportes</TabsTrigger>
           </TabsList>
 
           {/* INFO */}
