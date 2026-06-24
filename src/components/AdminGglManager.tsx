@@ -270,41 +270,66 @@ export default function AdminGglManager() {
                 {isOpen && (
                   <div className="p-3 pt-0 space-y-3 border-t border-border">
                     <div>
-                      <p className="text-xs font-semibold text-foreground mb-1.5">Gestores do GGL (nome e WhatsApp)</p>
-                      {gMembers.length === 0 && <p className="text-[11px] text-muted-foreground mb-1">Nenhum gestor cadastrado.</p>}
-                      <ul className="space-y-1 mb-2">
-                        {gMembers.map((m) => (
-                          <li key={m.id} className="flex items-center justify-between gap-2 text-xs">
-                            <div className="min-w-0">
-                              <span className="font-medium">{m.name}</span>
-                              {m.role && <span className="text-primary"> · {m.role}</span>}
-                              {m.phone && <span className="text-muted-foreground"> · {m.phone}</span>}
-                            </div>
-                            <button onClick={() => removeMember(m.id)} className="text-destructive p-1">
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <Input placeholder="Nome" value={newMember[g.id]?.name ?? ""}
-                          onChange={(e) => setNewMember((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), name: e.target.value } }))}
-                          className="h-7 text-xs" />
-                        <Input placeholder="Função (cargo)" value={newMember[g.id]?.role ?? ""}
-                          onChange={(e) => setNewMember((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), role: e.target.value } }))}
-                          className="h-7 text-xs" />
-                        <Input placeholder="WhatsApp" value={newMember[g.id]?.phone ?? ""}
-                          onChange={(e) => setNewMember((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), phone: e.target.value } }))}
-                          className="h-7 text-xs" />
-                        <Button size="sm" onClick={() => addMember(g.id)} className="h-7 px-2 text-xs">
-                          <Plus className="h-3 w-3 mr-1" /> Adicionar
+                      <p className="text-xs font-bold uppercase text-foreground mb-1.5">GESTORES LOCAIS</p>
+                      {gMembers.length === 0 ? (
+                        <p className="text-[11px] text-muted-foreground mb-2">Nenhum gestor cadastrado.</p>
+                      ) : (
+                        <div className="overflow-x-auto rounded border border-border mb-2">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">NOME</TableHead>
+                                <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">WHATSAPP</TableHead>
+                                <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">FUNÇÃO</TableHead>
+                                <TableHead className="text-[10px] h-8 w-10"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {gMembers.map((m) => (
+                                <TableRow key={m.id}>
+                                  <TableCell className="text-[11px] py-1.5 font-medium">{m.name}</TableCell>
+                                  <TableCell className="text-[11px] py-1.5">{m.phone || "—"}</TableCell>
+                                  <TableCell className="text-[11px] py-1.5">{m.role || "—"}</TableCell>
+                                  <TableCell className="py-1.5">
+                                    <button onClick={() => removeMember(m.id)} className="text-destructive">
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                      {!showMemberForm[g.id] ? (
+                        <Button size="sm" onClick={() => setShowMemberForm((p) => ({ ...p, [g.id]: true }))}
+                          className="w-full h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
+                          <Plus className="h-3 w-3 mr-1" /> ADICIONAR GESTOR
                         </Button>
-                      </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-1.5 border border-dashed border-border rounded-lg p-2">
+                          <Input placeholder="Nome" value={newMember[g.id]?.name ?? ""}
+                            onChange={(e) => setNewMember((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), name: e.target.value } }))}
+                            className="h-7 text-xs col-span-2" />
+                          <Input placeholder="WhatsApp" value={newMember[g.id]?.phone ?? ""}
+                            onChange={(e) => setNewMember((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), phone: e.target.value } }))}
+                            className="h-7 text-xs" />
+                          <Input placeholder="Função (cargo)" value={newMember[g.id]?.role ?? ""}
+                            onChange={(e) => setNewMember((p) => ({ ...p, [g.id]: { ...(p[g.id] ?? { name: "", phone: "", role: "" }), role: e.target.value } }))}
+                            className="h-7 text-xs" />
+                          <Button size="sm" variant="outline" onClick={() => setShowMemberForm((p) => ({ ...p, [g.id]: false }))} className="h-7 text-xs">
+                            Cancelar
+                          </Button>
+                          <Button size="sm" onClick={() => addMember(g.id)} className="h-7 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
+                            <Plus className="h-3 w-3 mr-1" /> Salvar
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     <div>
-                      <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
-                        <Mail className="h-3 w-3" /> E-mails administradores deste GGL (máx. 2)
+                      <p className="text-xs font-bold uppercase text-foreground mb-1.5 flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> E-MAILS ADMINISTRADORES
                       </p>
                       <ul className="space-y-1 mb-2">
                         {emails.filter((e) => e.ggl_id === g.id).map((e) => (
@@ -327,22 +352,9 @@ export default function AdminGglManager() {
                       </div>
                     </div>
 
-                    {/* Botões Calendário + Reporte */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button size="sm" onClick={() => { setCalendarFor(g); setCalYear(new Date().getFullYear()); }}
-                        className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
-                        <CalendarIcon className="h-3.5 w-3.5 mr-1" /> CALENDÁRIO
-                        <span className="ml-1 text-[10px] text-primary-foreground/80">({events.filter((e) => e.ggl_id === g.id).length})</span>
-                      </Button>
-                      <Button size="sm" onClick={() => { setReportsFor(g); setReportsMonth(null); }}
-                        className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 uppercase font-bold">
-                        <ClipboardList className="h-3.5 w-3.5 mr-1" /> REPORTE DAS AÇÕES
-                        <span className="ml-1 text-[10px] text-primary-foreground/80">({reports.filter((r) => r.ggl_id === g.id).length})</span>
-                      </Button>
-                    </div>
-
                     <div>
-                      <p className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                      <p className="text-xs font-bold uppercase text-foreground mb-1.5 flex items-center gap-1">
+
                         <UserPlus className="h-3 w-3" /> Voluntários vinculados
                       </p>
                       {gVolunteers.length === 0 ? (
