@@ -304,145 +304,165 @@ const GglAdminHome = () => {
             )}
           </TabsContent>
 
-          {/* REPORTE */}
+          {/* REPORTES */}
           <TabsContent value="rep" className="mt-4 space-y-3">
-            <div className="glass-card rounded-xl p-4 space-y-2 border-2 border-primary/20">
-              <h3 className="text-sm font-bold uppercase flex items-center gap-1.5">
-                <Plus className="h-4 w-4 text-primary" /> NOVO REPORTE DE AÇÃO
-              </h3>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="col-span-2">
-                  <label className="text-[10px] text-muted-foreground">Mês</label>
-                  <Input value={newReport.action_date ? MONTHS[new Date(newReport.action_date + "T00:00:00").getMonth()] : ""} disabled className="h-8 text-xs" placeholder="Selecione a data" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground">Data</label>
-                  <Input type="date" value={newReport.action_date} onChange={(e) => setNewReport((p) => ({ ...p, action_date: e.target.value }))} className="h-8 text-xs" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground">Horas</label>
-                  <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: Number(e.target.value) }))} className="h-8 text-xs" />
-                </div>
-
-                <div className="col-span-2 relative">
-                  <label className="text-[10px] text-muted-foreground">Nome do voluntário (vinculados ao GGL)</label>
-                  <Input
-                    value={volSearch}
-                    onChange={(e) => {
-                      setVolSearch(e.target.value);
-                      setNewReport((p) => ({ ...p, volunteer_name: e.target.value }));
-                    }}
-                    placeholder="Comece a digitar o primeiro nome..."
-                    className="h-8 text-xs"
-                  />
-                  {volSuggestions.length > 0 && (
-                    <ul className="absolute z-10 left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
-                      {volSuggestions.map((v) => (
-                        <li key={v.cpf}>
-                          <button onClick={() => pickVolunteer(v)} className="w-full text-left px-2 py-1.5 text-xs hover:bg-muted">
-                            <span className="font-medium">{v.effective_name || v.full_name}</span>
-                            {v.credencial && <span className="text-primary ml-1">· {v.credencial}</span>}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-[10px] text-muted-foreground">CPF</label>
-                  <Input value={newReport.volunteer_cpf} onChange={(e) => setNewReport((p) => ({ ...p, volunteer_cpf: e.target.value }))} className="h-8 text-xs" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground">Credencial</label>
-                  <Input value={newReport.volunteer_credential} readOnly className="h-8 text-xs bg-muted/40" placeholder="Automático" />
-                </div>
-
-                <div>
-                  <label className="text-[10px] text-muted-foreground">Colaborador CEJAM?</label>
-                  <Select
-                    value={newReport.is_cejam_collaborator ? "sim" : "nao"}
-                    onValueChange={(v) => setNewReport((p) => ({ ...p, is_cejam_collaborator: v === "sim" }))}
-                  >
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sim">Sim</SelectItem>
-                      <SelectItem value="nao">Não</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground">N° de beneficiários</label>
-                  <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: Number(e.target.value) }))} className="h-8 text-xs" />
-                </div>
-
-                <div>
-                  <label className="text-[10px] text-muted-foreground">Tipo de ação</label>
-                  <Select value={newReport.action_type} onValueChange={(v) => setNewReport((p) => ({ ...p, action_type: v }))}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    <SelectContent>
-                      {ACTION_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground">Nome da ação</label>
-                  <Input value={newReport.action_name} onChange={(e) => setNewReport((p) => ({ ...p, action_name: e.target.value }))} className="h-8 text-xs" />
-                </div>
+            {reportMonth == null ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {MONTHS.map((name, idx) => {
+                  const count = reports.filter((r) => new Date(r.action_date + "T00:00:00").getMonth() === idx).length;
+                  return (
+                    <button key={name} onClick={() => setReportMonth(idx)}
+                      className="glass-card rounded-xl p-4 text-left hover:bg-muted/40 transition-colors border border-border">
+                      <p className="text-sm font-bold uppercase text-primary">{name}</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">{count} reporte(s)</p>
+                    </button>
+                  );
+                })}
               </div>
+            ) : (
+              <>
+                <Button size="sm" variant="ghost" onClick={() => setReportMonth(null)}>
+                  ← Voltar aos meses
+                </Button>
 
-              <Button onClick={submitReport} size="sm" className="w-full mt-2">
-                <Plus className="h-3 w-3 mr-1" /> Salvar reporte
-              </Button>
-            </div>
+                <div className="glass-card rounded-xl p-4 space-y-2 border-2 border-primary/20">
+                  <h3 className="text-sm font-bold uppercase flex items-center gap-1.5">
+                    <Plus className="h-4 w-4 text-primary" /> NOVO REPORTE DE AÇÃO · {MONTHS[reportMonth]}
+                  </h3>
 
-            <div className="glass-card rounded-xl overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-[10px]">Mês</TableHead>
-                    <TableHead className="text-[10px]">Data</TableHead>
-                    <TableHead className="text-[10px]">Voluntário</TableHead>
-                    <TableHead className="text-[10px]">CPF</TableHead>
-                    <TableHead className="text-[10px]">Credencial</TableHead>
-                    <TableHead className="text-[10px]">CEJAM</TableHead>
-                    <TableHead className="text-[10px]">Benef.</TableHead>
-                    <TableHead className="text-[10px]">Horas</TableHead>
-                    <TableHead className="text-[10px]">Tipo</TableHead>
-                    <TableHead className="text-[10px]">Ação</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reports.length === 0 ? (
-                    <TableRow><TableCell colSpan={11} className="text-center text-xs text-muted-foreground py-4">Nenhum reporte ainda.</TableCell></TableRow>
-                  ) : reports.map((r) => {
-                    const d = new Date(r.action_date + "T00:00:00");
-                    return (
-                      <TableRow key={r.id}>
-                        <TableCell className="text-[10px] py-1.5">{MONTHS[d.getMonth()]}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{d.toLocaleDateString("pt-BR")}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.volunteer_name}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.volunteer_cpf || "—"}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.volunteer_credential || "—"}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.is_cejam_collaborator ? "Sim" : "Não"}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.beneficiaries_count}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.hours}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.action_type}</TableCell>
-                        <TableCell className="text-[10px] py-1.5">{r.action_name}</TableCell>
-                        <TableCell className="py-1.5">
-                          <button onClick={() => deleteReport(r.id)} className="text-destructive">
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </TableCell>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">Data</label>
+                      <Input type="date" value={newReport.action_date} onChange={(e) => setNewReport((p) => ({ ...p, action_date: e.target.value }))} className="h-8 text-xs" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">Horas</label>
+                      <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: Number(e.target.value) }))} className="h-8 text-xs" />
+                    </div>
+
+                    <div className="col-span-2 relative">
+                      <label className="text-[10px] font-bold uppercase text-foreground">Nome do voluntário (vinculados ao GGL)</label>
+                      <Input
+                        value={volSearch}
+                        onChange={(e) => {
+                          setVolSearch(e.target.value);
+                          setNewReport((p) => ({ ...p, volunteer_name: e.target.value }));
+                        }}
+                        placeholder="Comece a digitar o primeiro nome..."
+                        className="h-8 text-xs"
+                      />
+                      {volSuggestions.length > 0 && (
+                        <ul className="absolute z-10 left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          {volSuggestions.map((v) => (
+                            <li key={v.cpf}>
+                              <button onClick={() => pickVolunteer(v)} className="w-full text-left px-2 py-1.5 text-xs hover:bg-muted">
+                                <span className="font-medium">{v.effective_name || v.full_name}</span>
+                                {v.credencial && <span className="text-primary ml-1">· {v.credencial}</span>}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">CPF</label>
+                      <Input value={newReport.volunteer_cpf} onChange={(e) => setNewReport((p) => ({ ...p, volunteer_cpf: e.target.value }))} className="h-8 text-xs" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">Credencial</label>
+                      <Input value={newReport.volunteer_credential} readOnly className="h-8 text-xs bg-muted/40" placeholder="Automático" />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">Colaborador CEJAM?</label>
+                      <Select
+                        value={newReport.is_cejam_collaborator ? "sim" : "nao"}
+                        onValueChange={(v) => setNewReport((p) => ({ ...p, is_cejam_collaborator: v === "sim" }))}
+                      >
+                        <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sim">Sim</SelectItem>
+                          <SelectItem value="nao">Não</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">N° de beneficiários</label>
+                      <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: Number(e.target.value) }))} className="h-8 text-xs" />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">Tipo de ação</label>
+                      <Select value={newReport.action_type} onValueChange={(v) => setNewReport((p) => ({ ...p, action_type: v }))}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          {ACTION_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase text-foreground">Nome da ação</label>
+                      <Input value={newReport.action_name} onChange={(e) => setNewReport((p) => ({ ...p, action_name: e.target.value }))} className="h-8 text-xs" />
+                    </div>
+                  </div>
+
+                  <Button onClick={submitReport} size="sm" className="w-full mt-2 uppercase font-bold">
+                    <Plus className="h-3 w-3 mr-1" /> Salvar reporte
+                  </Button>
+                </div>
+
+                <div className="glass-card rounded-xl overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">DATA</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">VOLUNTÁRIO</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">CPF</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">CREDENCIAL</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">CEJAM</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">BENEF.</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">HORAS</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">TIPO</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold text-foreground">AÇÃO</TableHead>
+                        <TableHead></TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                    </TableHeader>
+                    <TableBody>
+                      {(() => {
+                        const monthReports = reports.filter((r) => new Date(r.action_date + "T00:00:00").getMonth() === reportMonth);
+                        if (monthReports.length === 0) {
+                          return <TableRow><TableCell colSpan={10} className="text-center text-xs text-muted-foreground py-4">Nenhum reporte em {MONTHS[reportMonth]}.</TableCell></TableRow>;
+                        }
+                        return monthReports.map((r) => {
+                          const d = new Date(r.action_date + "T00:00:00");
+                          return (
+                            <TableRow key={r.id}>
+                              <TableCell className="text-[10px] py-1.5">{d.toLocaleDateString("pt-BR")}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.volunteer_name}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.volunteer_cpf || "—"}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.volunteer_credential || "—"}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.is_cejam_collaborator ? "Sim" : "Não"}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.beneficiaries_count}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.hours}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.action_type}</TableCell>
+                              <TableCell className="text-[10px] py-1.5">{r.action_name}</TableCell>
+                              <TableCell className="py-1.5">
+                                <button onClick={() => deleteReport(r.id)} className="text-destructive">
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        });
+                      })()}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
           </TabsContent>
+
         </Tabs>
       </div>
     </div>
