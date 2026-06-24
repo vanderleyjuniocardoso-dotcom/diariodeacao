@@ -354,9 +354,9 @@ export default function AdminGglManager() {
 
                     <div>
                       <p className="text-xs font-bold uppercase text-foreground mb-1.5 flex items-center gap-1">
-
-                        <UserPlus className="h-3 w-3" /> Voluntários vinculados
+                        <UserPlus className="h-3 w-3" /> VOLUNTÁRIOS VINCULADOS
                       </p>
+
                       {gVolunteers.length === 0 ? (
                         <p className="text-[11px] text-muted-foreground mb-1">Nenhum voluntário vinculado.</p>
                       ) : (
