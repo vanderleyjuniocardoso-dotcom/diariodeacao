@@ -366,7 +366,8 @@ const GglAdminHome = () => {
                         value={volSearch}
                         onChange={(e) => {
                           setVolSearch(e.target.value);
-                          setNewReport((p) => ({ ...p, volunteer_name: e.target.value }));
+                          setVolPicked(false);
+                          setNewReport((p) => ({ ...p, volunteer_name: e.target.value, volunteer_cpf: "", volunteer_credential: "" }));
                         }}
                         placeholder="Comece a digitar o primeiro nome..."
                         className="h-8 text-xs"
