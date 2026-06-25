@@ -257,19 +257,34 @@ export default function AdminGglManager() {
             return (
               <div key={g.id} className="border border-border rounded-lg overflow-hidden">
                 <button onClick={() => setExpanded(isOpen ? null : g.id)}
-                  className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/40">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-foreground truncate">{g.unit_name}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {g.cities.join(", ") || "Sem cidades"} · {gMembers.length} integrantes · {gVolunteers.length} voluntários
+                  className="w-full flex items-center justify-between p-3 text-left bg-primary text-primary-foreground hover:bg-primary/90">
+                  <div className="flex-1 min-w-0 text-center">
+                    <p className="font-bold text-sm uppercase truncate tracking-wide">{g.unit_name}</p>
+                    <p className="text-[11px] text-primary-foreground/80 truncate mt-0.5">
+                      {gMembers.length} integrantes · {gVolunteers.length} voluntários
                     </p>
                   </div>
-                  {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isOpen ? <ChevronUp className="h-4 w-4 ml-2 flex-shrink-0" /> : <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />}
                 </button>
 
                 {isOpen && (
-                  <div className="p-3 pt-0 space-y-3 border-t border-border">
+                  <div className="p-3 space-y-3 border-t border-border">
                     <div>
+                      <p className="text-xs font-bold uppercase text-foreground mb-1.5 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> CIDADES SOB GESTÃO
+                      </p>
+                      {g.cities.length === 0 ? (
+                        <p className="text-[11px] text-muted-foreground">Nenhuma cidade cadastrada.</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {g.cities.map((c) => (
+                            <span key={c} className="text-[11px] bg-primary/10 text-primary rounded-full px-2.5 py-1 font-medium uppercase">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                       <p className="text-xs font-bold uppercase text-foreground mb-1.5">GESTORES LOCAIS</p>
                       {gMembers.length === 0 ? (
                         <p className="text-[11px] text-muted-foreground mb-2">Nenhum gestor cadastrado.</p>
