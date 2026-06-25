@@ -120,10 +120,17 @@ const CpfGate = () => {
           <InstallAppButton />
         </div>
 
-        <p className="text-center mt-4 text-xs text-primary-foreground/80">
-          Sou administrador de GGL,{" "}
-          <a href="/cadastro-ggl" className="underline font-medium">acessar aqui</a>
-        </p>
+        <div className="mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
+            onClick={() => navigate("/cadastro-ggl")}
+          >
+            Sou Gestor Local
+          </Button>
+        </div>
       </div>
     </div>
   );
