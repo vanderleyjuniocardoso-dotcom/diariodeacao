@@ -113,13 +113,14 @@ const GglAdminHome = () => {
 
   // ===== Reporte =====
   const volSuggestions = useMemo(() => {
+    if (volPicked) return [];
     const q = volSearch.trim().toLowerCase();
     if (!q) return [];
     return volunteers.filter((v) => {
       const name = (v.effective_name || v.full_name || "").toLowerCase();
       return name.includes(q);
     }).slice(0, 6);
-  }, [volSearch, volunteers]);
+  }, [volSearch, volunteers, volPicked]);
 
   const pickVolunteer = (v: Volunteer) => {
     setNewReport((p) => ({
@@ -129,6 +130,7 @@ const GglAdminHome = () => {
       volunteer_credential: v.credencial || "",
     }));
     setVolSearch(v.effective_name || v.full_name || "");
+    setVolPicked(true);
   };
 
   const submitReport = async () => {
