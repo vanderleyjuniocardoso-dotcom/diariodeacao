@@ -285,6 +285,8 @@ export default function AdminGglManager() {
                         </div>
                       )}
                     </div>
+
+                    <div>
                       <p className="text-xs font-bold uppercase text-foreground mb-1.5">GESTORES LOCAIS</p>
                       {gMembers.length === 0 ? (
                         <p className="text-[11px] text-muted-foreground mb-2">Nenhum gestor cadastrado.</p>
