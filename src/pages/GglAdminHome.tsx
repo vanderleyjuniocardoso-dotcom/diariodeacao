@@ -27,14 +27,19 @@ interface Report {
 const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const ACTION_TYPES = ["Capelania", "Palhaçaria", "Apoio"];
 
-const emptyReport = {
+const emptyReport: {
+  action_date: string; volunteer_name: string; volunteer_cpf: string;
+  volunteer_credential: string; is_cejam_collaborator: boolean;
+  beneficiaries_count: number | "" ; hours: number | "";
+  action_type: string; action_name: string;
+} = {
   action_date: "",
   volunteer_name: "",
   volunteer_cpf: "",
   volunteer_credential: "",
   is_cejam_collaborator: false,
-  beneficiaries_count: 0,
-  hours: 0,
+  beneficiaries_count: "",
+  hours: "",
   action_type: "",
   action_name: "",
 };
@@ -52,6 +57,7 @@ const GglAdminHome = () => {
   const [newEvent, setNewEvent] = useState({ date: "", unit: "", title: "", description: "" });
   const [newReport, setNewReport] = useState({ ...emptyReport });
   const [volSearch, setVolSearch] = useState("");
+  const [volPicked, setVolPicked] = useState(false);
   const [reportMonth, setReportMonth] = useState<number | null>(null);
 
   const load = async (gid: string) => {
@@ -107,13 +113,14 @@ const GglAdminHome = () => {
 
   // ===== Reporte =====
   const volSuggestions = useMemo(() => {
+    if (volPicked) return [];
     const q = volSearch.trim().toLowerCase();
     if (!q) return [];
     return volunteers.filter((v) => {
       const name = (v.effective_name || v.full_name || "").toLowerCase();
       return name.includes(q);
     }).slice(0, 6);
-  }, [volSearch, volunteers]);
+  }, [volSearch, volunteers, volPicked]);
 
   const pickVolunteer = (v: Volunteer) => {
     setNewReport((p) => ({
@@ -123,6 +130,7 @@ const GglAdminHome = () => {
       volunteer_credential: v.credencial || "",
     }));
     setVolSearch(v.effective_name || v.full_name || "");
+    setVolPicked(true);
   };
 
   const submitReport = async () => {
@@ -147,6 +155,7 @@ const GglAdminHome = () => {
     toast.success("Reporte salvo");
     setNewReport({ ...emptyReport });
     setVolSearch("");
+    setVolPicked(false);
     load(gglAdminGroupId);
   };
 
@@ -206,21 +215,32 @@ const GglAdminHome = () => {
               {members.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum integrante cadastrado.</p>
               ) : (
-                <ul className="space-y-2">
-                  {members.map((m) => (
-                    <li key={m.id} className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">{m.name}</p>
-                        <p className="text-xs text-muted-foreground">{m.role || "—"}</p>
-                      </div>
-                      {m.phone && (
-                        <a href={`https://wa.me/${m.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-xs text-primary font-semibold flex items-center gap-1">
-                          <Phone className="h-3 w-3" />{m.phone}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="overflow-x-auto rounded border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">NOME</TableHead>
+                        <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">WHATSAPP</TableHead>
+                        <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">FUNÇÃO</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {members.map((m) => (
+                        <TableRow key={m.id}>
+                          <TableCell className="text-[11px] py-1.5 font-medium">{m.name}</TableCell>
+                          <TableCell className="text-[11px] py-1.5">
+                            {m.phone ? (
+                              <a href={`https://wa.me/${m.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-1">
+                                <Phone className="h-3 w-3" />{m.phone}
+                              </a>
+                            ) : "—"}
+                          </TableCell>
+                          <TableCell className="text-[11px] py-1.5">{m.role || "—"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           </TabsContent>
@@ -337,7 +357,7 @@ const GglAdminHome = () => {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold uppercase text-foreground">Horas</label>
-                      <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: Number(e.target.value) }))} className="h-8 text-xs" />
+                      <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: e.target.value === "" ? "" : Number(e.target.value) }))} className="h-8 text-xs" />
                     </div>
 
                     <div className="col-span-2 relative">
@@ -346,7 +366,8 @@ const GglAdminHome = () => {
                         value={volSearch}
                         onChange={(e) => {
                           setVolSearch(e.target.value);
-                          setNewReport((p) => ({ ...p, volunteer_name: e.target.value }));
+                          setVolPicked(false);
+                          setNewReport((p) => ({ ...p, volunteer_name: e.target.value, volunteer_cpf: "", volunteer_credential: "" }));
                         }}
                         placeholder="Comece a digitar o primeiro nome..."
                         className="h-8 text-xs"
@@ -389,7 +410,7 @@ const GglAdminHome = () => {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold uppercase text-foreground">N° de beneficiários</label>
-                      <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: Number(e.target.value) }))} className="h-8 text-xs" />
+                      <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: e.target.value === "" ? "" : Number(e.target.value) }))} className="h-8 text-xs" />
                     </div>
 
                     <div>
