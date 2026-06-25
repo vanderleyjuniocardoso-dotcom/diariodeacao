@@ -357,7 +357,7 @@ const GglAdminHome = () => {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold uppercase text-foreground">Horas</label>
-                      <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: Number(e.target.value) }))} className="h-8 text-xs" />
+                      <Input type="number" step="0.5" min="0" value={newReport.hours} onChange={(e) => setNewReport((p) => ({ ...p, hours: e.target.value === "" ? "" : Number(e.target.value) }))} className="h-8 text-xs" />
                     </div>
 
                     <div className="col-span-2 relative">
