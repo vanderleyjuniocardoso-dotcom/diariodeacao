@@ -410,7 +410,7 @@ const GglAdminHome = () => {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold uppercase text-foreground">N° de beneficiários</label>
-                      <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: Number(e.target.value) }))} className="h-8 text-xs" />
+                      <Input type="number" min="0" value={newReport.beneficiaries_count} onChange={(e) => setNewReport((p) => ({ ...p, beneficiaries_count: e.target.value === "" ? "" : Number(e.target.value) }))} className="h-8 text-xs" />
                     </div>
 
                     <div>
