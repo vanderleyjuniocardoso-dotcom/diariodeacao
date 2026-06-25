@@ -155,6 +155,7 @@ const GglAdminHome = () => {
     toast.success("Reporte salvo");
     setNewReport({ ...emptyReport });
     setVolSearch("");
+    setVolPicked(false);
     load(gglAdminGroupId);
   };
 
