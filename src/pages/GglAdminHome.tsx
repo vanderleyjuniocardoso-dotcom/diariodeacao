@@ -206,21 +206,32 @@ const GglAdminHome = () => {
               {members.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum integrante cadastrado.</p>
               ) : (
-                <ul className="space-y-2">
-                  {members.map((m) => (
-                    <li key={m.id} className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">{m.name}</p>
-                        <p className="text-xs text-muted-foreground">{m.role || "—"}</p>
-                      </div>
-                      {m.phone && (
-                        <a href={`https://wa.me/${m.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-xs text-primary font-semibold flex items-center gap-1">
-                          <Phone className="h-3 w-3" />{m.phone}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="overflow-x-auto rounded border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">NOME</TableHead>
+                        <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">WHATSAPP</TableHead>
+                        <TableHead className="text-[10px] h-8 uppercase font-bold text-foreground">FUNÇÃO</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {members.map((m) => (
+                        <TableRow key={m.id}>
+                          <TableCell className="text-[11px] py-1.5 font-medium">{m.name}</TableCell>
+                          <TableCell className="text-[11px] py-1.5">
+                            {m.phone ? (
+                              <a href={`https://wa.me/${m.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-1">
+                                <Phone className="h-3 w-3" />{m.phone}
+                              </a>
+                            ) : "—"}
+                          </TableCell>
+                          <TableCell className="text-[11px] py-1.5">{m.role || "—"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           </TabsContent>
