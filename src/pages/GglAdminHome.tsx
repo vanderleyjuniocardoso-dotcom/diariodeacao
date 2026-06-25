@@ -27,14 +27,19 @@ interface Report {
 const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 const ACTION_TYPES = ["Capelania", "Palhaçaria", "Apoio"];
 
-const emptyReport = {
+const emptyReport: {
+  action_date: string; volunteer_name: string; volunteer_cpf: string;
+  volunteer_credential: string; is_cejam_collaborator: boolean;
+  beneficiaries_count: number | "" ; hours: number | "";
+  action_type: string; action_name: string;
+} = {
   action_date: "",
   volunteer_name: "",
   volunteer_cpf: "",
   volunteer_credential: "",
   is_cejam_collaborator: false,
-  beneficiaries_count: 0,
-  hours: 0,
+  beneficiaries_count: "",
+  hours: "",
   action_type: "",
   action_name: "",
 };
