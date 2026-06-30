@@ -255,6 +255,8 @@ const GglAdminHome = () => {
                 </div>
               )}
             </div>
+
+            <GglStatsDashboard reports={reports} volunteersCount={volunteers.length} />
           </TabsContent>
 
           {/* CALENDÁRIO */}
