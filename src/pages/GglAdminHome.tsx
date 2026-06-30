@@ -13,6 +13,7 @@ import {
   MapPin, Users, Phone, Calendar as CalendarIcon, LogOut, Plus, Trash2,
   ChevronLeft, ChevronRight, Building2, Shield, ClipboardList,
 } from "lucide-react";
+import GglStatsDashboard from "@/components/GglStatsDashboard";
 
 interface Group { id: string; unit_name: string; cities: string[]; unit_actions: string[]; }
 interface Member { id: string; name: string; phone: string | null; role: string | null; }
