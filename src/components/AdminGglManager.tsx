@@ -452,6 +452,10 @@ export default function AdminGglManager() {
                       <Trash2 className="h-3 w-3 mr-1" /> Excluir GGL
                     </Button>
 
+                    <GglStatsDashboard
+                      reports={reports.filter((r) => r.ggl_id === g.id)}
+                      volunteersCount={gVolunteers.length}
+                    />
                   </div>
                 )}
               </div>
