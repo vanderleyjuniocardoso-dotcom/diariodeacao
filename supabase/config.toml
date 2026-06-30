@@ -2,3 +2,7 @@ project_id = "eolvrylgvgndinrcblem"
 
 [functions.send-daily-push]
 verify_jwt = false
+
+[functions.sync-ggl-report-to-sheet]
+verify_jwt = false
+
