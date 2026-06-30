@@ -139,7 +139,7 @@ const GglAdminHome = () => {
     if (!newReport.action_date || !newReport.volunteer_name.trim() || !newReport.action_type || !newReport.action_name.trim()) {
       return toast.error("Data, voluntário, tipo e nome da ação são obrigatórios");
     }
-    const { error } = await supabase.from("ggl_action_reports" as any).insert({
+    const payload = {
       ggl_id: gglAdminGroupId,
       action_date: newReport.action_date,
       volunteer_name: newReport.volunteer_name.trim(),
@@ -151,13 +151,24 @@ const GglAdminHome = () => {
       action_type: newReport.action_type,
       action_name: newReport.action_name.trim(),
       created_by: user?.id,
-    });
+    };
+    const { data: inserted, error } = await supabase
+      .from("ggl_action_reports" as any)
+      .insert(payload)
+      .select("id")
+      .maybeSingle();
     if (error) return toast.error(error.message);
     toast.success("Reporte salvo");
     setNewReport({ ...emptyReport });
     setVolSearch("");
     setVolPicked(false);
     load(gglAdminGroupId);
+    // Fire-and-forget: append to Google Sheets per-GGL tab
+    const reportId = (inserted as any)?.id;
+    if (reportId) {
+      supabase.functions.invoke("sync-ggl-report-to-sheet", { body: { report_id: reportId } })
+        .catch(() => {/* silent */});
+    }
   };
 
   const deleteReport = async (id: string) => {
