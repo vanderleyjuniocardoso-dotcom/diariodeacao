@@ -54,9 +54,9 @@ const IndicatorCard = ({ label, value, color }: { label: string; value: number |
   <div className="glass-card rounded-2xl p-4 flex items-center gap-4">
     <div className="relative h-16 w-16 flex-shrink-0">
       <div
-        className="absolute inset-0 rounded-full animate-spin"
+        className="absolute inset-0 rounded-full animate-spin [animation-iteration-count:1] [animation-fill-mode:forwards]"
         style={{
-          animationDuration: "3s",
+          animationDuration: "1.2s",
           background: `conic-gradient(${color} 0deg, ${color} 270deg, ${color}33 270deg, ${color}33 360deg)`,
           WebkitMask: "radial-gradient(circle, transparent 55%, #000 56%)",
           mask: "radial-gradient(circle, transparent 55%, #000 56%)",

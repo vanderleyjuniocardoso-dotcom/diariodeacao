@@ -11,6 +11,7 @@ import {
   Plus, Trash2, MapPin, ChevronDown, ChevronUp, UserPlus, Mail,
   Calendar as CalendarIcon, Upload, Phone, ClipboardList, Download,
 } from "lucide-react";
+import GglStatsDashboard from "@/components/GglStatsDashboard";
 
 interface Group { id: string; unit_name: string; cities: string[]; unit_actions: string[]; }
 interface Member { id: string; ggl_id: string; name: string; phone: string | null; role: string | null; }
@@ -451,6 +452,10 @@ export default function AdminGglManager() {
                       <Trash2 className="h-3 w-3 mr-1" /> Excluir GGL
                     </Button>
 
+                    <GglStatsDashboard
+                      reports={reports.filter((r) => r.ggl_id === g.id)}
+                      volunteersCount={gVolunteers.length}
+                    />
                   </div>
                 )}
               </div>
