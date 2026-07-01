@@ -30,6 +30,8 @@ const Donut = ({ value, max, color, icon: Icon }: { value: number; max: number; 
           cx="32" cy="32" r={r} stroke={color} strokeWidth="7" fill="none"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${c - dash}`}
+          strokeDashoffset={c}
+          className="indicator-ring-fill"
           style={{ transition: "stroke-dasharray 600ms ease" }}
         />
       </svg>

@@ -50,28 +50,36 @@ const INDICATORS: { key: string; label: string; color: string }[] = [
   { key: "mutiroes", label: "Mutirões Realizados", color: "#F97316" },
 ];
 
-const IndicatorCard = ({ label, value, color }: { label: string; value: number | string; color: string }) => (
-  <div className="glass-card rounded-2xl p-4 flex items-center gap-4">
-    <div className="relative h-16 w-16 flex-shrink-0">
-      <div
-        className="absolute inset-0 rounded-full animate-spin [animation-iteration-count:1] [animation-fill-mode:forwards]"
-        style={{
-          animationDuration: "1.2s",
-          background: `conic-gradient(${color} 0deg, ${color} 270deg, ${color}33 270deg, ${color}33 360deg)`,
-          WebkitMask: "radial-gradient(circle, transparent 55%, #000 56%)",
-          mask: "radial-gradient(circle, transparent 55%, #000 56%)",
-        }}
-      />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-bold" style={{ color }}>{value}</span>
+const IndicatorCard = ({ label, value, color }: { label: string; value: number | string; color: string }) => {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="glass-card rounded-2xl p-4 flex items-center gap-4">
+      <div className="relative h-16 w-16 flex-shrink-0">
+        <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90">
+          <circle cx="32" cy="32" r={r} stroke={`${color}33`} strokeWidth="7" fill="none" />
+          <circle
+            cx="32" cy="32" r={r}
+            stroke={color}
+            strokeWidth="7"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={c}
+            className="indicator-ring-fill"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-sm font-bold" style={{ color }}>{value}</span>
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-muted-foreground leading-tight">{label}</p>
+        <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
       </div>
     </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-xs text-muted-foreground leading-tight">{label}</p>
-      <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 const Admin = () => {
   const navigate = useNavigate();
