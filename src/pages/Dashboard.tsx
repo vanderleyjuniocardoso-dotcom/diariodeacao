@@ -88,7 +88,7 @@ const Dashboard = () => {
           if (sh && typeof sh.gglName === "string" && sh.gglName.trim()) {
             sheetGgl = sh.gglName.trim();
             // Sincroniza o GGL no perfil e na base autorizada (coluna GGL do ADM)
-            supabase.rpc("link_volunteer_ggl_by_name", { _ggl_name: sheetGgl }).catch(() => {});
+            void (supabase.rpc as any)("link_volunteer_ggl_by_name", { _ggl_name: sheetGgl }).then(() => {}, () => {});
           }
         } catch (e) {
           console.error("sheet-hours invoke failed", e);
