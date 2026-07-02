@@ -33,7 +33,7 @@ const AdminAuthorizedBase = () => {
   const load = async () => {
     setLoading(true);
     const [{ data }, { data: g }] = await Promise.all([
-      supabase.from("admin_volunteers").select("*").order("full_name"),
+      supabase.from("admin_volunteers").select("*").order("full_name").range(0, 49999),
       supabase.from("ggl_groups").select("id, unit_name").order("unit_name"),
     ]);
     setRows((data as Row[]) || []);
