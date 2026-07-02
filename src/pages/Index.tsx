@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import logoVoluntariado from "@/assets/logo-voluntariado.png";
 import InstallAppButton from "@/components/InstallAppButton";
 
@@ -19,9 +20,25 @@ const Index = () => {
       }
       return;
     }
-    const knownCpf = typeof window !== "undefined" ? localStorage.getItem("known_user_cpf") : null;
-    if (knownCpf) navigate("/login", { replace: true });
-    else navigate("/cpf-gate", { replace: true });
+    (async () => {
+      const knownCpf = typeof window !== "undefined" ? localStorage.getItem("known_user_cpf") : null;
+      if (!knownCpf) { navigate("/cpf-gate", { replace: true }); return; }
+      try {
+        const { data } = await supabase.rpc("check_cpf", { _cpf: knownCpf });
+        const row: any = Array.isArray(data) && data.length ? data[0] : null;
+        // Já tem conta criada → login
+        if (row?.has_account) { navigate("/login", { replace: true }); return; }
+        // Cadastro em andamento (pending/approved sem conta ainda) → continua de onde parou
+        if (row?.has_registration_active) {
+          navigate("/minha-jornada", { replace: true, state: { cpf: knownCpf, registrationId: row.registration_id } });
+          return;
+        }
+        // Sem cadastro ativo → volta pro CPF gate
+        navigate("/cpf-gate", { replace: true });
+      } catch {
+        navigate("/cpf-gate", { replace: true });
+      }
+    })();
   }, [user, loading, gglAdminGroupId, isAdmin, navigate]);
 
   return (
