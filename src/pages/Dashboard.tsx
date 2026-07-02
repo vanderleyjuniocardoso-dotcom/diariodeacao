@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
 import InstallAppButton from "@/components/InstallAppButton";
 import MessagesBell from "@/components/MessagesBell";
+import NotificationPermissionBanner from "@/components/NotificationPermissionBanner";
 import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -187,7 +188,9 @@ const Dashboard = () => {
           </div>
         </div>
 
+
         {/* Big level badge */}
+
         <div className="mb-4 rounded-2xl bg-primary-foreground text-primary px-4 py-3 flex items-center gap-3 shadow-lg">
           <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
             {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}
@@ -241,7 +244,10 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <NotificationPermissionBanner />
+
       <div className="px-5 mt-6 space-y-5 animate-fade-up">
+
         {/* Motivational */}
         <div className="glass-card rounded-2xl p-4">
           <div className="flex items-start gap-3">
