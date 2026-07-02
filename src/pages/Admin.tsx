@@ -244,7 +244,7 @@ const Admin = () => {
             <TabsTrigger value="pending" className="text-[9px] px-0.5"><Inbox className="h-3 w-3 mr-0.5" />Pend.</TabsTrigger>
             <TabsTrigger value="gestao" className="text-[9px] px-0.5"><Settings className="h-3 w-3 mr-0.5" />Gestão</TabsTrigger>
             <TabsTrigger value="engagement" className="text-[9px] px-0.5"><MapPin className="h-3 w-3 mr-0.5" />GGL</TabsTrigger>
-            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Indic.</TabsTrigger>
+            <TabsTrigger value="data" className="text-[9px] px-0.5"><BarChart3 className="h-3 w-3 mr-0.5" />Dados</TabsTrigger>
           </TabsList>
 
           <TabsContent value="gestao" className="space-y-5 mt-4">
@@ -343,6 +343,22 @@ const Admin = () => {
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               {showReport ? "Fechar Relatório de Ações" : "Relatório de Ações"}
+            </Button>
+
+            <Button
+              asChild
+              variant="default"
+              size="lg"
+              className="w-full"
+            >
+              <a
+                href="https://fluxogramaoperacional.lovable.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                GESTÃO DOCUMENTAL
+              </a>
             </Button>
 
             {showReport && (
