@@ -47,12 +47,14 @@ const Signup = () => {
     });
     if (error) { setLoading(false); toast.error(error.message); return; }
 
+    // Mostra imediatamente a mensagem de verificação — sem esperar sync
+    setSubmittedEmail(form.email);
+    setLoading(false);
+
     const userId = data.user?.id;
     if (userId) {
-      await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
+      (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
     }
-    setLoading(false);
-    setSubmittedEmail(form.email);
   };
 
   if (submittedEmail) {
