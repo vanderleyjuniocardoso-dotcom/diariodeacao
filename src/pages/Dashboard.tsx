@@ -244,7 +244,10 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <NotificationPermissionBanner />
+
       <div className="px-5 mt-6 space-y-5 animate-fade-up">
+
         {/* Motivational */}
         <div className="glass-card rounded-2xl p-4">
           <div className="flex items-start gap-3">
