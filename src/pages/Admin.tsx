@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings, Trophy, MapPin } from "lucide-react";
+import { ArrowLeft, Download, Search, Users, Clock, Heart, BarChart3, Megaphone, IdCard, Inbox, Settings, Trophy, MapPin, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminBroadcastComposer from "@/components/AdminBroadcastComposer";
 import AdminGglManager from "@/components/AdminGglManager";
@@ -19,6 +19,7 @@ interface VolunteerSummary {
   id: string;
   full_name: string;
   email: string;
+  cpf: string | null;
   totalHours: number;
   totalActions: number;
   volunteer_level: number;
@@ -122,7 +123,7 @@ const Admin = () => {
 
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, full_name, email, volunteer_level, volunteer_credential");
+        .select("id, full_name, email, cpf, volunteer_level, volunteer_credential");
 
       const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
 
@@ -139,6 +140,7 @@ const Admin = () => {
             id: p.id,
             full_name: p.full_name || "—",
             email: p.email || "—",
+            cpf: (p as any).cpf ?? null,
             totalHours: 0,
             totalActions: 0,
             volunteer_level: (p as any).volunteer_level ?? 1,
@@ -170,6 +172,16 @@ const Admin = () => {
     setVolunteers((prev) => prev.map((v) => (v.id === userId ? { ...v, volunteer_level: level } : v)));
     toast.success(`Nível atualizado para ${level}`);
   };
+
+  const deleteVolunteer = async (v: VolunteerSummary) => {
+    if (!v.cpf) { toast.error("Voluntário sem CPF vinculado"); return; }
+    if (!confirm(`Excluir DEFINITIVAMENTE ${v.full_name}? Isso apaga conta, e-mail, cadastro e todo o histórico.`)) return;
+    const { error } = await supabase.rpc("delete_authorized_volunteer" as any, { _cpf: v.cpf });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Voluntário excluído completamente");
+    setVolunteers((prev) => prev.filter((x) => x.id !== v.id));
+  };
+
 
   const exportToExcel = () => {
     const rows = actions.map((a) => ({
@@ -288,6 +300,13 @@ const Admin = () => {
                         <span className="text-sm font-bold text-muted-foreground w-6">{v.rank}º</span>
                         {medal && <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: medal, fill: medal }} />}
                         <p className="font-semibold text-foreground flex-1">{v.full_name}</p>
+                        <button
+                          onClick={() => deleteVolunteer(v)}
+                          aria-label="Excluir voluntário"
+                          className="text-muted-foreground hover:text-destructive p-1 -m-1"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 ml-8">Nível {v.volunteer_level}</p>
                       <div className="flex gap-4 mt-2 ml-8 text-xs text-muted-foreground">
