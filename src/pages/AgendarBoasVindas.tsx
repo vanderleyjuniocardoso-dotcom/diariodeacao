@@ -104,24 +104,23 @@ const AgendarBoasVindas = () => {
 
       <div className="px-5 mt-5 max-w-md mx-auto space-y-2">
         {visibleMonths.map(({ name, month }) => {
-          const available = monthsWithSlots.has(month);
           const monthSlots = slots.filter((s) => s.month === month);
+          const available = monthSlots.length > 0;
           const open = openMonth === month;
           return (
             <div key={month} className="glass-card rounded-xl overflow-hidden">
               <button
-                onClick={() => available && setOpenMonth(open ? null : month)}
-                disabled={!available}
-                className="w-full p-4 flex items-center justify-between text-left disabled:opacity-50"
+                onClick={() => setOpenMonth(open ? null : month)}
+                className="w-full p-4 flex items-center justify-between text-left"
               >
                 <span className="flex items-center gap-2 font-medium text-foreground">
                   <Calendar className="h-4 w-4 text-primary" />{name}
                 </span>
-                <span className="text-xs text-muted-foreground">{available ? `${monthSlots.length} datas` : "Sem datas"}</span>
+                <span className="text-xs text-muted-foreground">{available ? `${monthSlots.length} datas` : "Aguardando datas"}</span>
               </button>
               {open && (
                 <div className="px-4 pb-4 space-y-2">
-                  {monthSlots.map((s) => (
+                  {available ? monthSlots.map((s) => (
                     <button
                       key={s.id}
                       onClick={() => choose(s)}
@@ -135,17 +134,16 @@ const AgendarBoasVindas = () => {
                       </span>
                       <span className="text-primary font-medium">Escolher</span>
                     </button>
-                  ))}
+                  )) : (
+                    <p className="text-xs italic text-muted-foreground text-center py-3">
+                      Nenhuma data cadastrada ainda para este mês. Aguarde a equipe do CEJAM publicar.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
-        {slots.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-8">
-            Nenhuma data disponível no momento. Aguarde a equipe do CEJAM publicar novas datas.
-          </p>
-        )}
       </div>
     </div>
   );
