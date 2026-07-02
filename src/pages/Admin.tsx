@@ -19,6 +19,7 @@ interface VolunteerSummary {
   id: string;
   full_name: string;
   email: string;
+  cpf: string | null;
   totalHours: number;
   totalActions: number;
   volunteer_level: number;
