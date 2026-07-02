@@ -1047,7 +1047,10 @@ export type Database = {
           found: boolean
           full_name: string
           has_account: boolean
+          has_registration_active: boolean
           has_registration_pending: boolean
+          registration_id: string
+          registration_status: string
         }[]
       }
       confirm_attendance: {
@@ -1182,6 +1185,10 @@ export type Database = {
       is_ggl_admin_of: {
         Args: { _ggl_id: string; _user_id: string }
         Returns: boolean
+      }
+      link_volunteer_ggl_by_name: {
+        Args: { _ggl_name: string }
+        Returns: string
       }
       mark_video_watched: {
         Args: { _enrollment_id: string }

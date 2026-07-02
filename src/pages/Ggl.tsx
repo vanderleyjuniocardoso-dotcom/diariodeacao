@@ -40,6 +40,8 @@ const Ggl = () => {
           const { data: sh } = await supabase.functions.invoke("sheet-hours", { body: { credential } });
           const sheetGgl = (sh?.gglName ?? "").toString().trim();
           if (sheetGgl) {
+            // Sincroniza o GGL no perfil e na base autorizada (coluna GGL do ADM)
+            void (supabase.rpc as any)("link_volunteer_ggl_by_name", { _ggl_name: sheetGgl }).then(() => {}, () => {});
             const { data: matches } = await supabase
               .from("ggl_groups")
               .select("id, unit_name, cities, unit_actions")

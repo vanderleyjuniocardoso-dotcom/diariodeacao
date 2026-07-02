@@ -67,16 +67,17 @@ const CpfGate = () => {
       toast.error("Erro ao validar CPF");
       return;
     }
-    const row = Array.isArray(data) ? data[0] : data;
+    const row: any = Array.isArray(data) ? data[0] : data;
     if (row?.has_account) {
       rememberCpf(digits);
       navigate("/login");
+    } else if (row?.has_registration_active || row?.has_registration_pending) {
+      // Retoma exatamente o fluxo de onde parou (boas-vindas, magna, vídeo, voluntagram)
+      rememberCpf(digits);
+      navigate("/minha-jornada", { state: { cpf: digits, registrationId: row?.registration_id } });
     } else if (row?.found) {
       rememberCpf(digits);
       navigate("/signup", { state: { cpf: digits, fullName: row.full_name } });
-    } else if (row?.has_registration_pending) {
-      rememberCpf(digits);
-      navigate("/minha-jornada", { state: { cpf: digits } });
     } else {
       navigate("/cadastro-completo", { state: { cpf: digits } });
     }
