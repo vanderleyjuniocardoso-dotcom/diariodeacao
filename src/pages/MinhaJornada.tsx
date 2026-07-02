@@ -76,14 +76,31 @@ const MinhaJornada = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
-  // Voluntagram aprovado → leva pro signup
+  // Voluntagram aprovado → leva pro signup (cria a conta com CPF já validado)
   if (accessReq?.status === "approved") {
+    const goCreateAccount = async () => {
+      let fullName = "";
+      let cpfDigits = cpf;
+      if (regId) {
+        const { data } = await supabase
+          .from("volunteer_registrations")
+          .select("full_name, cpf")
+          .eq("id", regId)
+          .maybeSingle();
+        if (data) {
+          fullName = data.full_name || "";
+          cpfDigits = data.cpf || cpfDigits;
+        }
+      }
+      try { if (cpfDigits) localStorage.setItem("known_user_cpf", onlyDigits(cpfDigits)); } catch {}
+      navigate("/signup", { state: { cpf: cpfDigits, fullName } });
+    };
     return (
       <Wrapper>
         <PartyPopper className="h-14 w-14 text-primary mx-auto mb-4" />
         <h1 className="text-xl font-bold mb-2">Acesso liberado!</h1>
         <p className="text-sm text-muted-foreground mb-6">A equipe do CEJAM autorizou seu acesso ao VOLUNTAGRAM. Crie sua conta para começar.</p>
-        <Button variant="hero" size="lg" className="w-full" onClick={() => navigate("/cpf-gate")}>Criar minha conta</Button>
+        <Button variant="hero" size="lg" className="w-full" onClick={goCreateAccount}>Criar minha conta</Button>
       </Wrapper>
     );
   }
