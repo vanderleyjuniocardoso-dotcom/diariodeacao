@@ -300,6 +300,13 @@ const Admin = () => {
                         <span className="text-sm font-bold text-muted-foreground w-6">{v.rank}º</span>
                         {medal && <Trophy className="h-4 w-4 flex-shrink-0" style={{ color: medal, fill: medal }} />}
                         <p className="font-semibold text-foreground flex-1">{v.full_name}</p>
+                        <button
+                          onClick={() => deleteVolunteer(v)}
+                          aria-label="Excluir voluntário"
+                          className="text-muted-foreground hover:text-destructive p-1 -m-1"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 ml-8">Nível {v.volunteer_level}</p>
                       <div className="flex gap-4 mt-2 ml-8 text-xs text-muted-foreground">
