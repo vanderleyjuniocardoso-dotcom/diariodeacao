@@ -33,7 +33,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId });
     } catch {}
     const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-    if (data) setProfile(data as any);
+    if (data) {
+      setProfile(data as any);
+      // Sincroniza GGL a partir da planilha (col AF) — uma vez por sessão por credencial.
+      // Garante que profiles.ggl_id e admin_volunteers.ggl_id fiquem sempre populados,
+      // refletindo automaticamente no bloco GGL do ADM e no espaço do ADM do GGL.
+      const credential = (data as any)?.volunteer_credential?.trim();
+      if (credential && typeof window !== "undefined") {
+        const cacheKey = `ggl_sync_${credential}`;
+        if (!sessionStorage.getItem(cacheKey)) {
+          sessionStorage.setItem(cacheKey, "1");
+          (async () => {
+            try {
+              const { data: sh } = await supabase.functions.invoke("sheet-hours", { body: { credential } });
+              const gglName = (sh?.gglName ?? "").toString().trim();
+              if (gglName) {
+                await (supabase.rpc as any)("link_volunteer_ggl_by_name", { _ggl_name: gglName });
+                const { data: refreshed } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+                if (refreshed) setProfile(refreshed as any);
+              }
+            } catch (e) {
+              console.warn("GGL sync from sheet failed", e);
+            }
+          })();
+        }
+      }
+    }
   };
 
   const checkAdmin = async (userId: string) => {
