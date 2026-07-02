@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     if (error) throw error;
     if (!r) throw new Error("Cadastro não encontrado");
 
-    // Ensure entry in base autorizada (admin_volunteers) with nome, CPF e credencial
+    // Ensure entry in base autorizada (admin_volunteers) with cadastro completo
     const { data: av, error: avError } = await supabase
       .from("admin_volunteers")
       .select("credencial")
@@ -84,10 +84,25 @@ Deno.serve(async (req) => {
       credencial = (nc as string) || "";
     }
 
+    const { data: ggl, error: gglError } = await supabase
+      .from("ggl_groups")
+      .select("id")
+      .ilike("unit_name", r.kit_unit || "")
+      .maybeSingle();
+    if (gglError) throw gglError;
+
     const { error: upErr } = await supabase
       .from("admin_volunteers")
       .upsert(
-        { cpf: r.cpf, full_name: r.full_name, credencial, source: "auto" },
+        {
+          cpf: r.cpf,
+          full_name: r.full_name,
+          credencial,
+          phone: r.whatsapp,
+          profession: r.profession,
+          ggl_id: ggl?.id || null,
+          source: "auto",
+        },
         { onConflict: "cpf" }
       );
     if (upErr) throw upErr;
