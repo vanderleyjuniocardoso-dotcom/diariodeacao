@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import StatCard from "@/components/StatCard";
 import InstallAppButton from "@/components/InstallAppButton";
 import MessagesBell from "@/components/MessagesBell";
+import NotificationPermissionBanner from "@/components/NotificationPermissionBanner";
 import { Clock, Heart, MapPin, Sparkles, Shield, Trophy, Circle, Camera, LogOut, Loader2, User as UserIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
