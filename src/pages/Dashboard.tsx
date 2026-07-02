@@ -187,6 +187,12 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
+      </div>
+
+      <NotificationPermissionBanner />
+
+      <div className="px-5">
+
 
         {/* Big level badge */}
         <div className="mb-4 rounded-2xl bg-primary-foreground text-primary px-4 py-3 flex items-center gap-3 shadow-lg">
