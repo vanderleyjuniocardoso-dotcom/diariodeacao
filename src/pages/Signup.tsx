@@ -65,7 +65,7 @@ const Signup = () => {
             <Mail className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold font-heading text-foreground uppercase leading-tight">
-            Verifique seu e-mail para liberar seu acesso
+            VERIFIQUE SEU E-MAIL PARA VALIDAR SEU ACESSO
           </h1>
           <p className="text-sm text-muted-foreground mt-3">
             Enviamos um link de confirmação para <strong className="text-foreground">{submittedEmail}</strong>. Abra sua caixa de entrada (e o spam) para validar sua conta.
