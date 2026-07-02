@@ -32,11 +32,30 @@ const AdminAuthorizedBase = () => {
 
   const load = async () => {
     setLoading(true);
-    const [{ data }, { data: g }] = await Promise.all([
-      supabase.from("admin_volunteers").select("*").order("full_name").range(0, 49999),
+    const pageSize = 1000;
+    const fetchAuthorizedRows = async () => {
+      const allRows: Row[] = [];
+      for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabase
+          .from("admin_volunteers")
+          .select("*")
+          .order("full_name")
+          .range(from, from + pageSize - 1);
+        if (error) {
+          toast.error(error.message);
+          break;
+        }
+        const batch = (data as Row[]) || [];
+        allRows.push(...batch);
+        if (batch.length < pageSize) break;
+      }
+      return allRows;
+    };
+    const [data, { data: g }] = await Promise.all([
+      fetchAuthorizedRows(),
       supabase.from("ggl_groups").select("id, unit_name").order("unit_name"),
     ]);
-    setRows((data as Row[]) || []);
+    setRows(data);
     setGgls((g as GglOpt[]) || []);
     setLoading(false);
   };
