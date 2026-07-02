@@ -69,43 +69,15 @@ Deno.serve(async (req) => {
     if (error) throw error;
     if (!r) throw new Error("Cadastro não encontrado");
 
-    // Ensure entry in base autorizada (admin_volunteers) with cadastro completo
-    const { data: av, error: avError } = await supabase
+    // Só lê credencial existente (se já houver na base autorizada por autorização anterior do ADM).
+    // Não insere/atualiza admin_volunteers aqui — a Base Autorizada só recebe dados
+    // depois que o ADM autorizar o acesso ao VOLUNTAGRAM (via grant_voluntagram_credential).
+    const { data: av } = await supabase
       .from("admin_volunteers")
       .select("credencial")
       .eq("cpf", r.cpf)
       .maybeSingle();
-    if (avError) throw avError;
-
-    let credencial = av?.credencial || "";
-    if (!credencial) {
-      const { data: nc, error: ncErr } = await supabase.rpc("next_credential");
-      if (ncErr) throw ncErr;
-      credencial = (nc as string) || "";
-    }
-
-    const { data: ggl, error: gglError } = await supabase
-      .from("ggl_groups")
-      .select("id")
-      .ilike("unit_name", r.kit_unit || "")
-      .maybeSingle();
-    if (gglError) throw gglError;
-
-    const { error: upErr } = await supabase
-      .from("admin_volunteers")
-      .upsert(
-        {
-          cpf: r.cpf,
-          full_name: r.full_name,
-          credencial,
-          phone: r.whatsapp,
-          profession: r.profession,
-          ggl_id: ggl?.id || null,
-          source: "auto",
-        },
-        { onConflict: "cpf" }
-      );
-    if (upErr) throw upErr;
+    const credencial = av?.credencial || "";
 
     await ensureHeaders();
 
