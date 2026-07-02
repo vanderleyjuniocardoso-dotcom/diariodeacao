@@ -345,6 +345,22 @@ const Admin = () => {
               {showReport ? "Fechar Relatório de Ações" : "Relatório de Ações"}
             </Button>
 
+            <Button
+              asChild
+              variant="default"
+              size="lg"
+              className="w-full"
+            >
+              <a
+                href="https://fluxogramaoperacional.lovable.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                GESTÃO DOCUMENTAL
+              </a>
+            </Button>
+
             {showReport && (
               <div className="glass-card rounded-xl p-4 space-y-3 animate-fade-in">
                 <div>
