@@ -173,6 +173,16 @@ const Admin = () => {
     toast.success(`Nível atualizado para ${level}`);
   };
 
+  const deleteVolunteer = async (v: VolunteerSummary) => {
+    if (!v.cpf) { toast.error("Voluntário sem CPF vinculado"); return; }
+    if (!confirm(`Excluir DEFINITIVAMENTE ${v.full_name}? Isso apaga conta, e-mail, cadastro e todo o histórico.`)) return;
+    const { error } = await supabase.rpc("delete_authorized_volunteer" as any, { _cpf: v.cpf });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Voluntário excluído completamente");
+    setVolunteers((prev) => prev.filter((x) => x.id !== v.id));
+  };
+
+
   const exportToExcel = () => {
     const rows = actions.map((a) => ({
       "Nome do Voluntário": a.profiles?.full_name || "—",
