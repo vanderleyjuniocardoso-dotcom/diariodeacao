@@ -47,12 +47,14 @@ const Signup = () => {
     });
     if (error) { setLoading(false); toast.error(error.message); return; }
 
+    // Mostra imediatamente a mensagem de verificação — sem esperar sync
+    setSubmittedEmail(form.email);
+    setLoading(false);
+
     const userId = data.user?.id;
     if (userId) {
-      await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
+      (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
     }
-    setLoading(false);
-    setSubmittedEmail(form.email);
   };
 
   if (submittedEmail) {
@@ -63,7 +65,7 @@ const Signup = () => {
             <Mail className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold font-heading text-foreground uppercase leading-tight">
-            Verifique seu e-mail para liberar seu acesso
+            VERIFIQUE SEU E-MAIL PARA VALIDAR SEU ACESSO
           </h1>
           <p className="text-sm text-muted-foreground mt-3">
             Enviamos um link de confirmação para <strong className="text-foreground">{submittedEmail}</strong>. Abra sua caixa de entrada (e o spam) para validar sua conta.
