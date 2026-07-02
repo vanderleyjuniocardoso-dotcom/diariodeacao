@@ -128,6 +128,7 @@ const CadastroCompleto = () => {
         _photo_url: pub.publicUrl,
       });
       if (error) throw error;
+      try { await supabase.functions.invoke("sync-volunteer-to-sheet", { body: { registration_id: registrationId } }); } catch (e) { console.warn("sheet sync failed", e); }
       toast.success("Cadastro enviado!");
       try { localStorage.setItem("known_user_cpf", cpfDigits); } catch {}
       navigate("/boas-vindas/agendar", {
