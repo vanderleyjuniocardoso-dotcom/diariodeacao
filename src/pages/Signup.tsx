@@ -12,6 +12,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const prefill = (location.state as { cpf?: string; fullName?: string } | null) || {};
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
   const cpf = prefill.cpf || "";
