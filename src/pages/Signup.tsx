@@ -52,9 +52,29 @@ const Signup = () => {
       await (supabase.rpc as any)("sync_profile_from_registration", { _user_id: userId }).catch(() => {});
     }
     setLoading(false);
-    toast.success("Verifique seu e-mail para validar a conta.");
-    navigate("/login");
+    setSubmittedEmail(form.email);
   };
+
+  if (submittedEmail) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center px-6 py-10 bg-background">
+        <div className="max-w-sm mx-auto w-full animate-fade-up text-center">
+          <div className="mx-auto mb-5 w-16 h-16 rounded-2xl gradient-hero flex items-center justify-center">
+            <Mail className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold font-heading text-foreground uppercase leading-tight">
+            Verifique seu e-mail para liberar seu acesso
+          </h1>
+          <p className="text-sm text-muted-foreground mt-3">
+            Enviamos um link de confirmação para <strong className="text-foreground">{submittedEmail}</strong>. Abra sua caixa de entrada (e o spam) para validar sua conta.
+          </p>
+          <Button variant="hero" size="lg" className="w-full mt-6" onClick={() => navigate("/login")}>
+            Ir para o login
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-10 bg-background">
