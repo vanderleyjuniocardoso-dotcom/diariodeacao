@@ -187,14 +187,10 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
-      </div>
-
-      <NotificationPermissionBanner />
-
-      <div className="px-5">
 
 
         {/* Big level badge */}
+
         <div className="mb-4 rounded-2xl bg-primary-foreground text-primary px-4 py-3 flex items-center gap-3 shadow-lg">
           <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
             {Math.min(Math.max(profile?.volunteer_level ?? 1, 1), 3)}
