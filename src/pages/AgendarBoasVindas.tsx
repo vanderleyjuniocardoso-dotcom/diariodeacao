@@ -23,6 +23,12 @@ const AgendarBoasVindas = () => {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [regInfo, setRegInfo] = useState<{ fullName: string; phone: string; email: string }>({
+    fullName: st.fullName || "",
+    phone: st.phone || "",
+    email: st.email || "",
+  });
+
   useEffect(() => {
     if (!st.registrationId) {
       navigate("/cpf-gate", { replace: true });
@@ -41,6 +47,22 @@ const AgendarBoasVindas = () => {
       const existingRow = Array.isArray(existing) && existing.length ? (existing[0] as any) : null;
       if (existingRow) setBooking(existingRow as Booking);
 
+      // Garante que o nome completo do voluntário esteja disponível ao criar/atualizar o booking
+      if (!st.fullName || !st.phone || !st.email) {
+        const { data: reg } = await supabase
+          .from("volunteer_registrations")
+          .select("full_name, whatsapp, email")
+          .eq("id", st.registrationId)
+          .maybeSingle();
+        if (reg) {
+          setRegInfo({
+            fullName: st.fullName || (reg as any).full_name || "",
+            phone: st.phone || (reg as any).whatsapp || "",
+            email: st.email || (reg as any).email || "",
+          });
+        }
+      }
+
       setLoading(false);
     })();
   }, [st.registrationId, navigate]);
@@ -50,9 +72,9 @@ const AgendarBoasVindas = () => {
     const { data, error } = await supabase.rpc("create_booking", {
       _slot_id: slot.id,
       _registration_id: st.registrationId!,
-      _volunteer_name: st.fullName || "",
-      _volunteer_phone: st.phone || null,
-      _volunteer_email: st.email || null,
+      _volunteer_name: regInfo.fullName,
+      _volunteer_phone: regInfo.phone || null,
+      _volunteer_email: regInfo.email || null,
     });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
