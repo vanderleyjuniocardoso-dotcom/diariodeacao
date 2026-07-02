@@ -123,7 +123,7 @@ const Admin = () => {
 
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, full_name, email, volunteer_level, volunteer_credential");
+        .select("id, full_name, email, cpf, volunteer_level, volunteer_credential");
 
       const profileMap = new Map((profilesData || []).map((p) => [p.id, p]));
 
@@ -140,6 +140,7 @@ const Admin = () => {
             id: p.id,
             full_name: p.full_name || "—",
             email: p.email || "—",
+            cpf: (p as any).cpf ?? null,
             totalHours: 0,
             totalActions: 0,
             volunteer_level: (p as any).volunteer_level ?? 1,
